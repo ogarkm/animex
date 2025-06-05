@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Anime - Media App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="Resources/styles.css"> <!-- Your CSS file -->
+</head>
+<body>
+    <div class="app-container">
+        <header class="hero-section" style="background-image: url('https://placehold.co/400x300/1A2B3C/FFF?text=One+Piece+BG');">
+            <div class="hero-content">
+                <div class="hero-poster">
+                    <img src="https://placehold.co/100x150/555/fff?text=OP+Poster" alt="One Piece Poster">
+                </div>
+                <div class="hero-details">
+                    <span class="episode-info">EPISODE #234</span>
+                    <!-- Using a placeholder for title logo as an image -->
+                    <img src="https://placehold.co/180x60/eee/000?text=ONE+PIECE+LOGO" alt="One Piece Logo" class="title-logo">
+                    <button class="continue-button">
+                        <i class="fas fa-play"></i> CONTINUE WATCHING
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section id="anime-explore-section">
+                <h2 class="section-title">Explore</h2>
+                <div class="item-list" id="anime-list">
+                    <!-- Anime items will be populated here by JavaScript -->
+                </div>
+            </section>
+            <!-- You can add more sections here -->
+        </main>
+    </div> <!-- .app-container ends -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const animeListContainer = document.getElementById('anime-list');
+
+            // Function to fetch top anime from Jikan API
+            async function fetchTopAnime() {
+                try {
+                    // Jikan API endpoint for top anime
+                    const response = await fetch('https://api.jikan.moe/v4/top/anime?limit=10'); // Fetching top 10 anime
+                    if (!response.ok) {
+                        throw new Error(`Jikan API error: ${response.status} ${response.statusText}`);
+                    }
+                    const data = await response.json();
+                    displayAnime(data.data);
+                } catch (error) {
+                    console.error("Failed to fetch anime data:", error);
+                    animeListContainer.innerHTML = '<p>Error loading anime. Please try again later.</p>';
+                }
+            }
+
+            // Function to display anime data in the list
+            function displayAnime(animeData) {
+                animeListContainer.innerHTML = ''; // Clear any existing content
+
+                animeData.forEach(anime => {
+                    const listItem = document.createElement('div');
+                    listItem.classList.add('list-item');
+                    listItem.style.cursor = 'pointer'; // Make it visually clickable
+                    listItem.addEventListener('click', () => {
+                        window.location.href = `series-info.html?anime=true&id=${anime.mal_id}`;
+                    });
+                    const thumbnailDiv = document.createElement('div');
+                    thumbnailDiv.classList.add('item-thumbnail');
+                    const thumbnailImg = document.createElement('img');
+                    thumbnailImg.src = anime.images.jpg.image_url;
+                    thumbnailImg.alt = anime.title_english || anime.title;
+                    thumbnailDiv.appendChild(thumbnailImg);
+
+                    const detailsDiv = document.createElement('div');
+                    detailsDiv.classList.add('item-details');
+                    const titleH3 = document.createElement('h3');
+                    titleH3.classList.add('item-title');
+                    titleH3.textContent = anime.title_english || anime.title;
+                    detailsDiv.appendChild(titleH3);
+
+                    if (anime.score || anime.episodes) {
+                        const metaDiv = document.createElement('div');
+                        metaDiv.classList.add('item-meta');
+
+                        if (anime.score) {
+                            const scoreSpan = document.createElement('span');
+                            scoreSpan.classList.add('meta-pill');
+                            scoreSpan.textContent = `${anime.score}/10`;
+                            metaDiv.appendChild(scoreSpan);
+                        }
+
+                        if (anime.episodes) {
+                            const episodesSpan = document.createElement('span');
+                            episodesSpan.classList.add('meta-pill');
+                            episodesSpan.textContent = `${anime.episodes} EP`;
+                            metaDiv.appendChild(episodesSpan);
+                        }
+                        detailsDiv.appendChild(metaDiv);
+                    }
+
+                    const arrowDiv = document.createElement('div');
+                    arrowDiv.classList.add('item-arrow');
+                    const arrowIcon = document.createElement('i');
+                    arrowIcon.classList.add('fas', 'fa-chevron-right');
+                    arrowDiv.appendChild(arrowIcon);
+
+                    listItem.appendChild(thumbnailDiv);
+                    listItem.appendChild(detailsDiv);
+                    listItem.appendChild(arrowDiv);
+
+                    animeListContainer.appendChild(listItem);
+                });
+            }
+            
+
+            // Initial fetch of anime data
+            fetchTopAnime();
+        });
+
+
+    </script>
+</body>
+</html>

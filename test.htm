@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aniwatch‐API Episode Lookup</title>
+  <style>
+    body {
+      background: #1c1c1e;
+      color: #fff;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+    input {
+      margin-top: 0.2rem;
+      padding: 0.5rem;
+      width: 200px;
+      border: 1px solid #444;
+      border-radius: 4px;
+      background: #2c2c2e;
+      color: #fff;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 4px;
+      background: #66a2de;
+      color: #1c1c1e;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    #output {
+      margin-top: 1.5rem;
+      width: 100%;
+      max-width: 500px;
+      background: #2c2c2e;
+      border-radius: 6px;
+      padding: 1rem;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+    code {
+      background: #333;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    .link {
+      display: block;
+      margin-top: 0.5rem;
+      color: #66a2de;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Aniwatch-API Episode & Server Lookup</h1>
+
+  <label for="jikanId">Jikan (MAL) ID (e.g. 128):</label>
+  <input type="number" id="jikanId" placeholder="e.g. 128" />
+
+  <label for="episodeNum">Episode Number (e.g. 1):</label>
+  <input type="number" id="episodeNum" placeholder="e.g. 1" />
+
+  <button id="fetchBtn">Fetch servers</button>
+
+  <div id="output"></div>
+
+  <script>
+  // Helper to update the #output div
+  function logMessage(html) {
+    document.getElementById('output').innerHTML = html;
+  }
+
+  document.getElementById('fetchBtn').addEventListener('click', async () => {
+    const outputEl = document.getElementById('output');
+    outputEl.innerHTML = '⏳ Fetching…';
+
+    const jikanId = document.getElementById('jikanId').value.trim();
+    const episodeNum = document.getElementById('episodeNum').value.trim();
+
+    if (!jikanId || isNaN(jikanId) || !episodeNum || isNaN(episodeNum)) {
+      logMessage('<span style="color:#f55;">Please enter both a valid Jikan ID and Episode Number.</span>');
+      return;
+    }
+
+    try {
+      // 1. Fetch anime info from Jikan
+      const jikanResp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
+      if (!jikanResp.ok) throw new Error('Jikan lookup failed.');
+      const jikanData = await jikanResp.json();
+      const animeTitle = jikanData.data.title_english; 
+      // You could also try jikanData.data.title_english if you prefer.
+      console.log(`Jikan title: ${animeTitle}`);
+      // 2. Search Aniwatch by that title (page=1 for simplicity)
+      const searchQuery = encodeURIComponent(animeTitle);
+      const searchResp = await fetch(`https://aniwatch-api-v1-0.onrender.com/api/search/${searchQuery}/1`);
+      if (!searchResp.ok) throw new Error('Aniwatch search failed.');
+      const searchJson = await searchResp.json();
+      console.log(`Aniwatch search results for "${animeTitle}":`, searchJson);
+      let candidates = searchJson.searchYour;
+      if (!Array.isArray(candidates) || candidates.length === 0) {
+        throw new Error(`No Aniwatch results for “${animeTitle}”.`);
+      }
+      console.log(`Found ${candidates.length} candidates on Aniwatch for "${animeTitle}"`);
+      // 2a. Filter only “TV” entries (skip Specials / ONA / etc.)
+      candidates = candidates.filter(item => item.format === 'TV');
+
+      // 3. For each candidate (by `idanime`), compare the name/title to animeTitle
+      let foundAniwatchId = null;
+      for (let item of candidates) {
+        const candidateId = item.idanime; 
+        if (!candidateId) continue;
+
+        // Compare the candidate's name/title to animeTitle (case-insensitive, trimmed)
+        const candidateName = (item.name || item.title || '').toLowerCase().trim();
+        const searchTitle = (animeTitle || '').toLowerCase().trim();
+        if (candidateName === searchTitle) {
+          foundAniwatchId = candidateId;
+          break;
+        }
+      }
+
+      if (!foundAniwatchId) {
+        throw new Error(`Couldn’t find an Aniwatch anime whose mal_id = ${jikanId}.`);
+      }
+
+      // 4. Fetch episodes for foundAniwatchId
+      const epsResp = await fetch(`https://aniwatch-api-v1-0.onrender.com/api/episode/${foundAniwatchId}`);
+      if (!epsResp.ok) throw new Error('Aniwatch episode-list lookup failed.');
+      const epsJson = await epsResp.json();
+      const episodes = epsJson.episodetown;
+      if (!Array.isArray(episodes) || episodes.length === 0) {
+        throw new Error(`No episodes found for ${foundAniwatchId}.`);
+      }
+
+      // 5. Find the one whose "order" equals episodeNum
+      const targetEp = episodes.find(epObj => Number(epObj.order) === Number(episodeNum));
+      if (!targetEp) {
+        throw new Error(`Episode ${episodeNum} not found for ${foundAniwatchId}.`);
+      }
+      const epIdParam = targetEp.epId; 
+      // e.g. "solo-leveling-18718?ep=12345"
+
+      // 6. Fetch servers for that epIdParam
+      const serverResp = await fetch(
+        `https://aniwatch-api-v1-0.onrender.com/api/server/${encodeURIComponent(epIdParam)}`
+      );
+      if (!serverResp.ok) throw new Error('Aniwatch server lookup failed.');
+      const serverJson = await serverResp.json();
+      console.log(`Aniwatch servers for "${animeTitle}" episode ${episodeNum}:`, serverJson);
+      const subArr = serverJson.sub || [];
+      const dubArr = serverJson.dub || [];
+
+      // Build HTML output
+      let html = `
+        <strong>✅ Found animeId:</strong> <code>${foundAniwatchId}</code><br/>
+        <strong>Episode ${episodeNum} (epIdParam):</strong> <code>${epIdParam}</code><br/><br/>
+      `;
+
+      // Helper to resolve server links
+      async function resolveServerLink(one) {
+        if (one.serverlinkAni) return one.serverlinkAni;
+        if (one.srcId) {
+          try {
+            const resp = await fetch(`https://aniwatch-api-v1-0.onrender.com/api/src-server/${one.srcId}`);
+            if (resp.ok) {
+              const data = await resp.json();
+              if (data && data.serverSrc && data.serverSrc[0] && data.serverSrc[0].serverlinkAni) {
+                return data.serverSrc[0].serverlinkAni;
+              }
+            }
+          } catch (e) { /* ignore */ }
+        }
+        return one.srcId || '';
+      }
+
+      // Render servers (sub and dub)
+      async function renderServers(arr, label) {
+        if (!arr.length) return `<em>No “${label}” servers found.</em><br/>`;
+        let out = label === 'sub' ? `<strong>Sub servers:</strong><br/>` : `<br/><strong>Dub servers:</strong><br/>`;
+        for (let i = 0; i < arr.length; i++) {
+          const one = arr[i];
+          const link = await resolveServerLink(one);
+          console.log(`Server ${i + 1} (${label}):`, one, 'Link:', link);
+          out += `<a class="link" target="_blank" href="${link}">
+                    ${i + 1}. ${one.server}: <code>${link}</code>
+                  </a>`;
+        }
+        return out;
+      }
+
+      // Wait for all server links to resolve
+      const subHtml = await renderServers(subArr, 'sub');
+      const dubHtml = await renderServers(dubArr, 'dub');
+      html += subHtml + dubHtml;
+
+      logMessage(html);
+    }
+    catch (err) {
+      logMessage(`<span style="color:#f55;">Error: ${err.message}</span>`);
+      console.error(err);
+    }
+  });
+</script>
+
+
+</body>
+</html>
