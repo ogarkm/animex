@@ -1,95 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Animex</title> <!-- Main app title -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for nav icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="Resources/styles.css">
-    <link rel="icon" href="Resources/favicon.png" type="image/png"> <!-- Favicon for the app -->
-    <style>
-        /* Additional styles specific to index.html layout */
-        body, html {
-            height: 100%;
-            overflow: hidden; /* Prevent scrollbars on the body itself */
-        }
-
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%; /* Ensure app-container takes full height */
-        }
-
-        #contentFrame {
-            flex-grow: 1; /* Iframe takes up available vertical space */
-            width: 100%;
-            border: none; /* Remove default iframe border */
-            display: block; /* Fixes potential small gap issues */
-        }
-
-        /* The .bottom-nav styling is already in Resources/styles.css */
-    </style>
-</head>
-<body>
-    <div class="app-container">
-        <iframe id="contentFrame" src="" title="Content Area"></iframe>
-        <!-- Note: src will be set by JavaScript on load -->
-
-        <nav class="bottom-nav">
-            <a href="#" class="nav-item" data-src="manga.html">
-                <span class="nav-icon"><i class="fas fa-book-open"></i></span>
-                MANGA
-            </a>
-            <a href="#" class="nav-item" data-src="anime.html">
-                <span class="nav-icon"><i class="fas fa-film"></i></span>
-                ANIME
-            </a>
-            <a href="#" class="nav-item" data-src="search.html">
-                <span class="nav-icon"><i class="fas fa-search"></i></span>
-                SEARCH
-            </a>
-            <a href="#" class="nav-item" data-src="library.html">
-                <span class="nav-icon"><i class="fas fa-bookmark"></i></span>
-                LIBRARY
-            </a>
-            <a href="#" class="nav-item" data-src="settings.html">
-                <span class="nav-icon"><i class="fas fa-cog"></i></span>
-                SETTINGS
-            </a>
-        </nav>
-    </div>
-
+<html>
+    <head>
+        <meta http-equiv="refresh" content="0; url=/Launch.html" />
+        <title>Redirecting...</title>
+        <link rel="manifest" href="/Resources/manifest.json" />
+    </head>
+    <body>
+        <p>If you are not redirected automatically, <a href="/Launch.html">click here</a>.</p>
+    </body>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-            const contentFrame = document.getElementById('contentFrame');
-            const defaultSrc = 'manga.html'; // Load manga.html by default
-
-            function setActiveTab(selectedItem) {
-                navItems.forEach(item => {
-                    item.classList.remove('active');
-                });
-                selectedItem.classList.add('active');
-                contentFrame.src = selectedItem.dataset.src;
-            }
-
-            navItems.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault(); // Prevent default link navigation
-                    setActiveTab(item);
-                });
-            });
-
-            // Set initial active tab and iframe source
-            const initialActiveItem = document.querySelector(`.nav-item[data-src="${defaultSrc}"]`) || navItems[0];
-            if (initialActiveItem) {
-                setActiveTab(initialActiveItem);
-            }
-        });
+        if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log("Service Worker registered"));
+    }
     </script>
-</body>
 </html>
