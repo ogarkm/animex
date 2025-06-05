@@ -4,23 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Animex</title> <!-- Main app title -->
+
+    <!-- External Fonts and Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for nav icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="Resources/styles.css">
+
+    <!-- App Resources (ensure these paths are correct relative to this HTML file's location) -->
     <link rel="icon" href="Resources/favicon.png" type="image/png"> <!-- Favicon for the app -->
     <link rel="manifest" href="Resources/manifest.json"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="Resources/styles.css"> <!-- Main styles for the app -->
+
+    <!-- Meta Tags for Mobile Web App -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
     <style>
-        /* Additional styles specific to index.html layout */
+        /*
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        !!! PASTE THE ENTIRE CONTENT OF YOUR 'Resources/styles.css' FILE HERE  !!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        */
+
+        /* Example of what might be in Resources/styles.css (you need your actual content): */
+        /*
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #1f1f1f;
+            color: #ccc;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #8e8e93;
+            font-size: 10px;
+            flex-grow: 1;
+            height: 100%;
+            padding-top: 8px;
+            padding-bottom: 4px;
+            box-sizing: border-box;
+        }
+
+        .nav-item .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .nav-item.active {
+            color: #ffffff;
+        }
+        */
+
+        /* --- GENERAL LAYOUT STYLES (FROM YOUR ORIGINAL index.html) --- */
         body, html {
             height: 100%;
             overflow: hidden; /* Prevent scrollbars on the body itself */
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #121212; /* Default app background, covered by splash initially */
         }
 
         .app-container {
@@ -36,10 +92,141 @@
             display: block; /* Fixes potential small gap issues */
         }
 
-        /* The .bottom-nav styling is already in Resources/styles.css */
+        /* --- SPLASH SCREEN CSS --- */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000; /* Black background for splash */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999; /* Ensure it's on top */
+            opacity: 1; /* Will be animated to 0 */
+            overflow: hidden;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 150px; /* Adjust as needed for desired logo size */
+            height: 130px; /* Adjust based on your logo's aspect ratio */
+        }
+
+        .gate-post, .lintel, .opening {
+            position: absolute;
+            background-color: #2A2A2A; /* Dark gray from your logo */
+        }
+
+        /* Posts */
+        .gate-post {
+            width: 22%;
+            height: 73%;
+            bottom: 0;
+            opacity: 0;
+            animation: splashSlideUp 0.6s ease-out forwards; /* Renamed to avoid potential conflicts */
+        }
+        .left-post {
+            left: 15%;
+        }
+        .right-post {
+            right: 15%;
+        }
+
+        /* Lintels */
+        .lintel {
+            opacity: 0;
+            animation: splashFadeIn 0.5s ease-out forwards; /* Renamed */
+        }
+        .middle-lintel {
+            width: 70%;
+            height: 11.5%;
+            top: 15.5%;
+            left: 15%;
+            animation-delay: 0.5s; /* After posts */
+        }
+        .top-lintel {
+            width: 100%;
+            height: 15.5%;
+            top: 0;
+            left: 0;
+            animation-delay: 0.8s; /* After middle lintel */
+        }
+
+        /* Opening */
+        .opening {
+            width: 23%;
+            height: 38.5%;
+            background-color: #E8772E; /* Orange from your logo */
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) scaleY(0);
+            transform-origin: bottom center;
+            border-top-left-radius: 50px; /* Adjust for perfect curve */
+            border-top-right-radius: 50px; /* Adjust for perfect curve */
+            opacity: 0;
+            animation: splashFadeInAndGrowUp 0.6s ease-out forwards; /* Renamed */
+            animation-delay: 1.2s; /* After lintels */
+        }
+
+        /* Keyframes (prefixed with splash to avoid name collisions if Resources/styles.css has similar names) */
+        @keyframes splashSlideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes splashFadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes splashFadeInAndGrowUp {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) scaleY(0);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) scaleY(1);
+            }
+        }
+
+        @keyframes fadeOutSplashScreen { /* This one is for the whole screen, less likely to conflict */
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+        /* --- SPLASH SCREEN CSS END --- */
     </style>
 </head>
 <body>
+
+    <!-- SPLASH SCREEN HTML START -->
+    <div id="splash-screen">
+        <div class="logo-container">
+            <div class="gate-post left-post"></div>
+            <div class="gate-post right-post"></div>
+            <div class="lintel middle-lintel"></div>
+            <div class="lintel top-lintel"></div>
+            <div class="opening"></div>
+        </div>
+    </div>
+    <!-- SPLASH SCREEN HTML END -->
+
     <div class="app-container">
         <iframe id="contentFrame" src="" title="Content Area"></iframe>
         <!-- Note: src will be set by JavaScript on load -->
@@ -70,6 +257,30 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- SPLASH SCREEN SCRIPT START ---
+            const splashScreenElement = document.getElementById('splash-screen');
+
+            if (splashScreenElement) {
+                const logoAnimationDuration = 1800; // ms (longest animation part: opening 1.2s delay + 0.6s duration)
+                const holdDuration = 500;           // ms (how long to show the complete logo)
+                const fadeOutScreenDuration = 500;  // ms (duration of splash screen fade out)
+
+                const totalSplashScreenVisibleTime = logoAnimationDuration + holdDuration;
+
+                splashScreenElement.style.animation = `fadeOutSplashScreen ${fadeOutScreenDuration / 1000}s ease-out forwards`;
+                splashScreenElement.style.animationDelay = `${totalSplashScreenVisibleTime / 1000}s`;
+
+                splashScreenElement.addEventListener('animationend', (event) => {
+                    // Ensure we are reacting to the splash screen's own fade-out animation
+                    if (event.target === splashScreenElement && event.animationName === 'fadeOutSplashScreen') {
+                        splashScreenElement.style.display = 'none';
+                    }
+                });
+            }
+            // --- SPLASH SCREEN SCRIPT END ---
+
+
+            // --- ORIGINAL NAVIGATION SCRIPT START ---
             const navItems = document.querySelectorAll('.bottom-nav .nav-item');
             const contentFrame = document.getElementById('contentFrame');
             const defaultSrc = 'manga.html'; // Load manga.html by default
@@ -79,7 +290,10 @@
                     item.classList.remove('active');
                 });
                 selectedItem.classList.add('active');
-                contentFrame.src = selectedItem.dataset.src;
+                // Only set src if it's different to prevent unnecessary reloads
+                if (contentFrame.src !== selectedItem.dataset.src) {
+                    contentFrame.src = selectedItem.dataset.src;
+                }
             }
 
             navItems.forEach(item => {
@@ -94,11 +308,15 @@
             if (initialActiveItem) {
                 setActiveTab(initialActiveItem);
             }
+            // --- ORIGINAL NAVIGATION SCRIPT END ---
         });
 
+        // --- SERVICE WORKER REGISTRATION ---
         if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then(() => console.log("Service Worker registered"));
+            // Ensure sw.js is in the root directory relative to where this HTML is served
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log("Service Worker registered"))
+                .catch(error => console.error("Service Worker registration failed:", error));
         }
     </script>
 </body>
