@@ -8,7 +8,7 @@
   />
   <title>Episode Player</title>
 
-  <!-- Inter font + Font Awesome (for the back button icon) -->
+  <!-- Inter font + Font Awesome for back button -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link 
     rel="preconnect" 
@@ -63,8 +63,11 @@
       top: 50px;
       left: 0;
       right: 0;
-      bottom: 120px; /* leave space for info below */
+      bottom: 120px; /* leave space for the info bar */
       background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     #player-container iframe {
       width: 100%;
@@ -95,11 +98,17 @@
       font-size: 0.9rem;
       opacity: 0.8;
     }
+    #error-message {
+      color: #ff6b6b;
+      text-align: center;
+      padding: 2rem;
+      font-size: 1.1rem;
+    }
   </style>
 </head>
 
 <body>
-  <!-- Header with a Back button -->
+  <!-- Header with back button -->
   <header id="header">
     <button id="back-button" aria-label="Go Back">
       <i class="fas fa-arrow-left"></i>
@@ -107,14 +116,16 @@
     <div id="header-title">Loading…</div>
   </header>
 
-  <!-- Full‐screen iframe container -->
+  <!-- Where the video iframe will go -->
   <div id="player-container">
     <!-- JS will inject the <iframe> here -->
   </div>
 
-  <!-- Below‐player info area -->
+  <!-- Minimal info below -->
   <div id="info-container">
-    <div id="series-title">Series: <span id="series-name">—</span></div>
+    <div id="series-title">
+      Series: <span id="series-name">—</span>
+    </div>
     <div id="meta-line">
       Type: <span id="series-type">—</span>
       &nbsp;|&nbsp;
@@ -126,109 +137,77 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+      // 1) Read query params
       const params = new URLSearchParams(window.location.search);
       const jikanId = params.get('id');
       const episode = params.get('ep');
 
-      // If either is missing, show an error:
+      // Show error if missing
       if (!jikanId || !episode) {
-        document.getElementById('series-name').textContent = 'Unknown';
-        document.getElementById('series-type').textContent = 'N/A';
-        document.getElementById('series-year').textContent = 'N/A';
-        document.getElementById('episode-number').textContent = 'N/A';
-        document.getElementById('header-title').textContent = 'Missing id or ep';
+        document.getElementById('player-container').innerHTML = `
+          <div id="error-message">
+            Missing “id” or “ep” parameter in URL.<br>
+            Example: view.html?id=21&ep=104
+          </div>`;
+        document.getElementById('header-title').textContent = 'Error';
         return;
       }
 
-      // ===== Helper: Slugify for 9Anime format =====
-      function slugifyFor9Anime(title) {
-        return title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/-+/g, '-')
-          .replace(/^-|-$/g, '');
-      }
+      // 2) Fetch minimal anime info from Jikan
+      let title = 'Unknown';
+      let type = 'N/A';
+      let year = 'N/A';
 
-      // ===== 1) Fetch minimal series info from Jikan =====
-      let title, type, year;
       try {
         const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
-        if (!resp.ok) throw new Error('Jikan fetch failed');
-        const data = await resp.json();
-        const anime = data.data || {};
-        title = anime.title_english || anime.title || 'Unknown';
-        type = anime.type || 'N/A';
-        year = anime.year || 
-               (anime.aired && anime.aired.prop && anime.aired.prop.from && anime.aired.prop.from.year) || 
-               'N/A';
+        if (resp.ok) {
+          const data = await resp.json();
+          const anime = data.data || {};
+          title = anime.title_english || anime.title || 'Unknown';
+          type = anime.type || 'N/A';
+          year = anime.year ||
+                 (anime.aired?.prop?.from?.year) ||
+                 'N/A';
+        }
       } catch (err) {
-        console.error('Error fetching Jikan:', err);
-        title = 'Unknown';
-        type = 'N/A';
-        year = 'N/A';
+        console.warn('Failed to fetch Jikan info:', err);
       }
 
-      // Fill in header + info below
+      // 3) Update header + info section
       document.getElementById('header-title').textContent = `${title} — Ep ${episode}`;
       document.getElementById('series-name').textContent = title;
       document.getElementById('series-type').textContent = type;
       document.getElementById('series-year').textContent = year;
       document.getElementById('episode-number').textContent = episode;
 
-      // ===== 2) Build the 9Anime slug and then the GogoAnime iframe URL =====
-      const baseSlug = slugifyFor9Anime(title);
-      const nineAnimeSlug = `${baseSlug}-episode-${episode}`;
-      const nineAnimeURL = `https://9anime.org.lv/${nineAnimeSlug}/`;
+      // 4) Call your FastAPI proxy to get the raw iframe URL
+      //    (Adjust “your‐space‐name” to your actual HF Space or localhost:7860 if local)
+      const proxyBase = 'https://arkm20-animex-player-api.hf.space'; 
+      // If testing locally, use: const proxyBase = 'http://localhost:7860';
+      const iframeSrcURL = `${proxyBase}/iframe-src?id=${encodeURIComponent(jikanId)}&ep=${encodeURIComponent(episode)}`;
 
-      // 2A) Fetch the 9Anime page and scrape out the final <iframe src="…">
-      async function fetchEmbedSrc() {
-        try {
-          const res = await fetch(nineAnimeURL, {
-            headers: { 'User-Agent': 'Mozilla/5.0' }
-          });
-          if (!res.ok) throw new Error(`9Anime returned ${res.status}`);
-          const html = await res.text();
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          const embedDiv = doc.querySelector('#embed_holder');
-          if (!embedDiv) throw new Error('No embed_holder');
-
-          // 1) Static <iframe>?
-          const staticIframe = embedDiv.querySelector('iframe[src]');
-          if (staticIframe) return staticIframe.getAttribute('src');
-
-          // 2) Otherwise, look for a <script> that contains an <iframe src="…">
-          const scriptTag = embedDiv.querySelector('script');
-          if (scriptTag && scriptTag.textContent) {
-            const match = scriptTag.textContent.match(
-              /<iframe[^>]*\s+src=["']([^"']+)["']/
-            );
-            if (match) return match[1];
-          }
-
-          throw new Error('No iframe found in embed_holder');
-        } catch (e) {
-          console.error('Error scraping 9Anime:', e);
-          return null;
+      let embedSrc = null;
+      try {
+        const res = await fetch(iframeSrcURL);
+        if (res.ok) {
+          const json = await res.json();
+          embedSrc = json.src;
+        } else {
+          console.warn('Proxy returned HTTP', res.status);
         }
+      } catch (err) {
+        console.error('Error calling proxy:', err);
       }
 
-      const embedSrc = await fetchEmbedSrc();
       if (!embedSrc) {
-        const container = document.getElementById('player-container');
-        container.innerHTML = `
-          <div style="
-            color: #fff; 
-            text-align: center; 
-            padding: 2rem;
-            font-size: 1.1rem;
-          ">
+        document.getElementById('player-container').innerHTML = `
+          <div id="error-message">
             Could not load player. Please try again later.
           </div>`;
         return;
       }
 
-      // ===== 3) Inject the <iframe> for the GogoAnime player =====
+      // 5) Inject the final <iframe>
       const iframe = document.createElement('iframe');
       iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
       iframe.setAttribute('src', embedSrc);
@@ -238,7 +217,7 @@
       iframe.style.height = '100%';
       document.getElementById('player-container').appendChild(iframe);
 
-      // ===== 4) Back button logic =====
+      // 6) Back button logic
       document.getElementById('back-button').addEventListener('click', () => {
         window.history.back();
       });

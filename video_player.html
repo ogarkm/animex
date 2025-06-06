@@ -215,26 +215,40 @@
             pointer-events: none;
         }
         
-        .spinner {
+        /* UPDATED: Loading/Processing Spinner container */
+        .loading-container {
             position: absolute;
             top: 50%;
             left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 19;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .spinner {
             width: 50px;
             height: 50px;
-            transform: translate(-50%, -50%);
             border: 5px solid rgba(255,255,255,0.2);
             border-top-color: var(--player-accent-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            z-index: 19;
+        }
+        .loading-text {
+            color: var(--player-text-color);
+            font-size: 1em;
+        }
+        
+        .video-player-container.loading .loading-container,
+        .video-player-container.processing .loading-container {
+            display: flex;
+        }
+        .video-player-container.loading .big-play-button,
+        .video-player-container.processing .big-play-button {
             display: none;
         }
-        .video-player-container.loading .spinner {
-            display: block;
-        }
-        .video-player-container.loading .big-play-button {
-            display: none;
-        }
+
 
         /* Overlay for double tap seeking */
         .seek-overlay {
@@ -243,7 +257,6 @@
             width: 35%; /* Area for tap */
             height: calc(100% - 60px); /* Avoid controls area */
             z-index: 10; /* Above video, below controls */
-            /* background-color: rgba(255,0,0,0.1); */ /* For debugging tap area */
         }
         .seek-overlay.left { left: 0; }
         .seek-overlay.right { right: 0; }
@@ -269,7 +282,7 @@
 
 
         @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
@@ -292,7 +305,12 @@
 <body>
 
     <div class="video-player-container" id="videoPlayerContainer">
-        <div class="spinner" id="loadingSpinner"></div>
+        <!-- UPDATED: Loading container -->
+        <div class="loading-container" id="loadingContainer">
+            <div class="spinner"></div>
+            <p class="loading-text" id="loadingText"></p>
+        </div>
+
         <video id="customPlayer" playsinline preload="metadata"></video>
 
         <div class="seek-overlay left" id="seekOverlayLeft"></div>
@@ -334,6 +352,11 @@
         </div>
     </div>
 
+    <!-- ADDED: FFMPEG library for MKV support -->
+    <!-- Note: These are large files (~25MB) and will be cached by the browser after the first load. -->
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+    <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+
     <script>
         const playerContainer = document.getElementById('videoPlayerContainer');
         const video = document.getElementById('customPlayer');
@@ -350,7 +373,8 @@
         const progressFilled = document.getElementById('progressFilled');
         const progressBarHover = document.getElementById('progressBarHover');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
-        const loadingSpinner = document.getElementById('loadingSpinner');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const loadingText = document.getElementById('loadingText');
 
         const seekOverlayLeft = document.getElementById('seekOverlayLeft');
         const seekOverlayRight = document.getElementById('seekOverlayRight');
@@ -362,10 +386,64 @@
         let lastTapTimeRight = 0;
         const doubleTapDelay = 300; // ms for double tap detection
         let feedbackTimeout;
+        let ffmpeg; // To hold the ffmpeg instance
 
         if (!('ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0)) {
             playerContainer.classList.add('desktop');
         }
+
+        // --- NEW: MKV Processing and Video Source Handling ---
+        const handleVideoSource = async (src) => {
+            const url = decodeURIComponent(src);
+            // Check if the source is an MKV file
+            if (url.toLowerCase().endsWith('.mkv')) {
+                playerContainer.classList.add('processing');
+                loadingText.textContent = 'Processing video...';
+
+                // NOTE: This process downloads the entire video file before playback can begin.
+                // This is a limitation of client-side MKV conversion without complex streaming.
+                try {
+                    if (!ffmpeg) {
+                        ffmpeg = new FFmpeg.FFmpeg();
+                        ffmpeg.on('log', ({ message }) => {
+                            console.log(message); // For debugging ffmpeg process
+                        });
+                        loadingText.textContent = 'Loading converter...';
+                        await ffmpeg.load({
+                            coreURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js"
+                        });
+                    }
+
+                    loadingText.textContent = 'Fetching video...';
+                    const { fetchFile } = FFmpegUtil;
+                    const inputData = await fetchFile(url);
+                    await ffmpeg.writeFile('input.mkv', inputData);
+                    
+                    loadingText.textContent = 'Converting...';
+                    // This command copies the video/audio streams into a new MP4 container. It's fast because it's not re-encoding.
+                    await ffmpeg.exec(['-i', 'input.mkv', '-c', 'copy', 'output.mp4']);
+
+                    const outputData = await ffmpeg.readFile('output.mp4');
+                    const dataBlob = new Blob([outputData.buffer], { type: 'video/mp4' });
+                    video.src = URL.createObjectURL(dataBlob);
+
+                } catch (error) {
+                    console.error("Error processing MKV file:", error);
+                    loadingText.textContent = `Error: Could not process video.`;
+                    playerContainer.classList.remove('processing');
+                    // Add a class to keep the message visible
+                    playerContainer.classList.add('error');
+                    return;
+                }
+
+                playerContainer.classList.remove('processing');
+                loadingText.textContent = '';
+            } else {
+                // For non-MKV files, just set the source directly
+                video.src = url;
+            }
+        };
+
 
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -373,28 +451,28 @@
             const fullParam = urlParams.get('full');
 
             if (videoSrc) {
-                video.src = decodeURIComponent(videoSrc);
+                handleVideoSource(videoSrc);
                 if (fullParam === 'true') {
-                    playerContainer.classList.add('fullscreen-mode'); // Apply styles for full=true
-                    // Attempt to go fullscreen programmatically if allowed (often needs user interaction first)
-                    // We'll rely on the class for styling, actual fullscreen might be blocked.
-                    // To be more robust, you might prompt user or wait for first interaction.
-                    if (playerContainer.requestFullscreen) {
-                        // This might be blocked by browsers if not user-initiated
-                        // playerContainer.requestFullscreen().catch(err => console.warn("Fullscreen request failed:", err));
-                    }
-                    // Ensure fullscreen button reflects this state if we could go fullscreen.
-                    // For simplicity, the 'fullscreen-mode' class handles the visual filling.
+                    playerContainer.classList.add('fullscreen-mode');
                 }
             } else {
                 playerContainer.innerHTML = '<p style="color:white; text-align:center; padding: 20px;">Error: No video source specified. Add ?video=VIDEO_URL to the address.</p>';
-                return; // Stop further script execution if no video
+                return;
             }
         });
         
-        video.addEventListener('waiting', () => playerContainer.classList.add('loading'));
-        video.addEventListener('canplay', () => playerContainer.classList.remove('loading'));
-        video.addEventListener('playing', () => playerContainer.classList.remove('loading'));
+        video.addEventListener('waiting', () => {
+            playerContainer.classList.add('loading');
+            loadingText.textContent = "Loading...";
+        });
+        video.addEventListener('canplay', () => {
+            playerContainer.classList.remove('loading');
+            loadingText.textContent = "";
+        });
+        video.addEventListener('playing', () => {
+            playerContainer.classList.remove('loading');
+            loadingText.textContent = "";
+        });
 
         function togglePlay() {
             playerContainer.classList.add('has-interacted');
@@ -407,22 +485,19 @@
         playPauseBtn.addEventListener('click', togglePlay);
         bigPlayBtn.addEventListener('click', togglePlay);
         
-        // Single tap on video for play/pause or showing controls
         let videoTapTimeout;
         video.addEventListener('click', (event) => {
-            // Prevent click if it was part of a double tap seek
             if (event.target === seekOverlayLeft || event.target === seekOverlayRight) return;
-            if (event.detail === 1) { // Check for single click
+            if (event.detail === 1) {
                 videoTapTimeout = setTimeout(() => {
                      if (playerContainer.classList.contains('controls-active') && !video.paused) {
                         hideControls();
                     } else {
-                        togglePlay(); // If controls hidden or paused, toggle play
+                        togglePlay();
                     }
-                }, 200); // Delay to distinguish from double click
+                }, 200);
             }
         });
-        // Double click on video for fullscreen is handled by 'dblclick' event listener later
 
         video.addEventListener('play', () => {
             playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
@@ -487,45 +562,33 @@
             video.muted = e.target.value === '0';
         });
 
-        function requestNativeFullscreen(element) {
-            if (element.requestFullscreen) return element.requestFullscreen();
-            if (element.mozRequestFullScreen) return element.mozRequestFullScreen();
-            if (element.webkitRequestFullscreen) return element.webkitRequestFullscreen();
-            if (element.msRequestFullscreen) return element.msRequestFullscreen();
-            return Promise.reject(new Error("Fullscreen API not supported."));
-        }
-        function exitNativeFullscreen() {
-            if (document.exitFullscreen) return document.exitFullscreen();
-            if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
-            if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-            if (document.msExitFullscreen) return document.msExitFullscreen();
-            return Promise.reject(new Error("Fullscreen API not supported."));
-        }
-        function isNativeFullscreen() {
-            return !!(document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+        // --- UPDATED: Fullscreen Logic for Mobile & Desktop ---
+        function isFullscreen() {
+            // Check standard API and iOS-specific property
+            return !!(document.fullscreenElement || document.webkitFullscreenElement || video.webkitDisplayingFullscreen);
         }
 
         function toggleFullscreen() {
-            if (!isNativeFullscreen()) {
-                requestNativeFullscreen(playerContainer).catch(err => console.warn("Fullscreen request failed:", err));
-            } else {
-                exitNativeFullscreen().catch(err => console.warn("Exit fullscreen request failed:", err));
+            // Use the video-element-specific API on iOS/Safari
+            if (video.webkitEnterFullscreen) {
+                if (video.webkitDisplayingFullscreen) {
+                    video.webkitExitFullscreen();
+                } else {
+                    video.webkitEnterFullscreen();
+                }
+            } else { // Use the standard API for the container on other browsers
+                if (isFullscreen()) {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                } else {
+                    if (playerContainer.requestFullscreen) playerContainer.requestFullscreen();
+                    else if (playerContainer.webkitRequestFullscreen) playerContainer.webkitRequestFullscreen();
+                }
             }
         }
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
-        video.addEventListener('dblclick', (event) => {
-            clearTimeout(videoTapTimeout); // Cancel single tap action if it's a double click
-            // Prevent dblclick if it was on seek overlay (handled by tap)
-            if (event.target === seekOverlayLeft || event.target === seekOverlayRight) return;
-            toggleFullscreen();
-        });
 
-        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(event => {
-            document.addEventListener(event, updateFullscreenButton);
-        });
-
-        function updateFullscreenButton() {
-            if (isNativeFullscreen()) {
+        function updateFullscreenVisuals() {
+            if (isFullscreen()) {
                 fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
                 playerContainer.classList.add('fullscreen');
             } else {
@@ -533,7 +596,23 @@
                 playerContainer.classList.remove('fullscreen');
             }
         }
+        
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        video.addEventListener('dblclick', (event) => {
+            clearTimeout(videoTapTimeout);
+            if (event.target === seekOverlayLeft || event.target === seekOverlayRight) return;
+            toggleFullscreen();
+        });
 
+        // Listen to all possible fullscreen change events
+        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(
+            event => document.addEventListener(event, updateFullscreenVisuals)
+        );
+        // Also listen to iOS-specific events on the video element
+        video.addEventListener('webkitbeginfullscreen', updateFullscreenVisuals);
+        video.addEventListener('webkitendfullscreen', updateFullscreenVisuals);
+
+        // --- Controls Visibility Logic (unchanged) ---
         function showControls() {
             clearTimeout(controlsTimeout);
             playerContainer.classList.add('controls-active');
@@ -559,43 +638,38 @@
         videoControls.addEventListener('mouseleave', hideControlsWithDelay);
         
         playerContainer.addEventListener('touchstart', (event) => {
-            // Only handle if the tap is not on a button within controls
             if (event.target.closest('.control-button')) return;
-
             if (playerContainer.classList.contains('controls-active')) {
-                 // A tap outside controls when they are visible could hide them
-                 // Or, if it's on a seek overlay, it's handled there
+                // Future: Tap on video to hide controls could be handled here
             } else {
-                showControls(); // If controls hidden, tap shows them
+                showControls();
             }
             hideControlsWithDelay();
         }, { passive: true });
 
-
-        // Double Tap Seek Logic
+        // --- Double Tap Seek Logic (unchanged) ---
         function showSeekFeedback(element) {
             clearTimeout(feedbackTimeout);
             element.classList.add('show');
             feedbackTimeout = setTimeout(() => {
                 element.classList.remove('show');
-            }, 600); // Show feedback for 600ms
+            }, 600);
         }
 
-        seekOverlayLeft.addEventListener('click', (e) => { // Changed to 'click' for simplicity with double tap logic
-            e.stopPropagation(); // Prevent video's own click handler
+        seekOverlayLeft.addEventListener('click', (e) => {
+            e.stopPropagation();
             const currentTime = Date.now();
-            if (currentTime - lastTapTimeLeft < doubleTapDelay) { // Double tap
-                clearTimeout(videoTapTimeout); // Cancel single tap action
+            if (currentTime - lastTapTimeLeft < doubleTapDelay) {
+                clearTimeout(videoTapTimeout);
                 video.currentTime -= 10;
                 showSeekFeedback(seekFeedbackRewind);
-                lastTapTimeLeft = 0; // Reset for next double tap
-            } else { // First tap
+                lastTapTimeLeft = 0;
+            } else {
                 lastTapTimeLeft = currentTime;
-                // On first tap of a double tap, also show/hide controls
                 if (playerContainer.classList.contains('controls-active') && !video.paused) {
                     hideControls();
                 } else {
-                    showControls(); // If controls hidden or paused, show them
+                    showControls();
                     hideControlsWithDelay();
                 }
             }
@@ -619,12 +693,12 @@
                 }
             }
         });
-
-
+        
+        // --- Keyboard Shortcuts (unchanged) ---
         document.addEventListener('keydown', (e) => {
             const activeEl = document.activeElement;
-            if (activeEl && activeEl !== document.body && !playerContainer.contains(activeEl) && activeEl.tagName !== 'INPUT' && activeEl.tagName !== 'TEXTAREA') {
-               // return; 
+            if (activeEl && ['INPUT', 'TEXTAREA'].includes(activeEl.tagName)) {
+               return; 
             }
             
             switch(e.key.toLowerCase()) {

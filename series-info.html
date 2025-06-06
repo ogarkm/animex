@@ -79,6 +79,8 @@
             const isAnime = urlParams.get('anime') === 'true';
             const isManga = urlParams.get('manga') === 'true';
             const type = isManga ? 'manga' : 'anime';
+            const API_BASE_URL = 'https://arkm20-authapi.hf.space';
+            let currentSeriesTitle = '';
             const backButton = document.getElementById('back-button');
             if (backButton) {
                 backButton.style.display = (isAnime || isManga) ? '' : 'none';
@@ -179,6 +181,90 @@
                 }
             }
 
+            async function updateWatchHistory(showId, showTitle, seasonNumber, episodeNumber) {
+                // Check for the access token in localStorage
+                const token = localStorage.getItem('accessToken');
+
+                // If no token exists, the user is not logged in. Do nothing.
+                if (!token) {
+                    console.log("User is not logged in. Skipping watch history update.");
+                    return;
+                }
+
+                console.log(`Updating watch history for: ${showTitle} - S${seasonNumber}E${episodeNumber}`);
+
+                try {
+                    // The API endpoint expects a specific JSON structure in the body
+                    const body = {
+                        show_id: String(showId),
+                        show_title: String(showTitle),
+                        season_number: Number(seasonNumber),
+                        episode_number: Number(episodeNumber)
+                    };
+
+                    const response = await fetch(`${API_BASE_URL}/users/me/watch-history`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` // Include the user's token
+                        },
+                        body: JSON.stringify(body)
+                    });
+
+                    // We don't need to wait for the response, but it's good practice to log the result for debugging.
+                    if (response.ok) {
+                        console.log("Watch history updated successfully.");
+                    } else {
+                        const errorData = await response.json();
+                        console.error("Failed to update watch history:", errorData.detail || response.statusText);
+                    }
+                } catch (error) {
+                    console.error("Network error while updating watch history:", error);
+                }
+            }
+
+            // SNIPPET 2: Place this function inside the DOMContentLoaded listener.
+
+            async function updateWatchHistory(showId, showTitle, seasonNumber, episodeNumber) {
+                // Check for the access token in localStorage
+                const token = localStorage.getItem('accessToken');
+
+                // If no token exists, the user is not logged in. Do nothing.
+                if (!token) {
+                    console.log("User not logged in. Skipping watch history update.");
+                    return; // Exit the function early
+                }
+
+                console.log(`Updating watch history for: ${showTitle} - S${seasonNumber}E${episodeNumber}`);
+
+                try {
+                    const body = {
+                        show_id: String(showId),
+                        show_title: String(showTitle),
+                        season_number: Number(seasonNumber),
+                        episode_number: Number(episodeNumber)
+                    };
+
+                    const response = await fetch(`${API_BASE_URL}/users/me/watch-history`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` // Include the user's token
+                        },
+                        body: JSON.stringify(body)
+                    });
+
+                    if (response.ok) {
+                        console.log("Watch history update sent successfully.");
+                    } else {
+                        const errorData = await response.json();
+                        console.error("Failed to update watch history:", errorData.detail || response.statusText);
+                    }
+                } catch (error) {
+                    console.error("Network error while updating watch history:", error);
+                }
+            }
+
             function displayAnimeDetails(anime) {
                 if (!anime) return;
 
@@ -186,6 +272,7 @@
                 heroSection.style.backgroundImage = `url('${heroImageUrl}')`;
 
                 const displayTitle = anime.title_english || anime.title;
+                currentSeriesTitle = displayTitle;
                 seriesTitleTextElement.textContent = displayTitle;
                 seriesMainTitleBackup.textContent = displayTitle;
                 document.title = `${displayTitle} - Series Info`;
@@ -273,6 +360,15 @@
                     episodeItem.appendChild(episodeNumberSpan);
                     episodeItem.appendChild(episodeInfoDiv);
                     episodeItem.addEventListener('click', () => {
+                        updateWatchHistory(
+                            currentSeriesId,        // The ID of the show, already stored
+                            currentSeriesTitle,     // The title of the show, which we now store
+                            1,                      // Assumed Season Number
+                            episode.mal_id          // The episode number from the Jikan object
+                        );
+
+                        // --- YOUR ORIGINAL NAVIGATION LOGIC (RUNS IMMEDIATELY) ---
+                        // The user is navigated away without waiting for the API call to finish.
                         const url = `view.html?id=${encodeURIComponent(currentSeriesId)}&ep=${encodeURIComponent(episode.mal_id)}`;
                         window.location.href = url;
                     });

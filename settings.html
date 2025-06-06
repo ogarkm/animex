@@ -8,101 +8,301 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Assuming a local styles.css file for dark mode etc. If not, the toggle will work but not change appearance -->
     <link rel="stylesheet" href="Resources/styles.css">
     <style>
-        /* Minimal additional styles for new elements */
-        .settings-user-profile label {
-            cursor: pointer;
-            font-size: 0.8em;
-            color: var(--text-secondary);
-            display: block;
-            text-align: center;
-            margin-top: 5px;
+        :root {
+            --background-primary: #fff;
+            --background-light: #f4f4f4;
+            --text-primary: #111;
+            --text-secondary: #666;
+            --border-color: #eee;
         }
-        #watchHistoryContainer {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: var(--background-light); /* Assuming you have such a var */
+        /* Basic styles to make it standalone */
+        body { font-family: 'Inter', sans-serif; background-color: var(--background-primary); color: var(--text-primary); margin: 0; }
+        .app-container { max-width: 600px; margin: auto; padding: 15px; }
+        .main-content { padding-top: 20px; }
+        .settings-section { display: flex; flex-direction: column; gap: 20px; }
+        .settings-user-profile { text-align: center; }
+        .settings-user-profile img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); }
+        .settings-user-profile label { cursor: pointer; font-size: 0.8em; color: var(--text-secondary); display: block; text-align: center; margin-top: 5px; }
+        .username { font-weight: 600; font-size: 1.2em; margin-top: 10px; display: block; }
+        .settings-group { border: 1px solid var(--border-color); border-radius: 12px; padding: 30px 15px 15px 15px; }
+        .section-title { font-size: 1.1em; color: var(--text-primary); margin-bottom: 10px; padding-top: 15px; }
+        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .settings-item:last-child { border-bottom: none; }
+        .settings-item span { font-weight: 500; }
+        .settings-item i { color: var(--text-secondary); }
+        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #2196F3; }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .guestp { font-size: 0.9em; color: var(--text-secondary); margin: 20px 0; }
+        #watchHistoryContainer { margin-top: 10px; padding: 0; background-color: transparent; }
+        #watchHistoryContainer h4 { margin-top: 0; color: var(--text-primary); }
+        #watchHistoryContainer ul { list-style: none; padding-left: 0; }
+        #watchHistoryContainer li { padding: 5px 0; color: var(--text-secondary); }
+        #logoutButton { background-color: #d9534f; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 500; width: 100%; margin-top: 15px; }
+        #logoutButton:hover { background-color: #c9302c; }
+        .login-prompt button { background-color: #007bff; color: white; padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 1em; }
+        #showLoginBtn {background-color: #d9534f; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 500; width: 100%; margin-top: 15px; margin-bottom: 20px;}
+        /* --- Dark Mode --- */
+        body.dark-mode-active {
+            --background-primary: #121212;
+            --background-light: #1e1e1e;
+            --text-primary: #f1f1f1;
+            --text-secondary: #aaa;
+            --border-color: #333;
+        }
+
+        /* --- Login Iframe Modal --- */
+        #loginModal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: var(--background-primary);
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        #closeModalBtn {
+            position: absolute;
+            top: 10px; right: 15px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        #loginFrame {
+            width: 100%;
+            height: 500px;
+            border: none;
             border-radius: 8px;
         }
-        #watchHistoryContainer h4 {
-            margin-top: 0;
-            color: var(--text-primary);
+
+        /* --- Responsive & Improved Styles --- */
+        html {
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+        .app-container {
+            max-width: 600px;
+            margin: auto;
+            padding: 15px 8px;
+        }
+        @media (max-width: 600px) {
+            .app-container {
+                max-width: 100vw;
+                padding: 8px 2vw;
+            }
+            .modal-content {
+                width: 98vw;
+                max-width: 98vw;
+                padding: 10px 4vw;
+            }
+            #loginFrame {
+                height: 60vh;
+            }
+            .settings-user-profile img {
+                width: 64px;
+                height: 64px;
+            }
+            .settings-group {
+                padding: 0 6vw 12px 6vw;
+            }
+            .section-title {
+                font-size: 1em;
+                padding-top: 10px;
+            }
+            .settings-item {
+                padding: 10px 0;
+            }
+            #logoutButton, .login-prompt button {
+                font-size: 1em;
+                padding: 10px 0;
+            }
+        }
+        .settings-section {
+            gap: 16px;
+        }
+        .settings-group {
+            background: var(--background-light);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            margin-bottom: 8px;
+            transition: box-shadow 0.2s;
+        }
+        .settings-group:active, .settings-group:focus-within {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+        }
+        .settings-user-profile img {
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+        .settings-user-profile img:hover {
+            box-shadow: 0 2px 12px rgba(33,150,243,0.12);
+            border-color: #2196F3;
+        }
+        .settings-user-profile label {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+        }
+        .settings-user-profile label:hover {
+            color: #2196F3;
+        }
+        .username {
+            margin-top: 12px;
+            font-size: 1.15em;
+            letter-spacing: 0.01em;
+        }
+        .settings-item {
+            min-height: 44px;
+            font-size: 1em;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+        .settings-item:active {
+            background: rgba(33,150,243,0.07);
+        }
+        .settings-item span {
+            font-weight: 500;
+            font-size: 1em;
+        }
+        .toggle-switch {
+            width: 48px;
+            height: 26px;
+        }
+        .slider {
+            background-color: #bbb;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        .slider:before {
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+        #logoutButton, .login-prompt button {
+            border-radius: 10px;
+            font-size: 1.08em;
+            padding: 12px 0;
+            margin-top: 12px;
+            transition: background 0.2s;
+        }
+        #logoutButton:active, .login-prompt button:active {
+            background-color: #b52a27;
         }
         #watchHistoryContainer ul {
-            list-style: none;
-            padding-left: 0;
+            font-size: 0.98em;
         }
         #watchHistoryContainer li {
-            padding: 5px 0;
-            color: var(--text-secondary);
+            padding: 4px 0;
         }
-        #logoutButton {
-            background-color: #d9534f; /* A reddish color for logout */
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            width: 100%;
-            margin-top: 15px;
+        /* Modal close button larger touch area */
+        #closeModalBtn {
+            padding: 8px 12px;
+            top: 4px;
+            right: 8px;
         }
-        #logoutButton:hover {
-            background-color: #c9302c;
+        /* Make icons a bit larger for touch */
+        .settings-item i {
+            font-size: 1.2em;
+        }
+        /* Prevent horizontal scroll */
+        body, html {
+            max-width: 100vw;
+            overflow-x: hidden;
         }
     </style>
 </head>
 <body>
+    <!-- Login Modal -->
+    <div id="loginModal">
+        <div class="modal-content">
+            <button id="closeModalBtn" title="Back">×</button>
+            <iframe id="loginFrame" src=""></iframe>
+        </div>
+    </div>
+
     <div class="app-container">
         <main class="main-content no-hero">
             <section id="settings-section">
                 <div class="settings-user-profile">
-                    <img id="userAvatar" src="https://via.placeholder.com/50/cc0000/fff?text=U" alt="User Avatar" style="cursor:pointer;">
+                    <img id="userAvatar" src="https://via.placeholder.com/80/cccccc/fff?text=?" alt="User Avatar" style="cursor:pointer;">
                     <label for="profilePicUpload" id="changeAvatarLabel" style="cursor:pointer;">Change Avatar</label>
                     <input type="file" id="profilePicUpload" accept="image/*" style="display: none;">
-                    <span class="username" id="usernameDisplay">Guest User</span>
+                    <span class="username" id="usernameDisplay">Guest</span>
                 </div>
 
-                <div class="settings-group">
-                    <h3 class="section-title" style="font-size: 1.1em; color: var(--text-primary); margin-bottom: 0px; padding-top: 5px;">Account Settings</h3>
-                    <!-- "Edit profile" functionality is now tied to avatar change for simplicity.
-                         You might want a separate "Edit text profile" link that opens a modal or new page.
-                    -->
-                    <div class="settings-item" id="changePasswordItem">
-                        <span>Change password</span> <i class="fas fa-chevron-right"></i>
-                    </div>
-                    <div class="settings-item">
-                        <span>Add a payment method</span> <i class="fas fa-plus"></i>
-                    </div>
-                    <div class="settings-item">
-                        <span>Push notifications</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="pushNotificationsToggle"><span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="settings-item">
-                        <span>Dark mode</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="darkModeToggle" checked><span class="slider"></span>
-                        </label>
-                    </div>
+                <div id="guest-login-prompt" class="settings-group" style="text-align: center; display: none;">
+                    <p class="guestp">Login to manage your account and view history.</p>
+                    <button id="showLoginBtn">Login / Signup</button>
                 </div>
 
-                <div class="settings-group" id="watchHistoryGroup">
-                    <h3 class="section-title" style="font-size: 1.1em; color: var(--text-primary); margin-bottom: 0px; padding-top: 5px;">Watch History</h3>
-                    <div id="watchHistoryContainer">
-                        <p>Loading watch history...</p>
+                <div id="user-settings-groups">
+                    <div class="settings-group">
+                        <h3 class="section-title">Account</h3>
+                        <div class="settings-item" id="changePasswordItem">
+                            <span>Change password</span> <i class="fas fa-chevron-right"></i>
+                        </div>
+                        <div class="settings-item">
+                            <span>Add a payment method</span> <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="settings-item">
+                            <button id="logoutButton">Logout</button>
+                        </div>
                     </div>
-                </div>
 
-                <div class="settings-group">
-                     <h3 class="section-title" style="font-size: 1.1em; color: var(--text-primary); margin-bottom: 0px; padding-top: 5px;">More</h3>
-                    <div class="settings-item">
-                        <span>About us</span> <i class="fas fa-chevron-right"></i>
+                    <div class="settings-group" id="watchHistoryGroup">
+                        <h3 class="section-title">Watch History</h3>
+                        <div id="watchHistoryContainer">
+                            <p>Loading watch history...</p>
+                        </div>
                     </div>
-                    <div class="settings-item">
-                        <button id="logoutButton">Logout</button>
+
+                    <div class="settings-group">
+                        <h3 class="section-title">App Settings</h3>
+                        <div class="settings-item">
+                            <span>Push notifications</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="pushNotificationsToggle"><span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-item">
+                            <span>Dark mode</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="darkModeToggle"><span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                     <div class="settings-group">
+                         <h3 class="section-title">More</h3>
+                        <div class="settings-item" onclick="alert('About Us: This is a demo media app!')">
+                            <span>About us</span> <i class="fas fa-chevron-right"></i>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -110,75 +310,93 @@
     </div>
 
 <script>
-    // !!! IMPORTANT: Replace with your actual API URL !!!
-    const API_BASE_URL = 'YOUR_HUGGINGFACE_SPACE_API_URL'; // e.g., 'https://yourname-yourspace.hf.space'
-    // For local testing with FastAPI running on port 8000:
-    // const API_BASE_URL = 'http://localhost:8000';
+    // --- Configuration ---
+    const API_BASE_URL = 'https://arkm20-authapi.hf.space';
+    const LOGIN_PAGE_URL = `${API_BASE_URL}/login.html`;
 
-
+    // --- Element Selectors ---
     const userAvatarImg = document.getElementById('userAvatar');
     const usernameDisplaySpan = document.getElementById('usernameDisplay');
     const profilePicUploadInput = document.getElementById('profilePicUpload');
     const changeAvatarLabel = document.getElementById('changeAvatarLabel');
     const watchHistoryContainer = document.getElementById('watchHistoryContainer');
     const logoutButton = document.getElementById('logoutButton');
+    
+    // Login Modal Elements
+    const loginModal = document.getElementById('loginModal');
+    const loginFrame = document.getElementById('loginFrame');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const showLoginBtn = document.getElementById('showLoginBtn');
+    const guestLoginPrompt = document.getElementById('guest-login-prompt');
+    const userSettingsGroups = document.getElementById('user-settings-groups');
 
+    // --- Login Flow Functions ---
+    function showLoginModal() {
+        loginFrame.src = LOGIN_PAGE_URL;
+        loginModal.style.display = 'flex';
+    }
+
+    function hideLoginModal() {
+        loginModal.style.display = 'none';
+        loginFrame.src = 'about:blank'; // Clear iframe to stop potential processes
+        fetchUserProfile(); // Re-check login status after closing
+    }
+
+    // --- Main Profile Fetching Function ---
     async function fetchUserProfile() {
         const token = localStorage.getItem('accessToken');
         if (!token) {
-            usernameDisplaySpan.textContent = 'Guest User';
-            userAvatarImg.src = 'https://via.placeholder.com/50/cc0000/fff?text=G';
-            watchHistoryContainer.innerHTML = '<p>Please <a href="login.html">login</a> to see your settings and history.</p>'; // Assuming you have a login.html
-            // Hide sections that require login
-            document.getElementById('watchHistoryGroup').style.display = 'none';
-            logoutButton.style.display = 'none';
+            // Guest View
+            usernameDisplaySpan.textContent = 'Guest';
+            userAvatarImg.src = 'https://via.placeholder.com/80/cccccc/fff?text=?';
+            guestLoginPrompt.style.display = 'block';
+            userSettingsGroups.style.display = 'none';
+            changeAvatarLabel.style.display = 'none';
+            userAvatarImg.style.cursor = 'default';
             return;
         }
+
+        // Logged-in View
+        guestLoginPrompt.style.display = 'none';
+        userSettingsGroups.style.display = 'block';
+        changeAvatarLabel.style.display = 'block';
+        userAvatarImg.style.cursor = 'pointer';
 
         try {
             const response = await fetch(`${API_BASE_URL}/users/me`, {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (response.ok) {
                 const userData = await response.json();
-                console.log('User data:', userData);
                 usernameDisplaySpan.textContent = userData.username || 'User';
                 if (userData.profile_picture_url) {
-                    userAvatarImg.src = userData.profile_picture_url;
+                    // Prepend API base URL if the path is relative
+                    userAvatarImg.src = userData.profile_picture_url.startsWith('http') 
+                        ? userData.profile_picture_url 
+                        : `${API_BASE_URL}${userData.profile_picture_url}`;
                 } else {
-                    userAvatarImg.src = `https://via.placeholder.com/50/cc0000/fff?text=${userData.username ? userData.username.charAt(0).toUpperCase() : 'U'}`;
+                    const initial = userData.username ? userData.username.charAt(0).toUpperCase() : 'U';
+                    userAvatarImg.src = `https://via.placeholder.com/80/cc0000/fff?text=${initial}`;
                 }
                 displayWatchHistory(userData.watch_history_detailed);
-                logoutButton.style.display = 'block'; // Show logout button if logged in
             } else if (response.status === 401) {
-                console.error('Unauthorized. Token might be expired or invalid.');
-                localStorage.removeItem('accessToken'); // Clear invalid token
-                usernameDisplaySpan.textContent = 'Session Expired';
-                userAvatarImg.src = 'https://via.placeholder.com/50/ff0000/fff?text=X';
-                watchHistoryContainer.innerHTML = '<p>Your session has expired. Please <a href="login.html">login again</a>.</p>';
-                logoutButton.style.display = 'none';
+                localStorage.removeItem('accessToken');
+                fetchUserProfile(); // Token is invalid, refresh UI to guest view
             } else {
-                console.error('Failed to fetch user profile:', response.status, await response.text());
+                console.error('Failed to fetch user profile:', response.status);
                 watchHistoryContainer.innerHTML = '<p>Could not load user data.</p>';
             }
         } catch (error) {
             console.error('Error fetching user profile:', error);
             watchHistoryContainer.innerHTML = '<p>Error connecting to server.</p>';
-            // If API_BASE_URL is the placeholder, guide the user.
-            if (API_BASE_URL === 'YOUR_HUGGINGFACE_SPACE_API_URL') {
-                 watchHistoryContainer.innerHTML += '<p style="color:red; font-weight:bold;">Please update API_BASE_URL in the script.</p>';
-            }
         }
     }
 
     function displayWatchHistory(history) {
         if (!history || Object.keys(history).length === 0) {
-            watchHistoryContainer.innerHTML = '<p>No watch history yet.</p>';
+            watchHistoryContainer.innerHTML = '<p>No watch history yet. Start watching something!</p>';
             return;
         }
 
@@ -187,12 +405,11 @@
             const show = history[showId];
             html += `<li><strong>${show.title || show.show_id}</strong>`;
             if (show.seasons && Object.keys(show.seasons).length > 0) {
-                html += '<ul>';
+                html += '<ul style="padding-left: 20px;">';
                 for (const seasonNum in show.seasons) {
                     const season = show.seasons[seasonNum];
                     const episodeCount = Object.keys(season.episodes).length;
                     html += `<li>Season ${season.season_number}: ${episodeCount} episode${episodeCount > 1 ? 's' : ''} watched.</li>`;
-                    // You could list individual episodes here if desired
                 }
                 html += '</ul>';
             }
@@ -202,20 +419,13 @@
         watchHistoryContainer.innerHTML = html;
     }
 
-    // Trigger file input when avatar image or "Change Avatar" label is clicked
-    userAvatarImg.addEventListener('click', () => profilePicUploadInput.click());
-    changeAvatarLabel.addEventListener('click', () => profilePicUploadInput.click());
-
-
+    // --- Profile Picture Upload ---
     profilePicUploadInput.addEventListener('change', async (event) => {
         const file = event.target.files[0];
         if (!file) return;
 
         const token = localStorage.getItem('accessToken');
-        if (!token) {
-            alert('Please login to upload a profile picture.');
-            return;
-        }
+        if (!token) return;
 
         const formData = new FormData();
         formData.append('file', file);
@@ -223,15 +433,11 @@
         try {
             const response = await fetch(`${API_BASE_URL}/users/me/profile-picture`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                    // Content-Type is set automatically by browser for FormData
-                },
+                headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });
 
             if (response.ok) {
-                // const updatedUserData = await response.json(); // API returns the user object
                 alert('Profile picture updated!');
                 fetchUserProfile(); // Refresh profile to show new picture
             } else {
@@ -242,51 +448,72 @@
             console.error('Upload error:', error);
             alert('An error occurred during upload.');
         } finally {
-            // Reset file input so the same file can be chosen again if needed
             profilePicUploadInput.value = '';
         }
     });
 
-    logoutButton.addEventListener('click', () => {
-        localStorage.removeItem('accessToken');
-        alert('You have been logged out.');
-        // Reload the page or redirect to a guest page/login page
-        window.location.reload();
-        // Or: window.location.href = 'login.html';
-    });
-
-    // --- Dark Mode Toggle (Example, saves to localStorage) ---
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    if (localStorage.getItem('darkMode') === 'enabled') {
-        document.body.classList.add('dark-mode-active'); // Assuming you have a CSS class for dark mode
-        darkModeToggle.checked = true;
+    // --- Settings Toggles ---
+    function setupToggle(toggleId, storageKey) {
+        const toggle = document.getElementById(toggleId);
+        // Set initial state from localStorage
+        if (localStorage.getItem(storageKey) === 'enabled') {
+            toggle.checked = true;
+            if (toggleId === 'darkModeToggle') document.body.classList.add('dark-mode-active');
+        }
+        // Add event listener
+        toggle.addEventListener('change', () => {
+            if (toggle.checked) {
+                localStorage.setItem(storageKey, 'enabled');
+                if (toggleId === 'darkModeToggle') document.body.classList.add('dark-mode-active');
+            } else {
+                localStorage.setItem(storageKey, 'disabled');
+                if (toggleId === 'darkModeToggle') document.body.classList.remove('dark-mode-active');
+            }
+        });
     }
-    darkModeToggle.addEventListener('change', () => {
-        if (darkModeToggle.checked) {
-            document.body.classList.add('dark-mode-active');
-            localStorage.setItem('darkMode', 'enabled');
-        } else {
-            document.body.classList.remove('dark-mode-active');
-            localStorage.setItem('darkMode', 'disabled');
-        }
-    });
 
-    // --- Change Password (Placeholder) ---
-    document.getElementById('changePasswordItem').addEventListener('click', () => {
-        alert('Feature not implemented: Change Password. This would typically lead to a new form/page.');
-    });
-
-
-    // Call this when the page loads
+    // --- Event Listeners ---
     document.addEventListener('DOMContentLoaded', () => {
-        if (API_BASE_URL === 'YOUR_HUGGINGFACE_SPACE_API_URL') {
-            const warning = document.createElement('p');
-            warning.innerHTML = '<b>Developer Note:</b> Please update <code>API_BASE_URL</code> in the JavaScript of this HTML file to your deployed API endpoint.';
-            warning.style.backgroundColor = 'yellow';
-            warning.style.padding = '10px';
-            warning.style.textAlign = 'center';
-            document.body.prepend(warning);
-        }
+        // Setup login flow
+        showLoginBtn.addEventListener('click', showLoginModal);
+        closeModalBtn.addEventListener('click', hideLoginModal);
+        
+        // Listen for message from login iframe
+        window.addEventListener('message', (event) => {
+            // Security: a.check the origin of the message
+            if (event.origin !== API_BASE_URL) {
+                return;
+            }
+            // b. check if the message contains the token
+            if (event.data && event.data.accessToken) {
+                localStorage.setItem('accessToken', event.data.accessToken);
+                hideLoginModal(); // This will also trigger a profile refresh
+            }
+        }, false);
+
+        // Logout
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('accessToken');
+            alert('You have been logged out.');
+            fetchUserProfile(); // Refresh UI to guest state
+        });
+
+        // Avatar Upload Trigger
+        userAvatarImg.addEventListener('click', () => {
+             if (localStorage.getItem('accessToken')) profilePicUploadInput.click() 
+        });
+        changeAvatarLabel.addEventListener('click', () => profilePicUploadInput.click());
+
+        // Placeholder Buttons
+        document.getElementById('changePasswordItem').addEventListener('click', () => {
+            alert('Feature not implemented: This would typically open a new form to change the password.');
+        });
+        
+        // Initialize Toggles
+        setupToggle('darkModeToggle', 'darkMode');
+        setupToggle('pushNotificationsToggle', 'pushNotifications');
+
+        // Initial Load
         fetchUserProfile();
     });
 
