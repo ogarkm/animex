@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta 
+    name="viewport" 
+    content="width=device-width, initial-scale=1.0, user-scalable=no"
+  />
+  <title>Episode Player</title>
+
+  <!-- Inter font + Font Awesome (for the back button icon) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link 
+    rel="preconnect" 
+    href="https://fonts.gstatic.com" 
+    crossorigin
+  />
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
+    rel="stylesheet"
+  />
+  <link 
+    rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background-color: #000;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+    }
+    #header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: rgba(0,0,0,0.75);
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      z-index: 10;
+    }
+    #back-button {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-right: 1rem;
+    }
+    #header-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    #player-container {
+      position: absolute;
+      top: 50px;
+      left: 0;
+      right: 0;
+      bottom: 120px; /* leave space for info below */
+      background: #000;
+    }
+    #player-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    #info-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.85);
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+    }
+    #info-container span {
+      display: inline-block;
+    }
+    #series-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    #meta-line {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header with a Back button -->
+  <header id="header">
+    <button id="back-button" aria-label="Go Back">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <div id="header-title">Loading…</div>
+  </header>
+
+  <!-- Full‐screen iframe container -->
+  <div id="player-container">
+    <!-- JS will inject the <iframe> here -->
+  </div>
+
+  <!-- Below‐player info area -->
+  <div id="info-container">
+    <div id="series-title">Series: <span id="series-name">—</span></div>
+    <div id="meta-line">
+      Type: <span id="series-type">—</span>
+      &nbsp;|&nbsp;
+      Year: <span id="series-year">—</span>
+      &nbsp;|&nbsp;
+      Episode: <span id="episode-number">—</span>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const jikanId = params.get('id');
+      const episode = params.get('ep');
+
+      // If either is missing, show an error:
+      if (!jikanId || !episode) {
+        document.getElementById('series-name').textContent = 'Unknown';
+        document.getElementById('series-type').textContent = 'N/A';
+        document.getElementById('series-year').textContent = 'N/A';
+        document.getElementById('episode-number').textContent = 'N/A';
+        document.getElementById('header-title').textContent = 'Missing id or ep';
+        return;
+      }
+
+      // ===== Helper: Slugify for 9Anime format =====
+      function slugifyFor9Anime(title) {
+        return title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+      }
+
+      // ===== 1) Fetch minimal series info from Jikan =====
+      let title, type, year;
+      try {
+        const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
+        if (!resp.ok) throw new Error('Jikan fetch failed');
+        const data = await resp.json();
+        const anime = data.data || {};
+        title = anime.title_english || anime.title || 'Unknown';
+        type = anime.type || 'N/A';
+        year = anime.year || 
+               (anime.aired && anime.aired.prop && anime.aired.prop.from && anime.aired.prop.from.year) || 
+               'N/A';
+      } catch (err) {
+        console.error('Error fetching Jikan:', err);
+        title = 'Unknown';
+        type = 'N/A';
+        year = 'N/A';
+      }
+
+      // Fill in header + info below
+      document.getElementById('header-title').textContent = `${title} — Ep ${episode}`;
+      document.getElementById('series-name').textContent = title;
+      document.getElementById('series-type').textContent = type;
+      document.getElementById('series-year').textContent = year;
+      document.getElementById('episode-number').textContent = episode;
+
+      // ===== 2) Build the 9Anime slug and then the GogoAnime iframe URL =====
+      const baseSlug = slugifyFor9Anime(title);
+      const nineAnimeSlug = `${baseSlug}-episode-${episode}`;
+      const nineAnimeURL = `https://9anime.org.lv/${nineAnimeSlug}/`;
+
+      // 2A) Fetch the 9Anime page and scrape out the final <iframe src="…">
+      async function fetchEmbedSrc() {
+        try {
+          const res = await fetch(nineAnimeURL, {
+            headers: { 'User-Agent': 'Mozilla/5.0' }
+          });
+          if (!res.ok) throw new Error(`9Anime returned ${res.status}`);
+          const html = await res.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const embedDiv = doc.querySelector('#embed_holder');
+          if (!embedDiv) throw new Error('No embed_holder');
+
+          // 1) Static <iframe>?
+          const staticIframe = embedDiv.querySelector('iframe[src]');
+          if (staticIframe) return staticIframe.getAttribute('src');
+
+          // 2) Otherwise, look for a <script> that contains an <iframe src="…">
+          const scriptTag = embedDiv.querySelector('script');
+          if (scriptTag && scriptTag.textContent) {
+            const match = scriptTag.textContent.match(
+              /<iframe[^>]*\s+src=["']([^"']+)["']/
+            );
+            if (match) return match[1];
+          }
+
+          throw new Error('No iframe found in embed_holder');
+        } catch (e) {
+          console.error('Error scraping 9Anime:', e);
+          return null;
+        }
+      }
+
+      const embedSrc = await fetchEmbedSrc();
+      if (!embedSrc) {
+        const container = document.getElementById('player-container');
+        container.innerHTML = `
+          <div style="
+            color: #fff; 
+            text-align: center; 
+            padding: 2rem;
+            font-size: 1.1rem;
+          ">
+            Could not load player. Please try again later.
+          </div>`;
+        return;
+      }
+
+      // ===== 3) Inject the <iframe> for the GogoAnime player =====
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+      iframe.setAttribute('src', embedSrc);
+      iframe.setAttribute('allowfullscreen', 'true');
+      iframe.setAttribute('scrolling', 'no');
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      document.getElementById('player-container').appendChild(iframe);
+
+      // ===== 4) Back button logic =====
+      document.getElementById('back-button').addEventListener('click', () => {
+        window.history.back();
+      });
+    });
+  </script>
+</body>
+</html>

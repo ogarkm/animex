@@ -9,23 +9,67 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="Resources/styles.css">
+    <style>
+        /* Minimal additional styles for new elements */
+        .settings-user-profile label {
+            cursor: pointer;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            display: block;
+            text-align: center;
+            margin-top: 5px;
+        }
+        #watchHistoryContainer {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--background-light); /* Assuming you have such a var */
+            border-radius: 8px;
+        }
+        #watchHistoryContainer h4 {
+            margin-top: 0;
+            color: var(--text-primary);
+        }
+        #watchHistoryContainer ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        #watchHistoryContainer li {
+            padding: 5px 0;
+            color: var(--text-secondary);
+        }
+        #logoutButton {
+            background-color: #d9534f; /* A reddish color for logout */
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 15px;
+        }
+        #logoutButton:hover {
+            background-color: #c9302c;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- No Hero Section -->
         <main class="main-content no-hero">
             <section id="settings-section">
                 <div class="settings-user-profile">
-                    <img src="https://via.placehold.com/50/cc0000/fff?text=U" alt="User Avatar">
-                    <span class="username">Guest User</span>
+                    <img id="userAvatar" src="https://via.placeholder.com/50/cc0000/fff?text=U" alt="User Avatar" style="cursor:pointer;">
+                    <label for="profilePicUpload" id="changeAvatarLabel" style="cursor:pointer;">Change Avatar</label>
+                    <input type="file" id="profilePicUpload" accept="image/*" style="display: none;">
+                    <span class="username" id="usernameDisplay">Guest User</span>
                 </div>
 
                 <div class="settings-group">
                     <h3 class="section-title" style="font-size: 1.1em; color: var(--text-primary); margin-bottom: 0px; padding-top: 5px;">Account Settings</h3>
-                    <div class="settings-item">
-                        <span>Edit profile</span> <i class="fas fa-chevron-right"></i>
-                    </div>
-                    <div class="settings-item">
+                    <!-- "Edit profile" functionality is now tied to avatar change for simplicity.
+                         You might want a separate "Edit text profile" link that opens a modal or new page.
+                    -->
+                    <div class="settings-item" id="changePasswordItem">
                         <span>Change password</span> <i class="fas fa-chevron-right"></i>
                     </div>
                     <div class="settings-item">
@@ -34,14 +78,21 @@
                     <div class="settings-item">
                         <span>Push notifications</span>
                         <label class="toggle-switch">
-                            <input type="checkbox"><span class="slider"></span>
+                            <input type="checkbox" id="pushNotificationsToggle"><span class="slider"></span>
                         </label>
                     </div>
                     <div class="settings-item">
                         <span>Dark mode</span>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked><span class="slider"></span>
+                            <input type="checkbox" id="darkModeToggle" checked><span class="slider"></span>
                         </label>
+                    </div>
+                </div>
+
+                <div class="settings-group" id="watchHistoryGroup">
+                    <h3 class="section-title" style="font-size: 1.1em; color: var(--text-primary); margin-bottom: 0px; padding-top: 5px;">Watch History</h3>
+                    <div id="watchHistoryContainer">
+                        <p>Loading watch history...</p>
                     </div>
                 </div>
 
@@ -50,11 +101,195 @@
                     <div class="settings-item">
                         <span>About us</span> <i class="fas fa-chevron-right"></i>
                     </div>
+                    <div class="settings-item">
+                        <button id="logoutButton">Logout</button>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 
-    
+<script>
+    // !!! IMPORTANT: Replace with your actual API URL !!!
+    const API_BASE_URL = 'YOUR_HUGGINGFACE_SPACE_API_URL'; // e.g., 'https://yourname-yourspace.hf.space'
+    // For local testing with FastAPI running on port 8000:
+    // const API_BASE_URL = 'http://localhost:8000';
+
+
+    const userAvatarImg = document.getElementById('userAvatar');
+    const usernameDisplaySpan = document.getElementById('usernameDisplay');
+    const profilePicUploadInput = document.getElementById('profilePicUpload');
+    const changeAvatarLabel = document.getElementById('changeAvatarLabel');
+    const watchHistoryContainer = document.getElementById('watchHistoryContainer');
+    const logoutButton = document.getElementById('logoutButton');
+
+    async function fetchUserProfile() {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            usernameDisplaySpan.textContent = 'Guest User';
+            userAvatarImg.src = 'https://via.placeholder.com/50/cc0000/fff?text=G';
+            watchHistoryContainer.innerHTML = '<p>Please <a href="login.html">login</a> to see your settings and history.</p>'; // Assuming you have a login.html
+            // Hide sections that require login
+            document.getElementById('watchHistoryGroup').style.display = 'none';
+            logoutButton.style.display = 'none';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/me`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const userData = await response.json();
+                console.log('User data:', userData);
+                usernameDisplaySpan.textContent = userData.username || 'User';
+                if (userData.profile_picture_url) {
+                    userAvatarImg.src = userData.profile_picture_url;
+                } else {
+                    userAvatarImg.src = `https://via.placeholder.com/50/cc0000/fff?text=${userData.username ? userData.username.charAt(0).toUpperCase() : 'U'}`;
+                }
+                displayWatchHistory(userData.watch_history_detailed);
+                logoutButton.style.display = 'block'; // Show logout button if logged in
+            } else if (response.status === 401) {
+                console.error('Unauthorized. Token might be expired or invalid.');
+                localStorage.removeItem('accessToken'); // Clear invalid token
+                usernameDisplaySpan.textContent = 'Session Expired';
+                userAvatarImg.src = 'https://via.placeholder.com/50/ff0000/fff?text=X';
+                watchHistoryContainer.innerHTML = '<p>Your session has expired. Please <a href="login.html">login again</a>.</p>';
+                logoutButton.style.display = 'none';
+            } else {
+                console.error('Failed to fetch user profile:', response.status, await response.text());
+                watchHistoryContainer.innerHTML = '<p>Could not load user data.</p>';
+            }
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+            watchHistoryContainer.innerHTML = '<p>Error connecting to server.</p>';
+            // If API_BASE_URL is the placeholder, guide the user.
+            if (API_BASE_URL === 'YOUR_HUGGINGFACE_SPACE_API_URL') {
+                 watchHistoryContainer.innerHTML += '<p style="color:red; font-weight:bold;">Please update API_BASE_URL in the script.</p>';
+            }
+        }
+    }
+
+    function displayWatchHistory(history) {
+        if (!history || Object.keys(history).length === 0) {
+            watchHistoryContainer.innerHTML = '<p>No watch history yet.</p>';
+            return;
+        }
+
+        let html = '<h4>Recently Watched:</h4><ul>';
+        for (const showId in history) {
+            const show = history[showId];
+            html += `<li><strong>${show.title || show.show_id}</strong>`;
+            if (show.seasons && Object.keys(show.seasons).length > 0) {
+                html += '<ul>';
+                for (const seasonNum in show.seasons) {
+                    const season = show.seasons[seasonNum];
+                    const episodeCount = Object.keys(season.episodes).length;
+                    html += `<li>Season ${season.season_number}: ${episodeCount} episode${episodeCount > 1 ? 's' : ''} watched.</li>`;
+                    // You could list individual episodes here if desired
+                }
+                html += '</ul>';
+            }
+            html += '</li>';
+        }
+        html += '</ul>';
+        watchHistoryContainer.innerHTML = html;
+    }
+
+    // Trigger file input when avatar image or "Change Avatar" label is clicked
+    userAvatarImg.addEventListener('click', () => profilePicUploadInput.click());
+    changeAvatarLabel.addEventListener('click', () => profilePicUploadInput.click());
+
+
+    profilePicUploadInput.addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            alert('Please login to upload a profile picture.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/me/profile-picture`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                    // Content-Type is set automatically by browser for FormData
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                // const updatedUserData = await response.json(); // API returns the user object
+                alert('Profile picture updated!');
+                fetchUserProfile(); // Refresh profile to show new picture
+            } else {
+                const errorData = await response.json();
+                alert(`Error uploading: ${errorData.detail || response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('An error occurred during upload.');
+        } finally {
+            // Reset file input so the same file can be chosen again if needed
+            profilePicUploadInput.value = '';
+        }
+    });
+
+    logoutButton.addEventListener('click', () => {
+        localStorage.removeItem('accessToken');
+        alert('You have been logged out.');
+        // Reload the page or redirect to a guest page/login page
+        window.location.reload();
+        // Or: window.location.href = 'login.html';
+    });
+
+    // --- Dark Mode Toggle (Example, saves to localStorage) ---
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark-mode-active'); // Assuming you have a CSS class for dark mode
+        darkModeToggle.checked = true;
+    }
+    darkModeToggle.addEventListener('change', () => {
+        if (darkModeToggle.checked) {
+            document.body.classList.add('dark-mode-active');
+            localStorage.setItem('darkMode', 'enabled');
+        } else {
+            document.body.classList.remove('dark-mode-active');
+            localStorage.setItem('darkMode', 'disabled');
+        }
+    });
+
+    // --- Change Password (Placeholder) ---
+    document.getElementById('changePasswordItem').addEventListener('click', () => {
+        alert('Feature not implemented: Change Password. This would typically lead to a new form/page.');
+    });
+
+
+    // Call this when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        if (API_BASE_URL === 'YOUR_HUGGINGFACE_SPACE_API_URL') {
+            const warning = document.createElement('p');
+            warning.innerHTML = '<b>Developer Note:</b> Please update <code>API_BASE_URL</code> in the JavaScript of this HTML file to your deployed API endpoint.';
+            warning.style.backgroundColor = 'yellow';
+            warning.style.padding = '10px';
+            warning.style.textAlign = 'center';
+            document.body.prepend(warning);
+        }
+        fetchUserProfile();
+    });
+
+</script>
 </body>
 </html>

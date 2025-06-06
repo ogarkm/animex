@@ -239,84 +239,6 @@
                 setupPagination(episodesData.length);
             }
 
-            async function handleEpisodeStreamRequest(animeTitle, episodeNumberFromJikan) {
-                try {
-                    console.log(`Handling episode stream request for: "${animeTitle}", Episode number (from Jikan): ${episodeNumberFromJikan}`);
-                    // Step 1: Search amvstrm for the anime
-                    const searchQuery = encodeURIComponent(animeTitle);
-                    const searchUrl = `https://cors-anywhere.herokuapp.com/https://api.amvstr.me/api/v1/search?query=${searchQuery}&dub=false`; // Assuming sub for now
-                    console.log(`Searching amvstrm: ${searchUrl}`);
-                    const searchResponse = await fetch(searchUrl);
-                    if (!searchResponse.ok) {
-                        const errorText = await searchResponse.text();
-                        console.error(`amvstrm search API error: ${searchResponse.status} ${searchResponse.statusText}`, errorText);
-                        return;
-                    }
-                    const searchData = await searchResponse.json();
-
-                    if (!searchData.results || searchData.results.length === 0) {
-                        console.log(`No results found on amvstrm for: ${animeTitle}`);
-                        return;
-                    }
-                    
-                    const amvstrmAnime = searchData.results[0]; // Assume the first result is the best match
-                    console.log(`Found on amvstrm: ${amvstrmAnime.title} (ID: ${amvstrmAnime.id})`);
-
-                    // Step 2: Get anime info (including episodes) from amvstrm
-                    const infoUrl = `https://cors-anywhere.herokuapp.com/https://api.amvstr.me/api/v1/info/${amvstrmAnime.id}?dub=false`;
-                    console.log(`Fetching info from amvstrm: ${infoUrl}`);
-                    const infoResponse = await fetch(infoUrl);
-                     if (!infoResponse.ok) {
-                        const errorText = await infoResponse.text();
-                        console.error(`amvstrm info API error: ${infoResponse.status} ${infoResponse.statusText}`, errorText);
-                        return;
-                    }
-                    const infoData = await infoResponse.json();
-
-                    if (!infoData.episodes || infoData.episodes.length === 0) {
-                        console.log(`No episodes found on amvstrm for amvstrm anime ID: ${amvstrmAnime.id} (${amvstrmAnime.title})`);
-                        return;
-                    }
-
-                    // Step 3: Find the correct episode on amvstrm
-                    const targetEpisodeNumber = parseInt(episodeNumberFromJikan, 10);
-                    const amvstrmEpisode = infoData.episodes.find(ep => parseInt(ep.number, 10) === targetEpisodeNumber);
-
-                    if (!amvstrmEpisode) {
-                        console.log(`Episode number ${targetEpisodeNumber} not found on amvstrm for ${amvstrmAnime.title}. Available episode numbers:`, infoData.episodes.map(e => e.number));
-                        return;
-                    }
-                    console.log(`Found amvstrm episode: Number ${amvstrmEpisode.number}, ID ${amvstrmEpisode.id}`);
-
-                    // Step 4: Get the streaming link from amvstrm
-                    const streamUrl = `https://cors-anywhere.herokuapp.com/https://api.amvstr.me/api/v1/stream/${amvstrmEpisode.id}?dub=false`;
-                    console.log(`Fetching stream link from amvstrm: ${streamUrl}`);
-                    const streamResponse = await fetch(streamUrl);
-                    if (!streamResponse.ok) {
-                        const errorText = await streamResponse.text();
-                        console.error(`amvstrm stream API error: ${streamResponse.status} ${streamResponse.statusText}`, errorText);
-                        return;
-                    }
-                    const streamData = await streamResponse.json();
-
-                    let streamLink = null;
-                    if (streamData.stream && streamData.stream.multi && streamData.stream.multi.main && streamData.stream.multi.main.url) {
-                        streamLink = streamData.stream.multi.main.url;
-                    } else if (streamData.stream && streamData.stream.main && streamData.stream.main.url) {
-                        streamLink = streamData.stream.main.url;
-                    }
-
-                    if (streamLink) {
-                        console.log(`AMVSTRM STREAMING LINK (${animeTitle} - Ep ${targetEpisodeNumber}): ${streamLink}`);
-                    } else {
-                        console.log(`Could not retrieve valid streaming link structure from amvstrm for episode ID: ${amvstrmEpisode.id}`);
-                        console.log('Full amvstrm stream response:', streamData);
-                    }
-
-                } catch (error) {
-                    console.error("Error handling episode stream request:", error);
-                }
-            }
 
             function renderEpisodePage() {
                 episodeListContainer.innerHTML = '';
@@ -350,14 +272,9 @@
                     
                     episodeItem.appendChild(episodeNumberSpan);
                     episodeItem.appendChild(episodeInfoDiv);
-
-                    // Add click listener for amvstrm
-                    episodeItem.addEventListener('click', async () => {
-                        const animeTitleFromDOM = seriesTitleTextElement.textContent;
-                        const jikanEpisodeNumber = episode.mal_id; 
-                        
-                        console.log(`Clicked on: "${animeTitleFromDOM}", Episode number (from Jikan): ${jikanEpisodeNumber}. Fetching stream...`);
-                        await handleEpisodeStreamRequest(animeTitleFromDOM, jikanEpisodeNumber);
+                    episodeItem.addEventListener('click', () => {
+                        const url = `view.html?id=${encodeURIComponent(currentSeriesId)}&ep=${encodeURIComponent(episode.mal_id)}`;
+                        window.location.href = url;
                     });
 
                     episodeListContainer.appendChild(episodeItem);
