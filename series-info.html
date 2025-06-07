@@ -191,7 +191,7 @@
                     return;
                 }
 
-                console.log(`Updating watch history for: ${showTitle} - S${seasonNumber}E${episodeNumber}`);
+                console.log(`Updating watch history for: ${showId} | ${showTitle} - S${seasonNumber}E${episodeNumber}`);
 
                 try {
                     // The API endpoint expects a specific JSON structure in the body
@@ -202,6 +202,8 @@
                         episode_number: Number(episodeNumber)
                     };
 
+                    console.log("Watch history body:", body);
+
                     const response = await fetch(`${API_BASE_URL}/users/me/watch-history`, {
                         method: 'POST',
                         headers: {
@@ -210,6 +212,8 @@
                         },
                         body: JSON.stringify(body)
                     });
+
+                    console.log("Watch history update response status:", response.status);
 
                     // We don't need to wait for the response, but it's good practice to log the result for debugging.
                     if (response.ok) {
@@ -226,39 +230,51 @@
             // SNIPPET 2: Place this function inside the DOMContentLoaded listener.
 
             async function updateWatchHistory(showId, showTitle, seasonNumber, episodeNumber) {
-                // Check for the access token in localStorage
                 const token = localStorage.getItem('accessToken');
-
-                // If no token exists, the user is not logged in. Do nothing.
+                console.log("Access token:", token);
                 if (!token) {
                     console.log("User not logged in. Skipping watch history update.");
-                    return; // Exit the function early
+                    // You might want to prompt the user to log in here.
+                    // For example: alert("Please log in to save your watch history.");
+                    return;
                 }
 
-                console.log(`Updating watch history for: ${showTitle} - S${seasonNumber}E${episodeNumber}`);
+                console.log(`Updating watch history for: ${showId} - ${showTitle} - S${seasonNumber}E${episodeNumber}`);
 
                 try {
-                    const body = {
+                    const params = new URLSearchParams({
                         show_id: String(showId),
                         show_title: String(showTitle),
                         season_number: Number(seasonNumber),
                         episode_number: Number(episodeNumber)
-                    };
+                    });
 
-                    const response = await fetch(`${API_BASE_URL}/users/me/watch-history`, {
-                        method: 'POST',
+                    const url = `https://arkm20-authapi.hf.space/users/me/watch-history?${params.toString()}`;
+
+                    const response = await fetch(url, {
+                        method: 'GET',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}` // Include the user's token
-                        },
-                        body: JSON.stringify(body)
+                            'Authorization': `Bearer ${token}`
+                        }
                     });
 
                     if (response.ok) {
-                        console.log("Watch history update sent successfully.");
+                        const result = await response.json();
+                        console.log("Watch history update successful:", result.message);
                     } else {
+                        // Specifically check for the authentication error code
+                        if (response.status === 401) {
+                            console.error("Authentication failed. The token is likely expired or invalid.");
+                            // This is a great place to redirect the user to a login page
+                            // or show a "Your session has expired, please log in again" message.
+                            // For example:
+                            // localStorage.removeItem('accessToken'); // Clear the bad token
+                            // window.location.href = '/login.html'; // Redirect to login
+                        }
+
+                        // Handle other potential errors (like 404 Not Found, 500 Server Error)
                         const errorData = await response.json();
-                        console.error("Failed to update watch history:", errorData.detail || response.statusText);
+                        console.error(`Failed to update watch history (${response.status}):`, errorData.detail || response.statusText);
                     }
                 } catch (error) {
                     console.error("Network error while updating watch history:", error);
@@ -360,6 +376,7 @@
                     episodeItem.appendChild(episodeNumberSpan);
                     episodeItem.appendChild(episodeInfoDiv);
                     episodeItem.addEventListener('click', () => {
+                        console.log(`Navigating to episode ${episode.mal_id} of ${currentSeriesTitle} -> ${currentSeriesId}`);
                         updateWatchHistory(
                             currentSeriesId,        // The ID of the show, already stored
                             currentSeriesTitle,     // The title of the show, which we now store

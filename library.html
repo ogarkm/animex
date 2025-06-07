@@ -377,7 +377,7 @@
                     img.src = URL.createObjectURL(series.posterFile);
                     img.onload = () => URL.revokeObjectURL(img.src);
                 } else {
-                    img.src = `https://via.placeholder.com/60x80/444/fff?text=${encodeURIComponent(seriesName.substring(0,3))}`;
+                    img.src = `https://placehold.co/60x80/444/fff?text=${encodeURIComponent(seriesName.substring(0,3))}`;
                 }
                 thumbnailDiv.appendChild(img);
 

@@ -250,7 +250,7 @@
         <main class="main-content no-hero">
             <section id="settings-section">
                 <div class="settings-user-profile">
-                    <img id="userAvatar" src="https://via.placeholder.com/80/cccccc/fff?text=?" alt="User Avatar" style="cursor:pointer;">
+                    <img id="userAvatar" src="https://placehold.co/80/cccccc/fff?text=?" alt="User Avatar" style="cursor:pointer;">
                     <label for="profilePicUpload" id="changeAvatarLabel" style="cursor:pointer;">Change Avatar</label>
                     <input type="file" id="profilePicUpload" accept="image/*" style="display: none;">
                     <span class="username" id="usernameDisplay">Guest</span>
@@ -348,7 +348,7 @@
         if (!token) {
             // Guest View
             usernameDisplaySpan.textContent = 'Guest';
-            userAvatarImg.src = 'https://via.placeholder.com/80/cccccc/fff?text=?';
+            userAvatarImg.src = 'https://placehold.co/80/cccccc/fff?text=?';
             guestLoginPrompt.style.display = 'block';
             userSettingsGroups.style.display = 'none';
             changeAvatarLabel.style.display = 'none';
@@ -378,7 +378,7 @@
                         : `${API_BASE_URL}${userData.profile_picture_url}`;
                 } else {
                     const initial = userData.username ? userData.username.charAt(0).toUpperCase() : 'U';
-                    userAvatarImg.src = `https://via.placeholder.com/80/cc0000/fff?text=${initial}`;
+                    userAvatarImg.src = `https://placehold.co/80/cc0000/fff?text=${initial}`;
                 }
                 displayWatchHistory(userData.watch_history_detailed);
             } else if (response.status === 401) {

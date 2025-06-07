@@ -236,6 +236,12 @@ body {
     font-size: 0.9em;
 }
 
+.hero-details {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
 
 /* Responsive adjustments */
 @media (max-width: 992px) {

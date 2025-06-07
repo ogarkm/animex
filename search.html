@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Search - Media App</title>
+    <title>Search & Browse - Media App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="Resources/styles.css">
     <style>
-        /* Basic styling for the back button and iframe container */
+        /* Base styles from original request */
         #iframe-container {
-            width: 100%;
+            width: 100%; /* Changed from vh to % */
             height: calc(100vh - 60px); /* Adjust height as needed, considering other elements */
             display: flex;
             flex-direction: column;
@@ -30,51 +30,48 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 1em;
-            display: flex;
+            display: inline-flex;
             align-items: center;
         }
         .back-button i {
             margin-right: 8px;
         }
         .search-bar-container input {
-            flex-grow: 1; /* Allow input to take available space */
+            flex-grow: 1;
         }
         .search-bar-container .fa-search {
-            cursor: pointer; /* Make search icon look clickable */
+            cursor: pointer;
         }
-        /* Ensure recent search items are styled correctly */
         .recent-search-item {
-            background-color: #2c2c2c; /* Darker background for recent items */
+            background-color: #4A4A4F;
             color: #eee;
             padding: 10px 15px;
-            border-radius: 20px; /* Pill shape */
+            border-radius: 20px;
             margin: 5px;
-            display: inline-flex; /* Align text and icon */
+            display: inline-flex;
             align-items: center;
             font-size: 0.9em;
             cursor: pointer;
         }
         .recent-search-item span {
-            margin-right: 10px; /* Space between text and delete icon */
+            margin-right: 10px;
         }
         .recent-search-item .fa-times {
             cursor: pointer;
-            color: #aaa; /* Lighter color for delete icon */
+            color: #aaa;
         }
         .recent-search-item .fa-times:hover {
-            color: #fff; /* White on hover */
+            color: #fff;
         }
         .item-list#search-item-list.recent-searches-active {
             display: flex;
-            flex-wrap: wrap; /* Allow recent items to wrap */
-            padding-left: 0; /* Remove default list padding if it's a ul/ol */
+            flex-wrap: wrap;
+            padding-left: 0;
         }
-
-        /* Style for search results (card-style) */
         .list-item.card-style {
             display: flex;
             align-items: center;
-            background-color: #2a2a2a; /* Card background */
+            background-color: #2a2a2a;
             border-radius: 8px;
             margin-bottom: 15px;
             padding: 10px;
@@ -85,8 +82,8 @@
             background-color: #3a3a3a;
         }
         .list-item.card-style .item-thumbnail img {
-            width: 60px; /* Fixed width for thumbnail */
-            height: 80px; /* Fixed height for thumbnail */
+            width: 60px;
+            height: 80px;
             object-fit: cover;
             border-radius: 4px;
             margin-right: 15px;
@@ -112,49 +109,16 @@
         .list-item.card-style .item-description {
             font-size: 0.9em;
             color: #ccc;
-            /* Limit description lines */
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 2; /* Number of lines to show */
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
         }
         .list-item.card-style .item-arrow {
             margin-left: 10px;
             color: #888;
         }
-        #episodes-pagination {
-            margin-top: 25px;
-            text-align: center;
-        }
-
-        #episodes-pagination button {
-            background-color: #333;
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            margin: 0 5px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            font-size: 0.9em;
-        }
-
-        #episodes-pagination button:hover:not(:disabled) {
-            background-color: var(--accent-color-active); /* Netflix red for hover */
-        }
-
-        #episodes-pagination button:disabled {
-            background-color: #202020;
-            color: #555;
-            cursor: not-allowed;
-        }
-        #episodes-pagination span {
-            color: #aaa;
-            font-size: 0.9em;
-        }
-
-        /* Pagination styles for search pagination (matches episode pagination) */
         .pagination-container {
             margin-top: 25px;
             text-align: center;
@@ -185,17 +149,123 @@
             color: #aaa;
             font-size: 0.9em;
         }
+        .search-options-list {
+            display: flex;
+            gap: 18px;
+            margin: 18px 0 10px 0;
+            padding: 0 2px;
+            list-style: none;
+        }
+        .search-option-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 1em;
+            font-weight: 500;
+            padding: 7px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s;
+        }
+        .search-option-btn.active {
+            background: var(--accent-color-active, #e50914);
+            color: #fff;
+        }
+
+        /* --- New styles for Browse Tab --- */
+        .horizontal-scroll-container {
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 10px 0 20px 0;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: #555 #222;
+        }
+        .horizontal-scroll-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .horizontal-scroll-container::-webkit-scrollbar-track {
+            background: #222;
+        }
+        .horizontal-scroll-container::-webkit-scrollbar-thumb {
+            background-color: #555;
+            border-radius: 4px;
+        }
+        .horizontal-scroll-container p { /* Style for loading/error messages */
+            padding-left: 10px;
+        }
+        .genre-chip {
+            background-color: #333;
+            color: #eee;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-right: 12px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+            font-size: 0.9em;
+        }
+        .genre-chip:hover {
+            background-color: var(--accent-color-active);
+        }
+        .popular-item-card {
+            flex: 0 0 140px; /* fixed width, don't grow, don't shrink */
+            margin-right: 15px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .popular-item-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            background-color: #2a2a2a; /* BG for while image loads */
+        }
+        .popular-item-card .item-title {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #eee;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #genre-results-list {
+            padding-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="app-container">
         <main class="main-content no-hero">
-            <section id="search-interaction-area">
-                <div class="search-bar-container">
-                    <input type="text" id="search-input" placeholder="Type to Search Anime...">
-                    <i class="fas fa-search" id="search-icon"></i>
-                </div>
+            <!-- Universal Header: Search Bar and Tabs -->
+            <div class="search-bar-container" id="search-bar-container">
+                <input type="text" id="search-input" placeholder="Type to Search Anime...">
+                <i class="fas fa-search" id="search-icon"></i>
+            </div>
+            <ul class="search-options-list" id="search-options-list">
+                <li>
+                    <button class="search-option-btn active" id="anime-option-btn" type="button">
+                        <i class="fa-solid fa-tv"></i> Anime
+                    </button>
+                </li>
+                <li>
+                    <button class="search-option-btn" id="manga-option-btn" type="button">
+                        <i class="fa-solid fa-book"></i> Manga
+                    </button>
+                </li>
+                <li>
+                    <button class="search-option-btn" id="browse-option-btn" type="button">
+                        <i class="fa-solid fa-compass"></i> Browse
+                    </button>
+                </li>
+            </ul>
 
+            <!-- Search Content Area -->
+            <section id="search-interaction-area">
                 <div id="search-content-area">
                     <h2 class="section-title" id="results-title">Recents</h2>
                     <div class="item-list" id="search-item-list">
@@ -204,9 +274,36 @@
                 </div>
             </section>
 
+            <!-- Browse Content Area -->
+            <section id="browse-interaction-area" style="display: none;">
+                <!-- View for showing results of a specific genre -->
+                <div id="genre-results-view" style="display: none;">
+                    <button id="back-to-genres-btn" class="back-button">
+                        <i class="fas fa-arrow-left"></i> Back to Genres
+                    </button>
+                    <h2 class="section-title" id="genre-results-title">Genre Results</h2>
+                    <ul class="search-options-list" id="genre-results-tabs">
+                        <li><button class="search-option-btn active" id="genre-anime-btn" type="button"><i class="fa-solid fa-tv"></i> Anime</button></li>
+                        <li><button class="search-option-btn" id="genre-manga-btn" type="button"><i class="fa-solid fa-book"></i> Manga</button></li>
+                    </ul>
+                    <div class="item-list" id="genre-results-list"></div>
+                </div>
+
+                <!-- Main browse view with genre list and popular carousels -->
+                <div id="main-browse-view">
+                    <h2 class="section-title">Browse by Genre</h2>
+                    <div class="horizontal-scroll-container" id="genre-list-container"></div>
+                    <h2 class="section-title">Popular Anime</h2>
+                    <div class="horizontal-scroll-container" id="popular-anime-list"></div>
+                    <h2 class="section-title">Popular Manga</h2>
+                    <div class="horizontal-scroll-container" id="popular-manga-list"></div>
+                </div>
+            </section>
+
+            <!-- Iframe Container for Details Page -->
             <section id="iframe-container" style="display: none;">
-                <button id="back-to-search-btn" class="back-button">
-                    <i class="fas fa-arrow-left"></i> Back to Search
+                <button id="back-from-iframe-btn" class="back-button">
+                    <i class="fas fa-arrow-left"></i> Back
                 </button>
                 <iframe id="series-info-iframe" title="Series Information"></iframe>
             </section>
@@ -215,6 +312,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element Selectors ---
             const searchInput = document.getElementById('search-input');
             const searchIcon = document.getElementById('search-icon');
             const searchItemList = document.getElementById('search-item-list');
@@ -222,298 +320,296 @@
             const searchInteractionArea = document.getElementById('search-interaction-area');
             const iframeContainer = document.getElementById('iframe-container');
             const seriesInfoIframe = document.getElementById('series-info-iframe');
-            const backToSearchBtn = document.getElementById('back-to-search-btn');
-            // const searchContentArea = document.getElementById('search-content-area'); // Not explicitly used in this scope, can be removed if not needed elsewhere
+            const backFromIframeBtn = document.getElementById('back-from-iframe-btn');
+            const searchBarContainer = document.getElementById('search-bar-container');
 
-            const RECENT_SEARCHES_KEY = 'animeRecentSearches';
-            const MAX_RECENT_SEARCHES = 5;
+            // Main Tab Buttons
+            const animeOptionBtn = document.getElementById('anime-option-btn');
+            const mangaOptionBtn = document.getElementById('manga-option-btn');
+            const browseOptionBtn = document.getElementById('browse-option-btn');
 
+            // Browse View Elements
+            const browseInteractionArea = document.getElementById('browse-interaction-area');
+            const mainBrowseView = document.getElementById('main-browse-view');
+            const genreListContainer = document.getElementById('genre-list-container');
+            const popularAnimeList = document.getElementById('popular-anime-list');
+            const popularMangaList = document.getElementById('popular-manga-list');
+
+            // Genre Results View Elements
+            const genreResultsView = document.getElementById('genre-results-view');
+            const backToGenresBtn = document.getElementById('back-to-genres-btn');
+            const genreResultsTitle = document.getElementById('genre-results-title');
+            const genreResultsList = document.getElementById('genre-results-list');
+            const genreAnimeBtn = document.getElementById('genre-anime-btn');
+            const genreMangaBtn = document.getElementById('genre-manga-btn');
+
+            // --- State Variables ---
+            let searchMode = 'anime'; // 'anime' or 'manga'
+            let currentView = 'search'; // 'search', 'browse', or 'iframe'
+            let lastViewBeforeIframe = 'search';
+            let currentGenre = { id: null, name: null };
             let allSearchResults = [];
             let currentSearchPage = 1;
             const resultsPerPage = 10;
-            
-            // --- Recent Searches Functions ---
-            function getRecentSearches() {
-                const searches = localStorage.getItem(RECENT_SEARCHES_KEY);
-                return searches ? JSON.parse(searches) : [];
-            }
+            let searchTimeout;
 
-            function addRecentSearch(term) {
-                if (!term || term.trim() === '') return;
-                let searches = getRecentSearches();
-                // Remove existing term to add it to the top (most recent)
-                searches = searches.filter(s => s.toLowerCase() !== term.toLowerCase());
-                searches.unshift(term); // Add to the beginning
-                if (searches.length > MAX_RECENT_SEARCHES) {
-                    searches = searches.slice(0, MAX_RECENT_SEARCHES);
+            // --- View Management ---
+            function switchView(view) {
+                currentView = view;
+                // Hide all main containers
+                searchInteractionArea.style.display = 'none';
+                browseInteractionArea.style.display = 'none';
+                iframeContainer.style.display = 'none';
+
+                // Manage search bar visibility
+                searchBarContainer.style.display = (view === 'browse') ? 'none' : 'flex';
+
+                // Deactivate all main tab buttons
+                [animeOptionBtn, mangaOptionBtn, browseOptionBtn].forEach(btn => btn.classList.remove('active'));
+
+                // Show the correct container and activate the correct tab
+                if (view === 'search') {
+                    searchInteractionArea.style.display = 'block';
+                    (searchMode === 'anime' ? animeOptionBtn : mangaOptionBtn).classList.add('active');
+                    if (!searchInput.value.trim()) displayRecentSearches();
+                } else if (view === 'browse') {
+                    browseInteractionArea.style.display = 'block';
+                    browseOptionBtn.classList.add('active');
+                    if (genreListContainer.innerHTML.trim() === '') {
+                        loadBrowseContent();
+                    }
+                } else if (view === 'iframe') {
+                    iframeContainer.style.display = 'flex';
                 }
-                localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(searches));
-                // DO NOT call displayRecentSearches() here.
-                // The visual list of recents will update when displayRecentSearches() is called
-                // (e.g., when input is cleared or on page load).
             }
 
-            function removeRecentSearch(termToRemove) {
-                let searches = getRecentSearches();
-                searches = searches.filter(s => s.toLowerCase() !== termToRemove.toLowerCase());
-                localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(searches));
-                displayRecentSearches(); // Refresh the list after removal
+            // --- API & Rendering Helper Functions ---
+            const apiCall = async (url) => {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    let errorMsg = `Jikan API error: ${response.status} ${response.statusText}`;
+                    try {
+                        const errorData = await response.json();
+                        if(errorData && errorData.message) errorMsg += ` - ${errorData.message}`;
+                    } catch (e) { /* ignore json parsing error */ }
+                    throw new Error(errorMsg);
+                }
+                return response.json();
+            };
+
+            function createResultCard(item, type) {
+                const listItem = document.createElement('div');
+                listItem.className = 'list-item card-style';
+                listItem.addEventListener('click', () => showSeriesInfo(item.mal_id, type));
+                
+                const thumbnail = `<div class="item-thumbnail"><img src="${item.images?.jpg?.image_url || 'https://placehold.co/60x80/444/fff?text=N/A'}" alt="${item.title}" loading="lazy"></div>`;
+                
+                const metaPills = [];
+                if (item.score) metaPills.push(`<span class="meta-pill">${item.score}/10</span>`);
+                if (type === 'anime' && item.episodes) metaPills.push(`<span class="meta-pill">${item.episodes} EP</span>`);
+                if (type === 'manga' && item.chapters) metaPills.push(`<span class="meta-pill">${item.chapters} CH</span>`);
+                
+                const synopsis = item.synopsis ? (item.synopsis.length > 100 ? item.synopsis.substring(0, 100) + '...' : item.synopsis) : 'No description available.';
+                
+                const details = `
+                    <div class="item-details">
+                        <h3 class="item-title">${item.title_english || item.title}</h3>
+                        <div class="item-meta">${metaPills.join('')}</div>
+                        <p class="item-description">${synopsis}</p>
+                    </div>`;
+                
+                const arrow = `<div class="item-arrow"><i class="fas fa-chevron-right"></i></div>`;
+
+                listItem.innerHTML = thumbnail + details + arrow;
+                return listItem;
             }
 
+            // --- Iframe & Detail View Logic ---
+            function showSeriesInfo(id, type) {
+                lastViewBeforeIframe = currentView;
+                seriesInfoIframe.src = `series-info.html?id=${id}${type === 'manga' ? '&manga=true' : ''}`;
+                switchView('iframe');
+            }
+
+            function backFromIframe() {
+                seriesInfoIframe.src = 'about:blank';
+                switchView(lastViewBeforeIframe);
+            }
+
+            // --- Search Logic ---
+            const getRecentSearches = () => JSON.parse(localStorage.getItem(`${searchMode}RecentSearches`) || '[]');
+            const addRecentSearch = (term) => {
+                if (!term) return;
+                let searches = getRecentSearches().filter(s => s.toLowerCase() !== term.toLowerCase());
+                searches.unshift(term);
+                localStorage.setItem(`${searchMode}RecentSearches`, JSON.stringify(searches.slice(0, 5)));
+            };
+            const removeRecentSearch = (term) => {
+                let searches = getRecentSearches().filter(s => s.toLowerCase() !== term.toLowerCase());
+                localStorage.setItem(`${searchMode}RecentSearches`, JSON.stringify(searches));
+                displayRecentSearches();
+            };
             function displayRecentSearches() {
+                searchItemList.innerHTML = '';
+                searchItemList.className = 'item-list recent-searches-active';
                 const searches = getRecentSearches();
-                searchItemList.innerHTML = ''; // Clear current items
-                searchItemList.classList.add('recent-searches-active'); // Add class for styling flex wrap
-
+                resultsTitle.textContent = 'Recents';
                 if (searches.length === 0) {
-                    resultsTitle.textContent = 'Recents';
-                    searchItemList.innerHTML = '<p style="width: 100%; text-align: center;">No recent searches.</p>'; // Added some styling for better presentation
+                    searchItemList.innerHTML = '<p style="width: 100%; text-align: center;">No recent searches.</p>';
                     return;
                 }
-                
-                resultsTitle.textContent = 'Recents';
                 searches.forEach(term => {
                     const recentItem = document.createElement('div');
-                    recentItem.classList.add('recent-search-item');
-                    
-                    const termSpan = document.createElement('span');
-                    termSpan.textContent = term;
-                    termSpan.addEventListener('click', () => {
+                    recentItem.className = 'recent-search-item';
+                    recentItem.innerHTML = `<span>${term}</span><i class="fas fa-times"></i>`;
+                    recentItem.querySelector('span').addEventListener('click', () => {
                         searchInput.value = term;
                         performSearch(term);
                     });
-
-                    const removeIcon = document.createElement('i');
-                    removeIcon.classList.add('fas', 'fa-times');
-                    removeIcon.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Prevent term click event (which would trigger a search)
+                    recentItem.querySelector('i').addEventListener('click', (e) => {
+                        e.stopPropagation();
                         removeRecentSearch(term);
                     });
-
-                    recentItem.appendChild(termSpan);
-                    recentItem.appendChild(removeIcon);
                     searchItemList.appendChild(recentItem);
                 });
             }
-
-            // --- Search Results Functions ---
             async function performSearch(query) {
-                if (!query || query.trim() === '') {
-                    displayRecentSearches(); // Show recents if query is empty
+                if (!query) {
+                    displayRecentSearches();
                     return;
                 }
-
                 resultsTitle.textContent = `Results for "${query}"`;
-                searchItemList.innerHTML = '<p style="width: 100%; text-align: center;">Loading...</p>'; // Loading indicator
-                searchItemList.classList.remove('recent-searches-active');
-
-
+                searchItemList.innerHTML = '<p style="width: 100%; text-align: center;">Loading...</p>';
+                searchItemList.className = 'item-list';
                 try {
-                    const response = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=15`);
-                    if (!response.ok) {
-                        // Attempt to parse error from Jikan if possible
-                        let errorMsg = `Jikan API error: ${response.status} ${response.statusText}`;
-                        try {
-                            const errorData = await response.json();
-                            if(errorData && errorData.message) {
-                                errorMsg += ` - ${errorData.message}`;
-                            }
-                        } catch (e) { /* ignore parsing error */ }
-                        throw new Error(errorMsg);
-                    }
-                    const data = await response.json();
-                    displaySearchResults(data.data, query); // Pass query for context if needed
-                    if (data.data && data.data.length > 0) {
-                         addRecentSearch(query); // Add to recents (storage only) if search yields results
-                    }
+                    const data = await apiCall(`https://api.jikan.moe/v4/${searchMode}?q=${encodeURIComponent(query)}&limit=25`);
+                    displaySearchResults(data.data, query);
+                    if (data.data?.length > 0) addRecentSearch(query);
                 } catch (error) {
                     console.error("Failed to fetch search results:", error);
-                    searchItemList.innerHTML = `<p style="width: 100%; text-align: center; color: red;">Error loading results: ${error.message}. Please try again.</p>`;
-                    resultsTitle.textContent = `Results for "${query}"`; // Keep the title reflecting the attempted search
+                    searchItemList.innerHTML = `<p style="width: 100%; text-align: center; color: red;">Error: ${error.message}.</p>`;
                 }
             }
-
-            // Pagination controls
-            function renderSearchPagination() {
-                let paginationDiv = document.getElementById('search-pagination');
-                if (!paginationDiv) {
-                    paginationDiv = document.createElement('div');
-                    paginationDiv.id = 'search-pagination';
-                    paginationDiv.className = 'pagination-container'; // Add class for styling
-                    paginationDiv.style.display = 'flex';
-                    paginationDiv.style.justifyContent = 'center';
-                    paginationDiv.style.alignItems = 'center';
-                    paginationDiv.style.margin = '20px 0 0 0';
-                    searchItemList.parentNode.appendChild(paginationDiv);
-                }
-                paginationDiv.innerHTML = '';
-                if (!allSearchResults || allSearchResults.length <= resultsPerPage) {
-                    paginationDiv.style.display = 'none';
-                    return;
-                }
-                paginationDiv.style.display = 'flex';
-                const totalPages = Math.ceil(allSearchResults.length / resultsPerPage);
-                const prevBtn = document.createElement('button');
-                prevBtn.textContent = 'Prev';
-                prevBtn.disabled = currentSearchPage === 1;
-                prevBtn.className = 'pagination-btn'; // Add class for styling
-                prevBtn.style.marginRight = '10px';
-                prevBtn.addEventListener('click', () => {
-                    if (currentSearchPage > 1) {
-                        currentSearchPage--;
-                        renderSearchResultsPage();
-                    }
-                });
-                const nextBtn = document.createElement('button');
-                nextBtn.textContent = 'Next';
-                nextBtn.disabled = currentSearchPage === totalPages;
-                nextBtn.className = 'pagination-btn'; // Add class for styling
-                nextBtn.style.marginLeft = '10px';
-                nextBtn.addEventListener('click', () => {
-                    if (currentSearchPage < totalPages) {
-                        currentSearchPage++;
-                        renderSearchResultsPage();
-                    }
-                });
-                const pageInfo = document.createElement('span');
-                pageInfo.textContent = ` Page ${currentSearchPage} of ${totalPages} `;
-                pageInfo.style.margin = '0 10px';
-                paginationDiv.appendChild(prevBtn);
-                paginationDiv.appendChild(pageInfo);
-                paginationDiv.appendChild(nextBtn);
-            }
-
-            function renderSearchResultsPage() {
-                if (!allSearchResults || allSearchResults.length === 0) return;
-                const start = (currentSearchPage - 1) * resultsPerPage;
-                const end = start + resultsPerPage;
-                const pageResults = allSearchResults.slice(start, end);
-                // Reuse displaySearchResults logic, but with only the pageResults
+            function displaySearchResults(data, query) {
+                allSearchResults = data || [];
                 searchItemList.innerHTML = '';
-                searchItemList.classList.remove('recent-searches-active');
-                pageResults.forEach(anime => {
-                    const listItem = document.createElement('div');
-                    listItem.classList.add('list-item', 'card-style');
-                    listItem.addEventListener('click', () => {
-                        showSeriesInfo(anime.mal_id);
-                    });
-                    const thumbnailDiv = document.createElement('div');
-                    thumbnailDiv.classList.add('item-thumbnail');
-                    const thumbnailImg = document.createElement('img');
-                    thumbnailImg.src = anime.images?.jpg?.image_url || 'https://placehold.co/60x80/444/fff?text=N/A';
-                    thumbnailImg.alt = anime.title_english || anime.title;
-                    thumbnailDiv.appendChild(thumbnailImg);
-                    const detailsDiv = document.createElement('div');
-                    detailsDiv.classList.add('item-details');
-                    const titleH3 = document.createElement('h3');
-                    titleH3.classList.add('item-title');
-                    titleH3.textContent = anime.title_english || anime.title;
-                    detailsDiv.appendChild(titleH3);
-                    const metaDiv = document.createElement('div');
-                    metaDiv.classList.add('item-meta');
-                    if (anime.score) {
-                        const scoreSpan = document.createElement('span');
-                        scoreSpan.classList.add('meta-pill');
-                        scoreSpan.textContent = `${anime.score}/10`;
-                        metaDiv.appendChild(scoreSpan);
-                    }
-                    if (anime.episodes) {
-                        const episodesSpan = document.createElement('span');
-                        episodesSpan.classList.add('meta-pill');
-                        episodesSpan.textContent = `${anime.episodes} EP`;
-                        metaDiv.appendChild(episodesSpan);
-                    }
-                    detailsDiv.appendChild(metaDiv);
-                    const descriptionP = document.createElement('p');
-                    descriptionP.classList.add('item-description');
-                    const synopsis = anime.synopsis || 'No description available.';
-                    descriptionP.textContent = synopsis.length > 100 ? synopsis.substring(0, 100) + '...' : synopsis;
-                    detailsDiv.appendChild(descriptionP);
-                    const arrowDiv = document.createElement('div');
-                    arrowDiv.classList.add('item-arrow');
-                    const arrowIcon = document.createElement('i');
-                    arrowIcon.classList.add('fas', 'fa-chevron-right');
-                    arrowDiv.appendChild(arrowIcon);
-                    listItem.appendChild(thumbnailDiv);
-                    listItem.appendChild(detailsDiv);
-                    listItem.appendChild(arrowDiv);
-                    searchItemList.appendChild(listItem);
-                });
-                renderSearchPagination();
-            }
-
-            // Update displaySearchResults to use pagination
-            function displaySearchResults(animeData, query) {
-                allSearchResults = animeData || [];
-                currentSearchPage = 1;
-                if (!allSearchResults || allSearchResults.length === 0) {
+                if (allSearchResults.length === 0) {
                     searchItemList.innerHTML = `<p style="width: 100%; text-align: center;">No results found for "${query}".</p>`;
-                    resultsTitle.textContent = `Results for "${query}"`;
-                    let paginationDiv = document.getElementById('search-pagination');
-                    if (paginationDiv) paginationDiv.style.display = 'none';
                     return;
                 }
-                resultsTitle.textContent = `Results for "${query}"`;
-                renderSearchResultsPage();
+                allSearchResults.forEach(item => searchItemList.appendChild(createResultCard(item, searchMode)));
             }
 
-            // --- Iframe and View Switching Functions ---
-            function showSeriesInfo(animeId) {
-                seriesInfoIframe.src = `series-info.html?id=${animeId}`;
-                searchInteractionArea.style.display = 'none';
-                iframeContainer.style.display = 'flex'; 
+            // --- Browse Logic ---
+            function createPopularCard(item, type) {
+                const card = document.createElement('div');
+                card.className = 'popular-item-card';
+                card.addEventListener('click', () => showSeriesInfo(item.mal_id, type));
+                card.innerHTML = `
+                    <img src="${item.images?.jpg?.large_image_url || 'https://placehold.co/140x200/444/fff?text=N/A'}" alt="${item.title}" loading="lazy">
+                    <div class="item-title">${item.title}</div>`;
+                return card;
             }
+            async function loadBrowseContent() {
+                genreListContainer.innerHTML = '<p>Loading genres...</p>';
+                popularAnimeList.innerHTML = '<p>Loading...</p>';
+                popularMangaList.innerHTML = '<p>Loading...</p>';
 
-            function showSearchView() {
-                iframeContainer.style.display = 'none';
-                searchInteractionArea.style.display = 'block'; 
-                seriesInfoIframe.src = 'about:blank'; 
-                
-                // Decide what to show: last search results or recents
-                const currentQuery = searchInput.value.trim();
-                if (currentQuery) {
-                    // If there's still a query in the input, re-run the search
-                    // or you could potentially cache the last results to avoid an API call.
-                    // For simplicity, let's just stick to recents if input is empty, or current results.
-                    // The performSearch function handles the title and list updates.
-                    // performSearch(currentQuery); // This might be too aggressive
-                } else {
-                    displayRecentSearches(); // Default to recents if search input is now empty
+                try {
+                    const [genresRes, popularAnimeRes, popularMangaRes] = await Promise.all([
+                        apiCall('https://api.jikan.moe/v4/genres/anime'),
+                        apiCall('https://api.jikan.moe/v4/top/anime?limit=15'),
+                        apiCall('https://api.jikan.moe/v4/top/manga?limit=15')
+                    ]);
+                    
+                    // Process Genres
+                    genreListContainer.innerHTML = '';
+                    genresRes.data.sort((a, b) => a.name.localeCompare(b.name)).forEach(genre => {
+                        const chip = document.createElement('button');
+                        chip.className = 'genre-chip';
+                        chip.textContent = genre.name;
+                        chip.addEventListener('click', () => showGenreResultsView(genre.mal_id, genre.name));
+                        genreListContainer.appendChild(chip);
+                    });
+
+                    // Process Popular
+                    popularAnimeList.innerHTML = '';
+                    popularAnimeRes.data.forEach(item => popularAnimeList.appendChild(createPopularCard(item, 'anime')));
+                    popularMangaList.innerHTML = '';
+                    popularMangaRes.data.forEach(item => popularMangaList.appendChild(createPopularCard(item, 'manga')));
+                } catch (error) {
+                    console.error("Failed to load browse content:", error);
+                    genreListContainer.innerHTML = `<p style="color:red;">Error loading genres.</p>`;
+                    popularAnimeList.innerHTML = `<p style="color:red;">Error loading popular anime.</p>`;
                 }
-                // No explicit action here to re-display search results if coming back from iframe,
-                // as the results should still be in the DOM unless explicitly cleared.
-                // If searchInput.value is not empty, performSearch would have already been called 
-                // or the results are still there.
+            }
+            function showGenreResultsView(genreId, genreName) {
+                currentGenre = { id: genreId, name: genreName };
+                mainBrowseView.style.display = 'none';
+                genreResultsView.style.display = 'block';
+                genreResultsTitle.textContent = genreName;
+                genreAnimeBtn.classList.add('active');
+                genreMangaBtn.classList.remove('active');
+                fetchAndDisplayGenreResults('anime');
+            }
+            function showMainBrowseView() {
+                genreResultsView.style.display = 'none';
+                mainBrowseView.style.display = 'block';
+            }
+            async function fetchAndDisplayGenreResults(type) {
+                genreResultsList.innerHTML = '<p style="width: 100%; text-align: center;">Loading...</p>';
+                try {
+                    const data = await apiCall(`https://api.jikan.moe/v4/${type}?genres=${currentGenre.id}&limit=24`);
+                    genreResultsList.innerHTML = '';
+                    if (!data.data || data.data.length === 0) {
+                        genreResultsList.innerHTML = `<p style="width: 100%; text-align: center;">No ${type} found for ${currentGenre.name}.</p>`;
+                        return;
+                    }
+                    data.data.forEach(item => genreResultsList.appendChild(createResultCard(item, type)));
+                } catch (error) {
+                    console.error(`Failed to fetch ${type} for genre ${currentGenre.name}:`, error);
+                    genreResultsList.innerHTML = `<p style="width: 100%; text-align: center; color: red;">Error loading results.</p>`;
+                }
             }
 
             // --- Event Listeners ---
-            let searchTimeout;
+            [animeOptionBtn, mangaOptionBtn, browseOptionBtn].forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const newMode = btn === browseOptionBtn ? 'browse' : 'search';
+                    if (newMode === 'search') {
+                        searchMode = (btn === animeOptionBtn) ? 'anime' : 'manga';
+                        searchInput.placeholder = `Type to Search ${searchMode.charAt(0).toUpperCase() + searchMode.slice(1)}...`;
+                        searchInput.value = '';
+                    }
+                    switchView(newMode);
+                });
+            });
+
             searchInput.addEventListener('input', () => {
                 clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    const query = searchInput.value.trim();
-                    performSearch(query); // performSearch will call displayRecentSearches if query is empty
-                }, 500); 
+                searchTimeout = setTimeout(() => performSearch(searchInput.value.trim()), 500);
+            });
+            searchInput.addEventListener('keypress', e => e.key === 'Enter' && (clearTimeout(searchTimeout), performSearch(searchInput.value.trim())));
+            searchIcon.addEventListener('click', () => (clearTimeout(searchTimeout), performSearch(searchInput.value.trim())));
+            
+            backFromIframeBtn.addEventListener('click', backFromIframe);
+            backToGenresBtn.addEventListener('click', showMainBrowseView);
+
+            genreAnimeBtn.addEventListener('click', () => {
+                if (genreAnimeBtn.classList.contains('active')) return;
+                genreAnimeBtn.classList.add('active');
+                genreMangaBtn.classList.remove('active');
+                fetchAndDisplayGenreResults('anime');
+            });
+            genreMangaBtn.addEventListener('click', () => {
+                if (genreMangaBtn.classList.contains('active')) return;
+                genreMangaBtn.classList.add('active');
+                genreAnimeBtn.classList.remove('active');
+                fetchAndDisplayGenreResults('manga');
             });
             
-            searchInput.addEventListener('keypress', (event) => {
-                if (event.key === 'Enter') {
-                    clearTimeout(searchTimeout); 
-                    const query = searchInput.value.trim();
-                    performSearch(query); // performSearch will call displayRecentSearches if query is empty
-                }
-            });
-
-            searchIcon.addEventListener('click', () => {
-                clearTimeout(searchTimeout);
-                const query = searchInput.value.trim();
-                performSearch(query); // performSearch will call displayRecentSearches if query is empty
-            });
-
-            backToSearchBtn.addEventListener('click', showSearchView);
-
             // --- Initial Load ---
-            displayRecentSearches(); 
+            switchView('search');
         });
     </script>
 </body>

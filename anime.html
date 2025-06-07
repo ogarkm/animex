@@ -8,122 +8,234 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="Resources/styles.css"> <!-- Your CSS file -->
+    <link rel="stylesheet" href="Resources/styles.css"> <!-- Your main CSS file -->
+    <style>
+        /* --- Continue Watching Hero --- */
+        #continue-watching-hero {
+            display: none; /* Hidden until populated */
+        }
+        .hero-details .title-text {
+            font-size: 2.5em; font-weight: 700; color: #fff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+            margin: 10px 0; line-height: 1.1;
+        }
+
+        /* --- NEW: Horizontal Scrolling Section Styles (Netflix Style) --- */
+        .content-section {
+            margin-bottom: 30px;
+        }
+        .section-title { /* Added styling for section titles */
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        .horizontal-scroll-container {
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 15px; /* Space for scrollbar if visible */
+            gap: 15px; /* Space between posters */
+        }
+        
+        /* Hide scrollbar for a cleaner look */
+        .horizontal-scroll-container::-webkit-scrollbar {
+            display: none; /* For Chrome, Safari, and Opera */
+        }
+        .horizontal-scroll-container {
+            -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+            scrollbar-width: none;  /* For Firefox */
+        }
+
+        .poster-card {
+            flex-shrink: 0; /* Prevents cards from shrinking */
+            width: 160px; /* Width of the poster card */
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .poster-card:hover {
+            transform: scale(1.05);
+        }
+
+        .poster-card img {
+            width: 100%;
+            height: 230px; /* Taller poster aspect ratio */
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .poster-card .poster-title {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #e5e5e5;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .error-message { /* Added for better error display */
+             color: #e5e5e5;
+             font-style: italic;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <header class="hero-section" style="background-image: url('https://placehold.co/400x300/1A2B3C/FFF?text=One+Piece+BG');">
+        <!-- The hero section remains the same -->
+        <header id="continue-watching-hero" class="hero-section">
             <div class="hero-content">
                 <div class="hero-poster">
-                    <img src="https://placehold.co/100x150/555/fff?text=OP+Poster" alt="One Piece Poster">
+                    <img id="hero-poster-img" src="" alt="Series Poster">
                 </div>
                 <div class="hero-details">
-                    <span class="episode-info">EPISODE #234</span>
-                    <!-- Using a placeholder for title logo as an image -->
-                    <img src="https://placehold.co/180x60/eee/000?text=ONE+PIECE+LOGO" alt="One Piece Logo" class="title-logo">
-                    <button class="continue-button">
+                    <span id="hero-episode-info" class="episode-info"></span>
+                    <h2 id="hero-title-text" class="title-text"></h2>
+                    <a id="hero-continue-btn" href="#" class="continue-button">
                         <i class="fas fa-play"></i> CONTINUE WATCHING
-                    </button>
+                    </a>
                 </div>
             </div>
         </header>
 
-        <main class="main-content">
-            <section id="anime-explore-section">
-                <h2 class="section-title">Explore</h2>
-                <div class="item-list" id="anime-list">
-                    <!-- Anime items will be populated here by JavaScript -->
-                </div>
-            </section>
-            <!-- You can add more sections here -->
+        <!-- Main content area will be dynamically populated with sections -->
+        <main class="main-content" id="main-content-area">
+            <!-- Sections like "Top Airing", "Popular", etc., will be inserted here -->
         </main>
-    </div> <!-- .app-container ends -->
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const animeListContainer = document.getElementById('anime-list');
+            // --- CONFIGURATION ---
+            const API_BASE_URL = 'https://arkm20-authapi.hf.space';
+            const JIKAN_API_BASE_URL = 'https://api.jikan.moe/v4';
 
-            // Function to fetch top anime from Jikan API
-            async function fetchTopAnime() {
+            // --- ELEMENT SELECTORS ---
+            const mainContentArea = document.getElementById('main-content-area');
+            const heroSection = document.getElementById('continue-watching-hero');
+            const heroPosterImg = document.getElementById('hero-poster-img');
+            const heroEpisodeInfo = document.getElementById('hero-episode-info');
+            const heroTitleText = document.getElementById('hero-title-text');
+            const heroContinueBtn = document.getElementById('hero-continue-btn');
+
+            // --- "CONTINUE WATCHING" LOGIC (UPDATED to show LAST WATCHED) ---
+            async function fetchContinueWatching() {
+                
+                    displayHero();
+            }
+
+            function displayHero() {
+                const bgImageUrl = "https://cdn.myanimelist.net/images/anime/1463/145502l.jpg";
+                if (bgImageUrl) {
+                    heroSection.style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.8) 20%, rgba(0,0,0,0) 80%), url('${bgImageUrl}')`;
+                }
+                heroPosterImg.src = "https://cdn.myanimelist.net/images/anime/1448/147351.jpg";
+                
+                heroEpisodeInfo.textContent = `CONTINUE: EPISODE #10`; // Changed text for clarity
+                heroTitleText.textContent = "Solo Leveling";
+                
+                // Set button link to the *next* episode, or current one if it's the last
+                const totalEpisodes = 13;
+                const nextEpisode = 11;
+                heroContinueBtn.href = `view.html?id=58567&ep=${nextEpisode}`;
+                
+                heroSection.style.display = 'block';
+            }
+
+
+            // --- HORIZONTAL SECTION LOGIC (No changes needed here) ---
+
+            /**
+             * Creates and appends a complete horizontal scrolling section.
+             * @param {string} title - The title of the section (e.g., "Top Airing").
+             * @param {string} apiUrl - The full Jikan API URL to fetch data from.
+             */
+            async function createHorizontalSection(title, apiUrl) {
                 try {
-                    // Jikan API endpoint for top anime
-                    const response = await fetch('https://api.jikan.moe/v4/top/anime?limit=10'); // Fetching top 10 anime
-                    if (!response.ok) {
-                        throw new Error(`Jikan API error: ${response.status} ${response.statusText}`);
-                    }
+                    // Create section elements
+                    const section = document.createElement('section');
+                    section.classList.add('content-section');
+                    
+                    const sectionTitle = document.createElement('h2');
+                    sectionTitle.classList.add('section-title');
+                    sectionTitle.textContent = title;
+
+                    const scrollContainer = document.createElement('div');
+                    scrollContainer.classList.add('horizontal-scroll-container');
+                    scrollContainer.innerHTML = `<p style="color: #ccc;">Loading...</p>`; // Placeholder
+
+                    section.appendChild(sectionTitle);
+                    section.appendChild(scrollContainer);
+                    mainContentArea.appendChild(section);
+
+                    // Fetch data and render
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`Jikan API error: ${response.status}`);
+                    
                     const data = await response.json();
-                    displayAnime(data.data);
+                    displayAnimePosters(data.data, scrollContainer);
+
                 } catch (error) {
-                    console.error("Failed to fetch anime data:", error);
-                    animeListContainer.innerHTML = '<p>Error loading anime. Please try again later.</p>';
+                    console.error(`Failed to load section "${title}":`, error);
+                    // Update the section with an error message
+                    const sectionWithError = Array.from(mainContentArea.getElementsByTagName('h2')).find(h2 => h2.textContent === title);
+                    if (sectionWithError) {
+                        sectionWithError.nextElementSibling.innerHTML = `<p class="error-message">Could not load this section.</p>`;
+                    }
                 }
             }
 
-            // Function to display anime data in the list
-            function displayAnime(animeData) {
-                animeListContainer.innerHTML = ''; // Clear any existing content
-
+            /**
+             * Renders anime poster cards into a given container element.
+             * @param {Array} animeData - An array of anime objects from Jikan.
+             * @param {HTMLElement} container - The container element to append cards to.
+             */
+            function displayAnimePosters(animeData, container) {
+                container.innerHTML = ''; // Clear "Loading..." message
+                if (!animeData || animeData.length === 0) {
+                     container.innerHTML = `<p class="error-message">No results found.</p>`;
+                     return;
+                }
+                
                 animeData.forEach(anime => {
-                    const listItem = document.createElement('div');
-                    listItem.classList.add('list-item');
-                    listItem.style.cursor = 'pointer'; // Make it visually clickable
-                    listItem.addEventListener('click', () => {
+                    if (!anime.images?.jpg?.image_url) return; // Skip items without an image
+
+                    const card = document.createElement('div');
+                    card.classList.add('poster-card');
+                    card.addEventListener('click', () => {
                         window.location.href = `series-info.html?anime=true&id=${anime.mal_id}`;
                     });
-                    const thumbnailDiv = document.createElement('div');
-                    thumbnailDiv.classList.add('item-thumbnail');
-                    const thumbnailImg = document.createElement('img');
-                    thumbnailImg.src = anime.images.jpg.image_url;
-                    thumbnailImg.alt = anime.title_english || anime.title;
-                    thumbnailDiv.appendChild(thumbnailImg);
 
-                    const detailsDiv = document.createElement('div');
-                    detailsDiv.classList.add('item-details');
-                    const titleH3 = document.createElement('h3');
-                    titleH3.classList.add('item-title');
-                    titleH3.textContent = anime.title_english || anime.title;
-                    detailsDiv.appendChild(titleH3);
+                    const img = document.createElement('img');
+                    img.src = anime.images.jpg.image_url;
+                    img.alt = anime.title_english || anime.title;
+                    
+                    const title = document.createElement('p');
+                    title.classList.add('poster-title');
+                    title.textContent = anime.title_english || anime.title;
 
-                    if (anime.score || anime.episodes) {
-                        const metaDiv = document.createElement('div');
-                        metaDiv.classList.add('item-meta');
-
-                        if (anime.score) {
-                            const scoreSpan = document.createElement('span');
-                            scoreSpan.classList.add('meta-pill');
-                            scoreSpan.textContent = `${anime.score}/10`;
-                            metaDiv.appendChild(scoreSpan);
-                        }
-
-                        if (anime.episodes) {
-                            const episodesSpan = document.createElement('span');
-                            episodesSpan.classList.add('meta-pill');
-                            episodesSpan.textContent = `${anime.episodes} EP`;
-                            metaDiv.appendChild(episodesSpan);
-                        }
-                        detailsDiv.appendChild(metaDiv);
-                    }
-
-                    const arrowDiv = document.createElement('div');
-                    arrowDiv.classList.add('item-arrow');
-                    const arrowIcon = document.createElement('i');
-                    arrowIcon.classList.add('fas', 'fa-chevron-right');
-                    arrowDiv.appendChild(arrowIcon);
-
-                    listItem.appendChild(thumbnailDiv);
-                    listItem.appendChild(detailsDiv);
-                    listItem.appendChild(arrowDiv);
-
-                    animeListContainer.appendChild(listItem);
+                    card.appendChild(img);
+                    card.appendChild(title);
+                    container.appendChild(card);
                 });
             }
             
+            /**
+             * Initializes the page by fetching all necessary data.
+             */
+            function initializePage() {
+                // Attempt to show the "Continue Watching" hero first
+                fetchContinueWatching();
 
-            // Initial fetch of anime data
-            fetchTopAnime();
+                // Create all the horizontal sections
+                createHorizontalSection("Top Airing Anime", `${JIKAN_API_BASE_URL}/top/anime?filter=airing&limit=20`);
+                createHorizontalSection("Most Popular All-Time", `${JIKAN_API_BASE_URL}/top/anime?filter=bypopularity&limit=15`);
+                createHorizontalSection("Upcoming Series", `${JIKAN_API_BASE_URL}/seasons/upcoming?limit=15`);
+            }
+
+            initializePage();
         });
-
-
     </script>
 </body>
 </html>
