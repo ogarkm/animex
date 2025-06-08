@@ -92,8 +92,8 @@
                 <div class="hero-details">
                     <span id="hero-episode-info" class="episode-info"></span>
                     <h2 id="hero-title-text" class="title-text"></h2>
-                    <a id="hero-continue-btn" href="#" class="continue-button">
-                        <i class="fas fa-play"></i> CONTINUE WATCHING
+                    <a id="hero-continue-btn" href="#" class="continue-button" style="text-decoration: none;">
+                        <i class="fas fa-play"></i> Explore Series
                     </a>
                 </div>
             </div>
@@ -132,13 +132,13 @@
                 }
                 heroPosterImg.src = "https://cdn.myanimelist.net/images/anime/1448/147351.jpg";
                 
-                heroEpisodeInfo.textContent = `CONTINUE: EPISODE #10`; // Changed text for clarity
+                heroEpisodeInfo.textContent = `Popular Today`; // Changed text for clarity
                 heroTitleText.textContent = "Solo Leveling";
                 
                 // Set button link to the *next* episode, or current one if it's the last
                 const totalEpisodes = 13;
                 const nextEpisode = 11;
-                heroContinueBtn.href = `view.html?id=58567&ep=${nextEpisode}`;
+                heroContinueBtn.href = `series-info.html?anime=true&id=52299`;
                 
                 heroSection.style.display = 'block';
             }

@@ -12,11 +12,11 @@
     <link rel="stylesheet" href="Resources/styles.css">
     <style>
         :root {
-            --background-primary: #fff;
-            --background-light: #f4f4f4;
-            --text-primary: #111;
-            --text-secondary: #666;
-            --border-color: #eee;
+            --background-primary: #121212;
+            --background-light: #1e1e1e;
+            --text-primary: #f1f1f1;
+            --text-secondary: #aaa;
+            --border-color: #333;
         }
         /* Basic styles to make it standalone */
         body { font-family: 'Inter', sans-serif; background-color: var(--background-primary); color: var(--text-primary); margin: 0; }
@@ -50,11 +50,11 @@
         #showLoginBtn {background-color: #d9534f; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 500; width: 100%; margin-top: 15px; margin-bottom: 20px;}
         /* --- Dark Mode --- */
         body.dark-mode-active {
-            --background-primary: #121212;
-            --background-light: #1e1e1e;
-            --text-primary: #f1f1f1;
-            --text-secondary: #aaa;
-            --border-color: #333;
+            --background-primary: #fff;
+            --background-light: #f4f4f4;
+            --text-primary: #111;
+            --text-secondary: #666;
+            --border-color: #eee;
         }
 
         /* --- Login Iframe Modal --- */
@@ -291,7 +291,7 @@
                             </label>
                         </div>
                         <div class="settings-item">
-                            <span>Dark mode</span>
+                            <span>Light Mode</span>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="darkModeToggle"><span class="slider"></span>
                             </label>

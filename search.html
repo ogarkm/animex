@@ -36,11 +36,44 @@
         .back-button i {
             margin-right: 8px;
         }
+        .search-bar-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 20px auto;
+            padding: 0 10px;
+            border-radius: 20px;
+            background-color: #333;
+            overflow: hidden;
+        }
         .search-bar-container input {
             flex-grow: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px 0 0 20px;
+            background-color: #444;
+            color: #eee;
+            font-size: 1em;
+            outline: none;
         }
         .search-bar-container .fa-search {
             cursor: pointer;
+            color: #aaa;
+            margin-right: 10px;
+        }
+        .search-bar-container #clear-search-btn {
+            display: none;
+            position: absolute;
+            right: 50px;
+            background: none;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+            font-size: 1.2em;
         }
         .recent-search-item {
             background-color: #4A4A4F;
@@ -245,6 +278,7 @@
             <div class="search-bar-container" id="search-bar-container">
                 <input type="text" id="search-input" placeholder="Type to Search Anime...">
                 <i class="fas fa-search" id="search-icon"></i>
+                <button id="clear-search-btn" style="display:none;" aria-label="Clear search" tabindex="0"><i class="fas fa-times"></i></button>
             </div>
             <ul class="search-options-list" id="search-options-list">
                 <li>
@@ -322,6 +356,7 @@
             const seriesInfoIframe = document.getElementById('series-info-iframe');
             const backFromIframeBtn = document.getElementById('back-from-iframe-btn');
             const searchBarContainer = document.getElementById('search-bar-container');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
 
             // Main Tab Buttons
             const animeOptionBtn = document.getElementById('anime-option-btn');
@@ -363,6 +398,14 @@
 
                 // Manage search bar visibility
                 searchBarContainer.style.display = (view === 'browse') ? 'none' : 'flex';
+
+                // Hide/show the options bar
+                const searchOptionsList = document.getElementById('search-options-list');
+                if (view === 'iframe') {
+                    searchOptionsList.style.display = 'none';
+                } else {
+                    searchOptionsList.style.display = '';
+                }
 
                 // Deactivate all main tab buttons
                 [animeOptionBtn, mangaOptionBtn, browseOptionBtn].forEach(btn => btn.classList.remove('active'));
@@ -588,6 +631,7 @@
             searchInput.addEventListener('input', () => {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => performSearch(searchInput.value.trim()), 500);
+                clearSearchBtn.style.display = searchInput.value ? 'inline-flex' : 'none';
             });
             searchInput.addEventListener('keypress', e => e.key === 'Enter' && (clearTimeout(searchTimeout), performSearch(searchInput.value.trim())));
             searchIcon.addEventListener('click', () => (clearTimeout(searchTimeout), performSearch(searchInput.value.trim())));
@@ -608,6 +652,13 @@
                 fetchAndDisplayGenreResults('manga');
             });
             
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearSearchBtn.style.display = 'none';
+                searchInput.focus();
+                displayRecentSearches();
+            });
+
             // --- Initial Load ---
             switchView('search');
         });

@@ -104,6 +104,29 @@
       padding: 2rem;
       font-size: 1.1rem;
     }
+
+    .search-options-list {
+            display: flex;
+            gap: 18px;
+            margin: 18px 0 10px 0;
+            padding: 0 2px;
+            list-style: none;
+        }
+        .search-option-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 0.7em;
+            font-weight: 700;
+            padding: 7px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s;
+        }
+        .search-option-btn.active {
+            background: var(--accent-color-active, #FF9500);
+            color: #fff;
+        }
   </style>
 </head>
 
@@ -133,6 +156,18 @@
       &nbsp;|&nbsp;
       Episode: <span id="episode-number">—</span>
     </div>
+    <ul class="search-options-list" id="search-options-list">
+                <li>
+                    <button class="search-option-btn active" id="sub-option-btn" type="button">
+                        SUB
+                    </button>
+                </li>
+                <li>
+                    <button class="search-option-btn" id="dub-option-btn" type="button">
+                        DUB
+                    </button>
+                </li>
+    </ul>
   </div>
 
   <script>
@@ -141,6 +176,10 @@
       const params = new URLSearchParams(window.location.search);
       const jikanId = params.get('id');
       const episode = params.get('ep');
+
+      const subOptionBtn = document.getElementById('sub-option-btn');
+      const dubOptionBtn = document.getElementById('dub-option-btn');
+      let currentDub = false;
 
       // Show error if missing
       if (!jikanId || !episode) {
@@ -180,46 +219,120 @@
       document.getElementById('series-year').textContent = year;
       document.getElementById('episode-number').textContent = episode;
 
-      // 4) Call your FastAPI proxy to get the raw iframe URL
-      //    (Adjust “your‐space‐name” to your actual HF Space or localhost:7860 if local)
-      const proxyBase = 'https://arkm20-animex-player-api.hf.space'; 
-      // If testing locally, use: const proxyBase = 'http://localhost:7860';
-      const iframeSrcURL = `${proxyBase}/iframe-src?id=${encodeURIComponent(jikanId)}&ep=${encodeURIComponent(episode)}`;
-
-      let embedSrc = null;
+      // --- NEXT EPISODE BUTTON LOGIC ---
+      // Fetch total episodes from Jikan info (if available)
+      let totalEpisodes = null;
       try {
-        const res = await fetch(iframeSrcURL);
-        if (res.ok) {
-          const json = await res.json();
-          embedSrc = json.src;
-        } else {
-          console.warn('Proxy returned HTTP', res.status);
+        const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          const anime = data.data || {};
+          totalEpisodes = anime.episodes || null;
         }
       } catch (err) {
-        console.error('Error calling proxy:', err);
+        // fallback: leave totalEpisodes as null
       }
 
-      if (!embedSrc) {
-        document.getElementById('player-container').innerHTML = `
-          <div id="error-message">
-            Could not load player. Please try again later.
-          </div>`;
-        return;
+      // Add next episode button or series over message
+      const infoContainer = document.getElementById('info-container');
+      let nextEpBtn = document.getElementById('next-episode-btn');
+      let seriesOverMsg = document.getElementById('series-over-msg');
+      if (nextEpBtn) nextEpBtn.remove();
+      if (seriesOverMsg) seriesOverMsg.remove();
+      const currentEpNum = parseInt(episode, 10);
+      if (totalEpisodes && currentEpNum < totalEpisodes) {
+        nextEpBtn = document.createElement('button');
+        nextEpBtn.id = 'next-episode-btn';
+        nextEpBtn.textContent = `Next Episode →`;
+        nextEpBtn.style.margin = '12px auto 0 auto';
+        nextEpBtn.style.display = 'block';
+        nextEpBtn.style.background = 'var(--accent-color-active, #FF9500)';
+        nextEpBtn.style.color = '#fff';
+        nextEpBtn.style.fontWeight = '700';
+        nextEpBtn.style.fontSize = '1em';
+        nextEpBtn.style.border = 'none';
+        nextEpBtn.style.borderRadius = '18px';
+        nextEpBtn.style.padding = '10px 32px';
+        nextEpBtn.style.cursor = 'pointer';
+        nextEpBtn.addEventListener('click', () => {
+          // Replace current page with next episode
+          const params = new URLSearchParams(window.location.search);
+          params.set('ep', currentEpNum + 1);
+          window.location.search = params.toString();
+        });
+        infoContainer.appendChild(nextEpBtn);
+      } else if (totalEpisodes && currentEpNum >= totalEpisodes) {
+        seriesOverMsg = document.createElement('div');
+        seriesOverMsg.id = 'series-over-msg';
+        seriesOverMsg.textContent = 'Wow... The Series is over';
+        seriesOverMsg.style.margin = '12px auto 0 auto';
+        seriesOverMsg.style.textAlign = 'center';
+        seriesOverMsg.style.fontWeight = '700';
+        seriesOverMsg.style.fontSize = '1.1em';
+        seriesOverMsg.style.color = 'var(--accent-color-active, #FF9500)';
+        infoContainer.appendChild(seriesOverMsg);
       }
 
-      // 5) Inject the final <iframe>
-      const iframe = document.createElement('iframe');
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-      iframe.setAttribute('src', embedSrc);
-      iframe.setAttribute('allowfullscreen', 'true');
-      iframe.setAttribute('scrolling', 'no');
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
-      document.getElementById('player-container').appendChild(iframe);
+      // Helper to load iframe with dub/sub
+      async function loadIframe(dub) {
+        // Remove any existing iframe
+        const playerContainer = document.getElementById('player-container');
+        playerContainer.innerHTML = '';
+        // 4) Call your FastAPI proxy to get the raw iframe URL
+        const proxyBase = 'https://arkm20-animex-player-api.hf.space';
+        const iframeSrcURL = `${proxyBase}/iframe-src?id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
+        let embedSrc = null;
+        try {
+          const res = await fetch(iframeSrcURL);
+          if (res.ok) {
+            const json = await res.json();
+            embedSrc = json.src;
+          } else {
+            console.warn('Proxy returned HTTP', res.status);
+          }
+        } catch (err) {
+          console.error('Error calling proxy:', err);
+        }
+        if (!embedSrc) {
+          playerContainer.innerHTML = `
+            <div id="error-message">
+              Could not load player. Please try again later.
+            </div>`;
+          return;
+        }
+        const iframe = document.createElement('iframe');
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+        iframe.setAttribute('src', embedSrc);
+        iframe.setAttribute('allowfullscreen', 'true');
+        iframe.setAttribute('scrolling', 'no');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        playerContainer.appendChild(iframe);
+      }
+
+      // 5) Initial load (SUB by default)
+      await loadIframe(false);
 
       // 6) Back button logic
       document.getElementById('back-button').addEventListener('click', () => {
-        window.history.back();
+        // Go directly to series-info.html for this anime
+        window.location.href = `series-info.html?id=${encodeURIComponent(jikanId)}&anime=true`;
+      });
+
+      // 7) Dub/Sub toggle logic
+      subOptionBtn.addEventListener('click', async () => {
+        if (!subOptionBtn.classList.contains('active')) {
+          subOptionBtn.classList.add('active');
+          dubOptionBtn.classList.remove('active');
+          await loadIframe(false);
+        }
+      });
+      dubOptionBtn.addEventListener('click', async () => {
+        if (!dubOptionBtn.classList.contains('active')) {
+          dubOptionBtn.classList.add('active');
+          subOptionBtn.classList.remove('active');
+          await loadIframe(true);
+        }
       });
     });
   </script>
