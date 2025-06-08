@@ -293,21 +293,22 @@ body {
     position: absolute;         /* take it out of the normal flow */
     top: 20px;                  /* distance from the top of the hero */
     left: 20px;                 /* distance from the left edge of the hero */
-    background-color: rgba(0, 0, 0, 0.0);
+    background-color: rgba(0, 0, 0, 0.2);
     color: #e5e5e5;
-    border: none;
-    border-radius: 60px;
+    border: rgba(#e5e5e5, 0.4) solid 1px; /* semi-transparent border */
+    border-radius: 50px;
     cursor: pointer;
     font-size: 1.25em;
     font-family: 'Inter', sans-serif;
     transition: background-color 0.2s ease;
     z-index: 5;                 /* ensure it sits above the overlay but below title if needed */
     margin: 0;                  /* remove any bottom-margin that was pushing it down */
-    padding: 8px 16px;          /* add some padding so it’s not too small */
+    padding: 8px 12px;          /* add some padding so it’s not too small */
 }
 
 
 .back-btn:hover {
     background-color: var(--accent-color-active);
-    color: var(--accent-color-active);
+    color: #e5e5e5;
+    border: rgba(var(--accent-color-active), 0.4) solid 1px;
 }
