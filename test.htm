@@ -1,226 +1,403 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Aniwatch‐API Episode Lookup</title>
-  <style>
-    body {
-      background: #1c1c1e;
-      color: #fff;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-    }
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    label {
-      display: block;
-      margin-top: 0.5rem;
-      font-size: 0.9rem;
-    }
-    input {
-      margin-top: 0.2rem;
-      padding: 0.5rem;
-      width: 200px;
-      border: 1px solid #444;
-      border-radius: 4px;
-      background: #2c2c2e;
-      color: #fff;
-    }
-    button {
-      margin-top: 1rem;
-      padding: 0.6rem 1.2rem;
-      border: none;
-      border-radius: 4px;
-      background: #66a2de;
-      color: #1c1c1e;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:hover {
-      opacity: 0.9;
-    }
-    #output {
-      margin-top: 1.5rem;
-      width: 100%;
-      max-width: 500px;
-      background: #2c2c2e;
-      border-radius: 6px;
-      padding: 1rem;
-      font-size: 0.9rem;
-      line-height: 1.4;
-      word-break: break-all;
-    }
-    code {
-      background: #333;
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-    }
-    .link {
-      display: block;
-      margin-top: 0.5rem;
-      color: #66a2de;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch History Client</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1b;
+            --card-bg: #272729;
+            --text-color: #d7dadc;
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --border-color: #4d4d50;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: white;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        h2 {
+            margin-top: 2rem;
+        }
+        
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        input, textarea, button {
+            font-family: inherit;
+            font-size: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.4);
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        button:disabled {
+            background-color: #3f3f46;
+            cursor: not-allowed;
+        }
+
+        .status {
+            text-align: center;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            display: none; /* Hidden by default */
+        }
+        
+        .status.success {
+            background-color: var(--success-color);
+            color: white;
+            display: block;
+        }
+        
+        .status.error {
+            background-color: var(--error-color);
+            color: white;
+            display: block;
+        }
+
+        #history-container {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            min-height: 50px;
+        }
+        
+        .show {
+            margin-bottom: 1.5rem;
+            padding-left: 1rem;
+            border-left: 3px solid var(--primary-color);
+        }
+        .show h3 { margin: 0 0 0.5rem 0; }
+        .season { margin-bottom: 1rem; padding-left: 1.5rem; }
+        .season h4 { margin: 0 0 0.5rem 0; color: #a1a1aa; }
+        .episode-list { list-style: none; padding-left: 1rem; margin: 0;}
+        .episode { 
+            padding: 0.25rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .episode:last-child { border-bottom: none; }
+        .episode-time { font-size: 0.8em; color: #a1a1aa; margin-left: 0.5rem; }
+
+    </style>
 </head>
 <body>
 
-  <h1>Aniwatch-API Episode & Server Lookup</h1>
+    <div class="container">
+        <h1>Watch History Client</h1>
 
-  <label for="jikanId">Jikan (MAL) ID (e.g. 128):</label>
-  <input type="number" id="jikanId" placeholder="e.g. 128" />
+        <!-- Authentication Section -->
+        <div class="section">
+            <div class="form-group">
+                <label for="authToken">Auth Key (JWT Token)</label>
+                <textarea id="authToken" placeholder="Paste your Bearer token here..." required></textarea>
+            </div>
+        </div>
 
-  <label for="episodeNum">Episode Number (e.g. 1):</label>
-  <input type="number" id="episodeNum" placeholder="e.g. 1" />
+        <!-- Section 1: Update Watch History -->
+        <div class="section">
+            <h2>Mark Episode as Watched</h2>
+            <form id="update-form">
+                <div class="form-group">
+                    <label for="showId">Show ID</label>
+                    <input type="text" id="showId" placeholder="e.g., tmdb-85271" required>
+                </div>
+                <div class="form-group">
+                    <label for="showTitle">Show Title</label>
+                    <input type="text" id="showTitle" placeholder="e.g., The Mandalorian" required>
+                </div>
+                <div class="form-group">
+                    <label for="seasonNumber">Season Number</label>
+                    <input type="number" id="seasonNumber" placeholder="e.g., 1" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="episodeNumber">Episode Number</label>
+                    <input type="number" id="episodeNumber" placeholder="e.g., 1" min="1" required>
+                </div>
+                <button type="submit" id="update-btn">Update Watch History</button>
+            </form>
+            <div id="update-status" class="status"></div>
+        </div>
+        
+        <hr style="border: 1px solid var(--border-color); margin: 2rem 0;">
+        
+        <!-- Section 2: View Watch History -->
+        <div class="section">
+            <h2>My Watch History</h2>
+            <button id="fetch-history-btn">Fetch My History</button>
+            <div id="fetch-status" class="status"></div>
+            <div id="history-container">
+                <p>Click "Fetch My History" to see your watched content.</p>
+            </div>
+        </div>
+    </div>
 
-  <button id="fetchBtn">Fetch servers</button>
+    <script>
+        const API_BASE_URL = 'https://arkm20-authapi.hf.space';
 
-  <div id="output"></div>
+        // --- DOM Element References ---
+        const authTokenInput = document.getElementById('authToken');
+        
+        // Update Form Elements
+        const updateForm = document.getElementById('update-form');
+        const showIdInput = document.getElementById('showId');
+        const showTitleInput = document.getElementById('showTitle');
+        const seasonNumberInput = document.getElementById('seasonNumber');
+        const episodeNumberInput = document.getElementById('episodeNumber');
+        const updateBtn = document.getElementById('update-btn');
+        const updateStatus = document.getElementById('update-status');
 
-  <script>
-  // Helper to update the #output div
-  function logMessage(html) {
-    document.getElementById('output').innerHTML = html;
-  }
+        // Fetch History Elements
+        const fetchHistoryBtn = document.getElementById('fetch-history-btn');
+        const fetchStatus = document.getElementById('fetch-status');
+        const historyContainer = document.getElementById('history-container');
 
-  document.getElementById('fetchBtn').addEventListener('click', async () => {
-    const outputEl = document.getElementById('output');
-    outputEl.innerHTML = '⏳ Fetching…';
-
-    const jikanId = document.getElementById('jikanId').value.trim();
-    const episodeNum = document.getElementById('episodeNum').value.trim();
-
-    if (!jikanId || isNaN(jikanId) || !episodeNum || isNaN(episodeNum)) {
-      logMessage('<span style="color:#f55;">Please enter both a valid Jikan ID and Episode Number.</span>');
-      return;
-    }
-
-    try {
-      // 1. Fetch anime info from Jikan
-      const jikanResp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
-      if (!jikanResp.ok) throw new Error('Jikan lookup failed.');
-      const jikanData = await jikanResp.json();
-      const animeTitle = jikanData.data.title_english; 
-      // You could also try jikanData.data.title_english if you prefer.
-      console.log(`Jikan title: ${animeTitle}`);
-      // 2. Search Aniwatch by that title (page=1 for simplicity)
-      const searchQuery = encodeURIComponent(animeTitle);
-      const searchResp = await fetch(`https://aniwatch-api-v1-0.onrender.com/api/search/${searchQuery}/1`);
-      if (!searchResp.ok) throw new Error('Aniwatch search failed.');
-      const searchJson = await searchResp.json();
-      console.log(`Aniwatch search results for "${animeTitle}":`, searchJson);
-      let candidates = searchJson.searchYour;
-      if (!Array.isArray(candidates) || candidates.length === 0) {
-        throw new Error(`No Aniwatch results for “${animeTitle}”.`);
-      }
-      console.log(`Found ${candidates.length} candidates on Aniwatch for "${animeTitle}"`);
-      // 2a. Filter only “TV” entries (skip Specials / ONA / etc.)
-      candidates = candidates.filter(item => item.format === 'TV');
-
-      // 3. For each candidate (by `idanime`), compare the name/title to animeTitle
-      let foundAniwatchId = null;
-      for (let item of candidates) {
-        const candidateId = item.idanime; 
-        if (!candidateId) continue;
-
-        // Compare the candidate's name/title to animeTitle (case-insensitive, trimmed)
-        const candidateName = (item.name || item.title || '').toLowerCase().trim();
-        const searchTitle = (animeTitle || '').toLowerCase().trim();
-        if (candidateName === searchTitle) {
-          foundAniwatchId = candidateId;
-          break;
+        // --- Helper Functions ---
+        function showStatus(element, message, isError = false) {
+            element.textContent = message;
+            element.className = 'status'; // Reset classes
+            element.classList.add(isError ? 'error' : 'success');
         }
-      }
 
-      if (!foundAniwatchId) {
-        throw new Error(`Couldn’t find an Aniwatch anime whose mal_id = ${jikanId}.`);
-      }
+        function hideStatus(element) {
+            element.style.display = 'none';
+        }
+        
+        function getAuthToken() {
+            return authTokenInput.value.trim();
+        }
 
-      // 4. Fetch episodes for foundAniwatchId
-      const epsResp = await fetch(`https://aniwatch-api-v1-0.onrender.com/api/episode/${foundAniwatchId}`);
-      if (!epsResp.ok) throw new Error('Aniwatch episode-list lookup failed.');
-      const epsJson = await epsResp.json();
-      const episodes = epsJson.episodetown;
-      if (!Array.isArray(episodes) || episodes.length === 0) {
-        throw new Error(`No episodes found for ${foundAniwatchId}.`);
-      }
+        // --- Event Handlers ---
+        
+        /**
+         * Handles the submission of the "Mark as Watched" form.
+         */
+        updateForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            hideStatus(updateStatus);
+            updateBtn.disabled = true;
+            updateBtn.textContent = 'Updating...';
 
-      // 5. Find the one whose "order" equals episodeNum
-      const targetEp = episodes.find(epObj => Number(epObj.order) === Number(episodeNum));
-      if (!targetEp) {
-        throw new Error(`Episode ${episodeNum} not found for ${foundAniwatchId}.`);
-      }
-      const epIdParam = targetEp.epId; 
-      // e.g. "solo-leveling-18718?ep=12345"
-
-      // 6. Fetch servers for that epIdParam
-      const serverResp = await fetch(
-        `https://aniwatch-api-v1-0.onrender.com/api/server/${encodeURIComponent(epIdParam)}`
-      );
-      if (!serverResp.ok) throw new Error('Aniwatch server lookup failed.');
-      const serverJson = await serverResp.json();
-      console.log(`Aniwatch servers for "${animeTitle}" episode ${episodeNum}:`, serverJson);
-      const subArr = serverJson.sub || [];
-      const dubArr = serverJson.dub || [];
-
-      // Build HTML output
-      let html = `
-        <strong>✅ Found animeId:</strong> <code>${foundAniwatchId}</code><br/>
-        <strong>Episode ${episodeNum} (epIdParam):</strong> <code>${epIdParam}</code><br/><br/>
-      `;
-
-      // Helper to resolve server links
-      async function resolveServerLink(one) {
-        if (one.serverlinkAni) return one.serverlinkAni;
-        if (one.srcId) {
-          try {
-            const resp = await fetch(`https://aniwatch-api-v1-0.onrender.com/api/src-server/${one.srcId}`);
-            if (resp.ok) {
-              const data = await resp.json();
-              if (data && data.serverSrc && data.serverSrc[0] && data.serverSrc[0].serverlinkAni) {
-                return data.serverSrc[0].serverlinkAni;
-              }
+            const token = getAuthToken();
+            if (!token) {
+                showStatus(updateStatus, 'Auth Key is required.', true);
+                updateBtn.disabled = false;
+                updateBtn.textContent = 'Update Watch History';
+                return;
             }
-          } catch (e) { /* ignore */ }
+
+            // Construct URL with query parameters as per the API definition
+            const url = new URL(`${API_BASE_URL}/users/me/watch-history`);
+            url.searchParams.append('show_id', showIdInput.value);
+            url.searchParams.append('show_title', showTitleInput.value);
+            url.searchParams.append('season_number', seasonNumberInput.value);
+            url.searchParams.append('episode_number', episodeNumberInput.value);
+
+            try {
+                const response = await fetch(url.toString(), {
+                    method: 'GET', // As specified in the Python code
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Throw an error to be caught by the catch block
+                    throw new Error(data.detail || `API Error: ${response.status}`);
+                }
+                
+                showStatus(updateStatus, data.message || 'Successfully updated!', false);
+                updateForm.reset(); // Clear the form on success
+
+            } catch (error) {
+                console.error('Update Error:', error);
+                showStatus(updateStatus, error.message, true);
+            } finally {
+                updateBtn.disabled = false;
+                updateBtn.textContent = 'Update Watch History';
+            }
+        });
+
+        /**
+         * Handles the click of the "Fetch History" button.
+         */
+        fetchHistoryBtn.addEventListener('click', async () => {
+            hideStatus(fetchStatus);
+            historyContainer.innerHTML = '<p>Loading history...</p>';
+            fetchHistoryBtn.disabled = true;
+            fetchHistoryBtn.textContent = 'Fetching...';
+
+            const token = getAuthToken();
+            if (!token) {
+                showStatus(fetchStatus, 'Auth Key is required.', true);
+                historyContainer.innerHTML = '<p>Please provide an Auth Key first.</p>';
+                fetchHistoryBtn.disabled = false;
+                fetchHistoryBtn.textContent = 'Fetch My History';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || `API Error: ${response.status}`);
+                }
+                console.log('Fetched watch history:', data.watch_history_detailed);
+
+                renderWatchHistory(data.watch_history_detailed);
+
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                showStatus(fetchStatus, error.message, true);
+                historyContainer.innerHTML = `<p style="color: var(--error-color);">Failed to load history.</p>`;
+            } finally {
+                fetchHistoryBtn.disabled = false;
+                fetchHistoryBtn.textContent = 'Fetch My History';
+            }
+        });
+
+        /**
+         * Renders the fetched watch history data into the DOM.
+         * @param {object} historyData - The nested watch history object from the API.
+         */
+        function renderWatchHistory(historyData) {
+            historyContainer.innerHTML = ''; // Clear previous content
+
+            const showIds = Object.keys(historyData);
+            if (showIds.length === 0) {
+                historyContainer.innerHTML = '<p>No watch history found.</p>';
+                return;
+            }
+
+            // Sort shows by title for consistent ordering
+            showIds.sort((a, b) => historyData[a].title.localeCompare(historyData[b].title));
+
+            for (const showId of showIds) {
+                const show = historyData[showId];
+
+                const showDiv = document.createElement('div');
+                showDiv.className = 'show';
+                
+                const showTitle = document.createElement('h3');
+                showTitle.textContent = show.title;
+                showDiv.appendChild(showTitle);
+
+                // Sort seasons numerically
+                const seasonNumbers = Object.keys(show.seasons).sort((a, b) => a - b);
+
+                for (const seasonNum of seasonNumbers) {
+                    const season = show.seasons[seasonNum];
+
+                    const seasonDiv = document.createElement('div');
+                    seasonDiv.className = 'season';
+                    
+                    const seasonTitle = document.createElement('h4');
+                    seasonTitle.textContent = `Season ${seasonNum}`;
+                    seasonDiv.appendChild(seasonTitle);
+
+                    const episodeList = document.createElement('ul');
+                    episodeList.className = 'episode-list';
+                    
+                    // Sort episodes numerically
+                    const episodeNumbers = Object.keys(season.episodes).sort((a, b) => a - b);
+
+                    for (const episodeNum of episodeNumbers) {
+                        const timestamp = season.episodes[episodeNum];
+                        const watchedDate = new Date(timestamp).toLocaleString();
+
+                        const episodeItem = document.createElement('li');
+                        episodeItem.className = 'episode';
+                        episodeItem.innerHTML = `Episode ${episodeNum} <span class="episode-time">(Watched: ${watchedDate})</span>`;
+                        episodeList.appendChild(episodeItem);
+                    }
+                    
+                    seasonDiv.appendChild(episodeList);
+                    showDiv.appendChild(seasonDiv);
+                }
+                historyContainer.appendChild(showDiv);
+            }
         }
-        return one.srcId || '';
-      }
-
-      // Render servers (sub and dub)
-      async function renderServers(arr, label) {
-        if (!arr.length) return `<em>No “${label}” servers found.</em><br/>`;
-        let out = label === 'sub' ? `<strong>Sub servers:</strong><br/>` : `<br/><strong>Dub servers:</strong><br/>`;
-        for (let i = 0; i < arr.length; i++) {
-          const one = arr[i];
-          const link = await resolveServerLink(one);
-          console.log(`Server ${i + 1} (${label}):`, one, 'Link:', link);
-          out += `<a class="link" target="_blank" href="${link}">
-                    ${i + 1}. ${one.server}: <code>${link}</code>
-                  </a>`;
-        }
-        return out;
-      }
-
-      // Wait for all server links to resolve
-      const subHtml = await renderServers(subArr, 'sub');
-      const dubHtml = await renderServers(dubArr, 'dub');
-      html += subHtml + dubHtml;
-
-      logMessage(html);
-    }
-    catch (err) {
-      logMessage(`<span style="color:#f55;">Error: ${err.message}</span>`);
-      console.error(err);
-    }
-  });
-</script>
-
+    </script>
 
 </body>
 </html>

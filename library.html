@@ -112,6 +112,28 @@
             .player-iframe-box { aspect-ratio: 16/9; /* min-height: 180px; aspect-ratio handles this */ }
             .player-iframe-container { min-height: 40vh; }
         }
+
+        /* Continue Watching section styles */
+        #continueWatchingSection {
+            margin-top: 40px;
+        }
+        #continueWatchingContent {
+            margin-top: 1em;
+        }
+        .show {
+            margin-bottom: 1.5em;
+        }
+        .season {
+            margin-left: 1em;
+            margin-top: 0.5em;
+        }
+        .episode-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .episode {
+            margin: 0.2em 0;
+        }
     </style>
 </head>
 <body>
@@ -142,6 +164,10 @@
                 <div id="videoPlayerContainer" style="display: none;">
                     <!-- Iframe will be injected here by playVideo() -->
                 </div>
+
+                <!-- Continue Watching section -->
+                <section id="continueWatchingSection">
+                </section>
             </section>
         </main>
     </div>
@@ -597,10 +623,163 @@
             }
         }
 
+        // --- Watch History (Continue Watching) Section ---
+        const API_BASE_URL = 'https://arkm20-authapi.hf.space';
+
+        // Create the container for continue watching
+        const continueWatchingSection = document.createElement('section');
+        continueWatchingSection.id = 'continueWatchingSection';
+        continueWatchingSection.style.marginTop = '20px';
+        continueWatchingSection.innerHTML = `
+          <h2 style="margin-bottom: 1em;">Continue Watching</h2>
+          <div id="continueWatchingContent"><p>Loading your watch history...</p></div>
+        `;
+
+        // Insert after seriesListContainer
+        seriesListContainer.insertAdjacentElement('afterend', continueWatchingSection);
+
+
+        async function fetchJikanInfo(id) {
+        try {
+            const res = await fetch(`https://api.jikan.moe/v4/anime/${id}`);
+            if (!res.ok) throw new Error('Jikan fetch failed');
+            const json = await res.json();
+            const anime = json.data;
+            return {
+            title: anime.title_english || anime.title,
+            image: anime.images.jpg.image_url
+            };
+        } catch (err) {
+            console.error(`Error fetching Jikan info for ID ${id}:`, err);
+            return null;
+        }
+        }
+
+        async function renderWatchHistory(historyData) {
+        const container = document.getElementById('continueWatchingContent');
+        container.innerHTML = '';
+        if (!historyData || Object.keys(historyData).length === 0) {
+            container.innerHTML = '<p>No watch history found.</p>';
+            return;
+        }
+
+        // For each show in history, fetch Jikan info, then render
+        const showIds = Object.keys(historyData).sort((a, b) => {
+            const aTitle = historyData[a].title.toLowerCase();
+            const bTitle = historyData[b].title.toLowerCase();
+            return aTitle.localeCompare(bTitle);
+        });
+
+        for (const showId of showIds) {
+            const showMeta = historyData[showId];
+            const jikan = await fetchJikanInfo(showId);
+            if (!jikan) continue;
+
+            const showDiv = document.createElement('div');
+            showDiv.className = 'show';
+            showDiv.style.display = 'flex';
+            showDiv.style.alignItems = 'flex-start';
+            showDiv.style.marginBottom = '24px';
+            showDiv.style.cursor = 'pointer';
+
+            // Poster image
+            const img = document.createElement('img');
+            img.src = jikan.image;
+            img.alt = jikan.title;
+            img.style.width = '60px';
+            img.style.height = '80px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '8px';
+            img.style.marginRight = '16px';
+            showDiv.appendChild(img);
+
+            // Info container
+            const infoDiv = document.createElement('div');
+            infoDiv.style.flex = '1';
+
+            // Title & seasons
+            const title = document.createElement('div');
+            title.textContent = jikan.title;
+            title.style.fontWeight = 'bold';
+            title.style.fontSize = '1.1em';
+            infoDiv.appendChild(title);
+
+            // Seasons & episodes list
+            const seasonNumbers = Object.keys(showMeta.seasons).sort((a, b) => a - b);
+            seasonNumbers.forEach(seasonNum => {
+                const season = showMeta.seasons[seasonNum];
+                const seasonTitle = document.createElement('div');
+                seasonTitle.style.marginTop = '8px';
+                seasonTitle.style.fontSize = '0.95em';
+                seasonTitle.style.color = '#555';
+                infoDiv.appendChild(seasonTitle);
+
+                const episodeList = document.createElement('ul');
+                episodeList.style.listStyle = 'none';
+                episodeList.style.padding = '4px 0';
+
+                Object.keys(season.episodes).sort((a, b) => a - b).forEach(epNum => {
+                    const ts = season.episodes[epNum];
+                    const watchedDate = new Date(ts).toLocaleString();
+                    const li = document.createElement('li');
+                    li.textContent = `Ep ${epNum} `;
+                    const span = document.createElement('span');
+                    span.textContent = `(Watched: ${watchedDate})`;
+                    span.style.fontSize = '0.85em';
+                    span.style.color = '#888';
+                    li.appendChild(span);
+                    episodeList.appendChild(li);
+                });
+                infoDiv.appendChild(episodeList);
+            });
+
+            showDiv.appendChild(infoDiv);
+            showDiv.addEventListener('click', () => {
+                window.location.href = `series-info.html?library=true&id=${encodeURIComponent(showId)}`;
+            });
+            container.appendChild(showDiv);
+        }
+
+        
+        }
+
+        async function fetchAndRenderWatchHistory() {
+            const container = document.getElementById('continueWatchingContent');
+            container.innerHTML = '<p>Loading your watch history...</p>';
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                container.innerHTML = '<p>Please log in to see your watch history.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/me`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('API Error');
+                const data = await response.json();
+                renderWatchHistory(data.watch_history_detailed);
+            } catch (e) {
+                container.innerHTML = '<p>Unable to retrieve your Watch History.</p>';
+            }
+        }
+
+        // Override series list render to include watch history after initial load
+        const originalDisplaySeriesList = displaySeriesList;
+        displaySeriesList = function() {
+        originalDisplaySeriesList.apply(this, arguments);
+        fetchAndRenderWatchHistory();
+        };
+
+        // Optionally, call fetchAndDisplayJikanList() on load instead of local import
+        // fetchAndDisplayJikanList();
+
         // --- Initial Load Logic ---
         document.addEventListener('DOMContentLoaded', () => {
             showView('series'); // Set initial view state
             tryAutoImportOnLoad();
+            fetchAndRenderWatchHistory();
         });
 
     </script>

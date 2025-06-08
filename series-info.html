@@ -78,14 +78,19 @@
             const urlParams = new URLSearchParams(window.location.search);
             const isAnime = urlParams.get('anime') === 'true';
             const isManga = urlParams.get('manga') === 'true';
+            const isLibrary = urlParams.get('library') === 'true';
             const type = isManga ? 'manga' : 'anime';
             const API_BASE_URL = 'https://arkm20-authapi.hf.space';
             let currentSeriesTitle = '';
             const backButton = document.getElementById('back-button');
             if (backButton) {
-                backButton.style.display = (isAnime || isManga) ? '' : 'none';
+                backButton.style.display = (isAnime || isManga || isLibrary) ? '' : 'none';
                 backButton.addEventListener('click', () => {
-                    window.location.href = isManga ? 'manga.html' : 'anime.html';
+                    if (isLibrary === true) {
+                        window.location.href = 'library.html';
+                    } else {
+                        window.location.href = isManga ? 'manga.html' : 'anime.html';
+                    }
                 });
             }
             // ****** END: BACK BUTTON LOGIC ******
@@ -181,7 +186,66 @@
                 }
             }
 
-            async function updateWatchHistory(showId, showTitle, seasonNumber, episodeNumber) {
+            /**
+ * Sends a request to the API to mark an episode as watched.
+ * This is a standalone async function that can be used in any JS environment.
+ *
+ * @param {string} apiBaseUrl - The base URL of the API (e.g., 'https://arkm20-authapi.hf.space').
+ * @param {string} authToken - The user's JWT Bearer token.
+ * @param {object} episodeDetails - An object containing the details of the episode.
+ * @param {string} episodeDetails.showId - The unique ID of the show (e.g., 'tmdb-85271').
+ * @param {string} episodeDetails.showTitle - The title of the show (e.g., 'The Mandalorian').
+ * @param {number} episodeDetails.seasonNumber - The season number.
+ * @param {number} episodeDetails.episodeNumber - The episode number.
+ * @returns {Promise<object>} A promise that resolves with the success response object from the API (e.g., { message: "Watch history updated." }).
+ * @throws {Error} Throws an error if the request fails, with a descriptive message from the API or a generic network error.
+ */
+        async function updateWatchHistory(showId, showTitle, seasonNumber, episodeNumber) {
+            const authToken = localStorage.getItem('accessToken');
+            const apiBaseUrl = 'https://arkm20-authapi.hf.space';
+            // --- 2. Construct the URL with Query Parameters ---
+            // The URLSearchParams object automatically handles encoding special characters in values.
+            const url = new URL(`${apiBaseUrl}/users/me/watch-history`);
+            url.searchParams.append('show_id', showId);
+            url.searchParams.append('show_title', showTitle);
+            url.searchParams.append('season_number', seasonNumber);
+            url.searchParams.append('episode_number', episodeNumber);
+
+            // --- 3. Make the API call within a try...catch block ---
+            try {
+                const response = await fetch(url.toString(), {
+                    method: 'GET', // As defined in the FastAPI backend
+                    headers: {
+                        // The API requires a Bearer token for authentication
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                // Parse the JSON response body. This is important for both success and error cases.
+                const data = await response.json();
+
+                // --- 4. Handle the Response ---
+                if (!response.ok) {
+                    // If response is not successful (e.g., 401, 404, 500), throw an error.
+                    // FastAPI typically returns errors in a 'detail' field.
+                    const errorMessage = data.detail || `API Error: ${response.status} ${response.statusText}`;
+                    throw new Error(errorMessage);
+                }
+                console.log(data)
+                
+                // If the request was successful, return the data.
+                return data;
+
+            } catch (error) {
+                // This block will catch both network errors (from fetch failing) and the error
+                // we explicitly threw above for bad HTTP statuses.
+                console.error("Error in updateWatchHistory:", error.message);
+                // Re-throw the error so the calling code knows the operation failed.
+                throw error;
+            }
+        }
+
+            /*async function updateWatchHistory(showId, showTitle, seasonNumber, episodeNumber) {
                 // Check for the access token in localStorage
                 const token = localStorage.getItem('accessToken');
 
@@ -279,7 +343,7 @@
                 } catch (error) {
                     console.error("Network error while updating watch history:", error);
                 }
-            }
+            }*/
 
             function displayAnimeDetails(anime) {
                 if (!anime) return;
