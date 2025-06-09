@@ -536,12 +536,17 @@
             importFolderButton.style.display = 'none';
             statusMessage.style.display = 'none';
 
+            // Hide Continue Watching section by default
+            continueWatchingSection.style.display = 'none';
+
             if (viewName === 'series') {
                 currentViewTitle.textContent = 'Downloads (Series)';
                 seriesListContainer.style.display = 'flex';
                 navigationHeader.style.display = 'none';
                 importFolderButton.style.display = 'block';
                 statusMessage.style.display = 'block';
+                // Show Continue Watching only on main series view
+                continueWatchingSection.style.display = 'block';
             } else if (viewName === 'episodes') {
                 currentViewTitle.textContent = title || 'Episodes';
                 episodeListContainer.style.display = 'flex';
@@ -769,7 +774,6 @@
         const originalDisplaySeriesList = displaySeriesList;
         displaySeriesList = function() {
         originalDisplaySeriesList.apply(this, arguments);
-        fetchAndRenderWatchHistory();
         };
 
         // Optionally, call fetchAndDisplayJikanList() on load instead of local import

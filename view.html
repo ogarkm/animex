@@ -64,10 +64,11 @@
       left: 0;
       right: 0;
       bottom: 120px; /* leave space for the info bar */
-      background: #000;
+      background: #000000;
       display: flex;
       align-items: center;
       justify-content: center;
+      max-height: 300px;
     }
     #player-container iframe {
       width: 100%;
@@ -310,8 +311,44 @@
         playerContainer.appendChild(iframe);
       }
 
+      // --- Watch History Update Logic ---
+    async function updateWatchHistory(showId, showTitle, episodeNumber) {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        console.log("User not logged in. Skipping watch history update.");
+        return;
+      }
+      try {
+        const params = new URLSearchParams({
+            show_id: String(showId),
+            show_title: String(showTitle),
+            season_number: 1,
+            episode_number: Number(episodeNumber)
+        });
+
+        const url = `https://arkm20-authapi.hf.space/users/me/watch-history?${params.toString()}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (response.ok) {
+          console.log("Watch history updated successfully.");
+        } else {
+          const result = await response.json().catch(() => ({}));
+          console.warn("Failed to update watch history:", result.message || response.status);
+        }
+      } catch (error) {
+        console.error("Network error while updating watch history:", error);
+      }
+    }
+
       // 5) Initial load (SUB by default)
       await loadIframe(false);
+      // Update watch history after loading the episode
+      updateWatchHistory(jikanId, title, episode);
 
       // 6) Back button logic
       document.getElementById('back-button').addEventListener('click', () => {
@@ -325,6 +362,7 @@
           subOptionBtn.classList.add('active');
           dubOptionBtn.classList.remove('active');
           await loadIframe(false);
+          updateWatchHistory(jikanId, title, episode);
         }
       });
       dubOptionBtn.addEventListener('click', async () => {
@@ -332,6 +370,7 @@
           dubOptionBtn.classList.add('active');
           subOptionBtn.classList.remove('active');
           await loadIframe(true);
+          updateWatchHistory(jikanId, title, episode);
         }
       });
     });
