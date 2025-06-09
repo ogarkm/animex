@@ -88,9 +88,13 @@ body {
 }
 
 .series-details-section {
-    background-color: transparent; /* Details section blends more with page */
+    background: rgba(58, 58, 60, 0.5); /* Semi-transparent background */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* For Safari */
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
     padding: 20px 0; /* Padding top/bottom, no side padding as main-content has it */
-    border-radius: 0; /* No distinct box unless desired */
     margin-bottom: 30px;
 }
 
@@ -166,16 +170,20 @@ body {
 .episode-item {
     display: flex;
     align-items: center;
-    background-color: #222;
+    background: rgba(58, 58, 60, 0.5); /* Semi-transparent background */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* For Safari */
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
     padding: 12px 15px;
     margin-bottom: 8px;
     padding-right: 30px;
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
+    transition: background 0.3s ease;
 }
 
 .episode-item:hover {
-    background-color: var(--border-color);
+    background: rgba(58, 58, 60, 0.7);
 }
 
 .episode-number {

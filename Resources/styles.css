@@ -1,13 +1,14 @@
 :root {
     --bg-dark: #1C1C1E;
-    --bg-content-area: #2C2C2E;
+    --bg-content-area: #1C1C1E; /* Changed to match body for seamless hero transition */
     --bg-content-elements: #3A3A3C;
     --text-primary: #FFFFFF;
     --text-secondary: #EBEBF599;
     --text-tertiary: #8A8A8E;
-    --accent-color-active: #FF9500; /* Or your specific orange like #E7753B */
+    --accent-color-active: #FF9500;
     --border-color: #38383A;
     --button-bg: #4A4A4F;
+    --button-secondary-bg: rgba(74, 74, 79, 0.7); /* Added for secondary button */
 }
 
 * {
@@ -33,6 +34,7 @@ body {
     overflow-y: auto;
 }
 
+/* === NETFLIX-INSPIRED HERO SECTION START === */
 .hero-section {
     height: 300px;
     background-size: cover;
@@ -99,10 +101,11 @@ body {
 }
 
 .continue-button {
-    background-color: var(--button-bg);
+    background-color: rgba(0, 0, 0, 0.3);
     color: var(--text-primary);
     border: none;
     padding: 8px 15px;
+    backdrop-filter: blur(10px);
     border-radius: 20px;
     font-size: 0.9em;
     font-weight: 500;
@@ -116,26 +119,23 @@ body {
     font-size: 0.8em;
 }
 
+
+/* === NETFLIX-INSPIRED HERO SECTION END === */
+
+
 .main-content {
     flex-grow: 1;
     background-color: var(--bg-content-area);
     padding: 20px;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    margin-top: -20px;
+    /* Removed negative margin and border-radius for seamless hero transition */
     position: relative;
-    z-index: 3;
+    z-index: 2; /* Lower z-index than old hero content */
 }
 
 .main-content.no-hero {
     margin-top: 0;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
-    /* The background of the content area is different from the body.
-       So it should still look distinct, even without the hero overlap.
-       If the body and main-content were the same color, you might remove top padding.
-       But here, the padding defines the start of the content inside this colored box.
-    */
 }
 
 
@@ -151,18 +151,33 @@ body {
     gap: 15px;
 }
 
+/* === GLASSMORPHISM EFFECT ON LIST ITEMS START === */
 .list-item {
-    background-color: var(--bg-dark);
-    padding: 15px;
+    /* 1. Frosted Glass Background */
+    background: rgba(58, 58, 60, 0.5); /* Semi-transparent background */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* For Safari */
+
+    /* 2. Defined Edges */
     border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    /* 3. Lifted Effect */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+
+    /* Original styles */
+    padding: 15px;
     display: flex;
     align-items: center;
     gap: 15px;
     cursor: pointer;
+    transition: background 0.3s ease;
 }
-.list-item.card-style {
-     background-color: var(--bg-content-elements);
+
+.list-item:hover {
+    background: rgba(58, 58, 60, 0.7);
 }
+
 
 .item-thumbnail img {
     width: 60px;
@@ -207,6 +222,8 @@ body {
     color: var(--text-tertiary);
     font-size: 1em;
 }
+
+/* (The rest of your CSS remains unchanged) */
 
 .search-bar-container {
     display: flex;
