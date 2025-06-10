@@ -42,7 +42,7 @@ body {
     position: relative; /* For the overlay */
 
     display: flex; /* CORE FIX: Enables flexbox */
-    align-items: flex-end; /* Works now: Aligns content (hero-content) to the bottom */
+    align-items: center; /* Works now: Aligns content (hero-content) to the bottom */
     justify-content: center; /* ADDED: Centers content horizontally. Use 'flex-start' for left alignment. */
 
     /* NEW Suggested Padding: (Adjust L/R and Bottom values as needed) */
@@ -69,7 +69,11 @@ body {
     z-index: 2; /* Ensures it's above the .hero-overlay */
     max-width: 60%; /* Adjusted from 50%. Change as needed for your title length. */
     /* text-align: center; /* If you want the block itself to center its inline/text content */
-    margin-bottom: 140px;
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px); /* Adds a glass effect */
+    padding: 10px 20px; /* Added padding for better spacing */
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .series-title-text {
@@ -132,16 +136,21 @@ body {
 .series-genres, .series-studios, .series-producers {
     margin-bottom: 15px;
     font-size: 0.9em;
+    margin-top: 20px;
 }
 .series-genres strong, .series-studios strong, .series-producers strong {
     color: #fff;
     display: block;
     margin-bottom: 8px;
+    border-radius: 20px;
+    padding: 6px 10px;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .series-genres span, .series-studios span, .series-producers span {
     display: inline-block;
-    background-color: #333;
+    background-color: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
     padding: 5px 10px;
     border-radius: 15px; /* Pill shape */
     margin-right: 8px;

@@ -11,230 +11,375 @@
     <!-- Assuming a local styles.css file for dark mode etc. If not, the toggle will work but not change appearance -->
     <link rel="stylesheet" href="Resources/styles.css">
     <style>
-        :root {
-            --background-primary: #121212;
-            --background-light: #1e1e1e;
-            --text-primary: #f1f1f1;
-            --text-secondary: #aaa;
-            --border-color: #333;
-        }
-        /* Basic styles to make it standalone */
-        body { font-family: 'Inter', sans-serif; background-color: var(--background-primary); color: var(--text-primary); margin: 0; }
-        .app-container { max-width: 600px; margin: auto; padding: 15px; }
-        .main-content { padding-top: 20px; }
-        .settings-section { display: flex; flex-direction: column; gap: 20px; }
-        .settings-user-profile { text-align: center; }
-        .settings-user-profile img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); }
-        .settings-user-profile label { cursor: pointer; font-size: 0.8em; color: var(--text-secondary); display: block; text-align: center; margin-top: 5px; }
-        .username { font-weight: 600; font-size: 1.2em; margin-top: 10px; display: block; }
-        .settings-group { border: 1px solid var(--border-color); border-radius: 12px; padding: 30px 15px 15px 15px; }
-        .section-title { font-size: 1.1em; color: var(--text-primary); margin-bottom: 10px; padding-top: 15px; }
-        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
-        .settings-item:last-child { border-bottom: none; }
-        .settings-item span { font-weight: 500; }
-        .settings-item i { color: var(--text-secondary); }
-        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #2196F3; }
-        input:checked + .slider:before { transform: translateX(20px); }
-        .guestp { font-size: 0.9em; color: var(--text-secondary); margin: 20px 0; }
-        #watchHistoryContainer { margin-top: 10px; padding: 0; background-color: transparent; }
-        #watchHistoryContainer h4 { margin-top: 0; color: var(--text-primary); }
-        #watchHistoryContainer ul { list-style: none; padding-left: 0; }
-        #watchHistoryContainer li { padding: 5px 0; color: var(--text-secondary); }
-        #logoutButton { background-color: #d9534f; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 500; width: 100%; margin-top: 15px; }
-        #logoutButton:hover { background-color: #c9302c; }
-        .login-prompt button { background-color: #007bff; color: white; padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 1em; }
-        #showLoginBtn {background-color: #d9534f; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 500; width: 100%; margin-top: 15px; margin-bottom: 20px;}
-        /* --- Dark Mode --- */
-        body.dark-mode-active {
-            --background-primary: #fff;
-            --background-light: #f4f4f4;
-            --text-primary: #111;
-            --text-secondary: #666;
-            --border-color: #eee;
-        }
+        /*
+    MODERNIZED UI - KEY CHANGES:
+    - Refined color palette for a more premium, modern feel.
+    - Softer dark mode using off-black and grey tones instead of pure black.
+    - Enhanced visual hierarchy with better spacing, typography, and sectioning.
+    - Replaced harsh borders with background contrast and subtle shadows.
+    - Added smooth transitions and interactive feedback on all clickable elements.
+    - Standardized styling using CSS variables for border-radius, etc.
+    - Redesigned buttons for a cleaner look (e.g., destructive action is less jarring).
+    - Improved light mode to feel as polished as the dark mode.
+*/
 
-        /* --- Login Iframe Modal --- */
-        #loginModal {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: none; /* Hidden by default */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background-color: var(--background-primary);
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            position: relative;
-        }
-        #closeModalBtn {
-            position: absolute;
-            top: 10px; right: 15px;
-            font-size: 1.5em;
-            font-weight: bold;
-            color: var(--text-secondary);
-            cursor: pointer;
-            border: none;
-            background: none;
-        }
-        #loginFrame {
-            width: 100%;
-            height: 500px;
-            border: none;
-            border-radius: 8px;
-        }
+:root {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-        /* --- Responsive & Improved Styles --- */
-        html {
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        *, *:before, *:after {
-            box-sizing: inherit;
-        }
-        .app-container {
-            max-width: 600px;
-            margin: auto;
-            padding: 15px 8px;
-        }
-        @media (max-width: 600px) {
-            .app-container {
-                max-width: 100vw;
-                padding: 8px 2vw;
-            }
-            .modal-content {
-                width: 98vw;
-                max-width: 98vw;
-                padding: 10px 4vw;
-            }
-            #loginFrame {
-                height: 60vh;
-            }
-            .settings-user-profile img {
-                width: 64px;
-                height: 64px;
-            }
-            .settings-group {
-                padding: 0 6vw 12px 6vw;
-            }
-            .section-title {
-                font-size: 1em;
-                padding-top: 10px;
-            }
-            .settings-item {
-                padding: 10px 0;
-            }
-            #logoutButton, .login-prompt button {
-                font-size: 1em;
-                padding: 10px 0;
-            }
-        }
-        .settings-section {
-            gap: 16px;
-        }
-        .settings-group {
-            background: var(--background-light);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            margin-bottom: 8px;
-            transition: box-shadow 0.2s;
-        }
-        .settings-group:active, .settings-group:focus-within {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.07);
-        }
-        .settings-user-profile img {
-            transition: box-shadow 0.2s, border-color 0.2s;
-        }
-        .settings-user-profile img:hover {
-            box-shadow: 0 2px 12px rgba(33,150,243,0.12);
-            border-color: #2196F3;
-        }
-        .settings-user-profile label {
-            margin-top: 8px;
-            font-size: 0.9em;
-            color: var(--text-secondary);
-            transition: color 0.2s;
-        }
-        .settings-user-profile label:hover {
-            color: #2196F3;
-        }
-        .username {
-            margin-top: 12px;
-            font-size: 1.15em;
-            letter-spacing: 0.01em;
-        }
-        .settings-item {
-            min-height: 44px;
-            font-size: 1em;
-            border-radius: 6px;
-            transition: background 0.15s;
-        }
-        .settings-item:active {
-            background: rgba(33,150,243,0.07);
-        }
-        .settings-item span {
-            font-weight: 500;
-            font-size: 1em;
-        }
-        .toggle-switch {
-            width: 48px;
-            height: 26px;
-        }
-        .slider {
-            background-color: #bbb;
-        }
-        input:checked + .slider {
-            background-color: #2196F3;
-        }
-        .slider:before {
-            height: 20px;
-            width: 20px;
-            left: 3px;
-            bottom: 3px;
-        }
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
-        #logoutButton, .login-prompt button {
-            border-radius: 10px;
-            font-size: 1.08em;
-            padding: 12px 0;
-            margin-top: 12px;
-            transition: background 0.2s;
-        }
-        #logoutButton:active, .login-prompt button:active {
-            background-color: #b52a27;
-        }
-        #watchHistoryContainer ul {
-            font-size: 0.98em;
-        }
-        #watchHistoryContainer li {
-            padding: 4px 0;
-        }
-        /* Modal close button larger touch area */
-        #closeModalBtn {
-            padding: 8px 12px;
-            top: 4px;
-            right: 8px;
-        }
-        /* Make icons a bit larger for touch */
-        .settings-item i {
-            font-size: 1.2em;
-        }
-        /* Prevent horizontal scroll */
-        body, html {
-            max-width: 100vw;
-            overflow-x: hidden;
-        }
+    /* Color Palette (Dark Mode - Default) */
+    --background-primary: #18181b;      /* Softer, off-black */
+    --background-secondary: #27272a;    /* Grey for cards/groups */
+    --background-tertiary-hover: #3f3f46;/* Subtle hover background */
+
+    --foreground-primary: #f4f4f5;      /* Off-white text for readability */
+    --foreground-secondary: #a1a1aa;    /* Lighter grey for secondary text */
+    --foreground-tertiary: #71717a;
+
+    --border-color: #3f3f46;            /* Softer border color */
+
+    --accent-primary: #6366f1;          /* Modern indigo accent */
+    --accent-primary-hover: #4f46e5;
+
+    --destructive: #ef4444;             /* A brighter, modern red */
+    --destructive-hover: #dc2626;
+
+    /* Sizing & Radius */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 24px;
+}
+
+/* --- Light Mode --- */
+body[data-theme="light"] {
+    --background-primary: #f4f4f5;
+    --background-secondary: #ffffff;
+    --background-tertiary-hover: #e4e4e7;
+
+    --foreground-primary: #18181b;
+    --foreground-secondary: #71717a;
+    --foreground-tertiary: #a1a1aa;
+
+    --border-color: #e4e4e7;
+}
+
+
+/* --- Base & Globals --- */
+html {
+    box-sizing: border-box;
+    font-size: 16px;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+body, html {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+body {
+    font-family: var(--font-sans);
+    background-color: var(--background-primary);
+    color: var(--foreground-primary);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* --- Layout --- */
+.app-container {
+    max-width: 600px;
+    margin-top: 3em;
+    align-items: center;
+}
+.main-content {
+    padding-top: 1.5rem;
+    width: 100%;
+}
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem; /* Increased spacing between major sections */
+}
+
+/* --- User Profile Section --- */
+.settings-user-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 40px; /* Keep your existing padding */
+
+    /* Define multiple background layers, ordered from top to bottom */
+    background-image:
+        linear-gradient(to top, black, transparent), /* 1. Vertical fade: black at bottom, transparent at top */
+        url("https://cdn.i.haymarketmedia.asia/?n=campaign-asia%2Fcontent%2F20240719041444_Untitled+design+(12).png&h=570&w=855&q=100&v=20250320&c=1"); /* 3. Your image */
+
+    /* Configure size for each layer (matching the order above) */
+    background-size:
+        auto 100%, /* Fade gradient covers the whole container */
+        99% auto;  /* Image: auto width, 50% height of container (adjust 50% as needed for desired size)
+                      * Alternatively, use '50% auto' for 50% width, auto height.
+                      * Or use 'contain' to scale down while showing the whole image. */
+
+    /* Configure position for each layer (matching the order above) */
+    background-position:
+        0 0,      /* Fade gradient starts at top-left (covers the whole area) */
+        center;   /* Image is centered horizontally and vertically */
+
+    /* Configure repeat behavior for each layer (matching the order above) */
+    background-repeat:
+        no-repeat, /* Gradients typically don't repeat, but good to be explicit */
+        no-repeat; /* Image: do not repeat the smaller image */
+
+    /* You can add a fallback background-color in case the image doesn't load */
+    background-color: #000000;
+}
+.settings-user-profile img {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.settings-user-profile img:hover {
+    transform: scale(1.05);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 25px rgba(var(--accent-primary-rgb, 99, 102, 241), 0.3);
+}
+.settings-user-profile label {
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--foreground-secondary);
+    transition: color 0.2s ease;
+}
+.settings-user-profile label:hover {
+    color: var(--accent-primary);
+}
+.username {
+    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+}
+
+/* --- Settings Grouping --- */
+.section-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--foreground-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 0.5rem;
+    margin-bottom: 0.75rem;
+    margin-top: 0.5em;
+}
+.settings-group {
+    background-color: var(--background-secondary);
+    border-radius: var(--radius-md);
+    padding: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    /* No border needed, contrast is enough */
+}
+
+/* --- Settings Item --- */
+.settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 52px;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm); /* Rounded corners for each item */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    /* No bottom border for a cleaner list */
+}
+.settings-item:hover {
+    background-color: var(--background-tertiary-hover);
+}
+.settings-item span {
+    font-weight: 500;
+    font-size: 1rem;
+}
+.settings-item i {
+    color: var(--foreground-secondary);
+    font-size: 1.25rem; /* Slightly larger icons */
+}
+
+/* --- Toggle Switch --- */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 28px;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: var(--border-color);
+    transition: background-color .3s ease;
+    border-radius: 34px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: transform .3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+input:checked + .slider {
+    background-color: var(--accent-primary);
+}
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* --- Buttons & Prompts --- */
+#logoutButton, #showLoginBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+#logoutButton {
+    background-color: transparent;
+    color: var(--destructive);
+}
+#logoutButton:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--destructive-hover);
+}
+
+#showLoginBtn, .login-prompt button {
+    background-color: var(--accent-primary);
+    color: white;
+}
+#showLoginBtn:hover, .login-prompt button:hover {
+    background-color: var(--accent-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.guestp {
+    font-size: 0.9rem;
+    color: var(--foreground-secondary);
+    text-align: center;
+    margin: 2rem 0;
+    line-height: 1.5;
+}
+
+/* --- Watch History --- */
+#watchHistoryContainer {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: var(--background-secondary);
+    border-radius: var(--radius-md);
+}
+#watchHistoryContainer h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--foreground-primary);
+}
+#watchHistoryContainer ul {
+    list-style: none;
+    padding-left: 0;
+    font-size: 0.95rem;
+}
+#watchHistoryContainer li {
+    padding: 0.5rem 0;
+    color: var(--foreground-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+#watchHistoryContainer li:last-child {
+    border-bottom: none;
+}
+
+/* --- Login Iframe Modal --- */
+#loginModal {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px); /* Modern frosted glass effect */
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal-content {
+    background-color: var(--background-secondary);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative;
+    border: 1px solid var(--border-color);
+}
+#closeModalBtn {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    font-size: 1.5rem;
+    font-weight: normal;
+    color: var(--foreground-secondary);
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0.5rem;
+    line-height: 1;
+    border-radius: 50%;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+#closeModalBtn:hover {
+    color: var(--foreground-primary);
+    background-color: var(--background-tertiary-hover);
+}
+#loginFrame {
+    width: 100%;
+    height: 550px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+}
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 600px) {
+    .app-container {
+        margin: 1rem auto;
+        padding: 0 0.5rem;
+    }
+    .settings-user-profile img {
+        width: 80px;
+        height: 80px;
+    }
+    .username {
+        font-size: 1.25rem;
+    }
+    .modal-content {
+        width: 95vw;
+        padding: 1rem;
+    }
+    #loginFrame {
+        height: 70vh;
+    }
+}
     </style>
 </head>
 <body>

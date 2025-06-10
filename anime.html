@@ -53,10 +53,15 @@
             width: 160px; /* Width of the poster card */
             cursor: pointer;
             transition: transform 0.2s ease-in-out;
+            background-color: rgba(0, 0, 0, 0.2); /* Slightly transparent background */
+            padding: 10px;
+            backdrop-filter: blur(5px); /* Adds a blur effect to the background */
+            border-radius: 10px;
         }
 
-        .poster-card:hover {
-            transform: scale(1.05);
+        .poster-card img:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
         }
 
         .poster-card img {
