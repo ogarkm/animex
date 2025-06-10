@@ -69,22 +69,22 @@ body {
     z-index: 2; /* Ensures it's above the .hero-overlay */
     max-width: 60%; /* Adjusted from 50%. Change as needed for your title length. */
     /* text-align: center; /* If you want the block itself to center its inline/text content */
+    margin-bottom: 140px;
 }
 
 .series-title-text {
     font-size: clamp(2rem, 4.5vw, 3.5rem); /* Min, Preferred (scalable), Max */
     font-weight: 700;
-    color: var(--text-primary); /* Use CSS variable */
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Adjusted shadow for legibility */
+    color: rgba(var(--text-primary), 0.4); /* Use CSS variable */
+    /*text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Adjusted shadow for legibility */
     margin: 0; /* Reset margin, flex parent handles block positioning */
     text-align: center; /* Centers text within this element */
     line-height: 1.2; /* Improved readability */
-    padding-bottom: 140px;
 }
 
 /* Main Content Area */
 .series-main-content {
-    padding: 20px 40px; /* More horizontal padding */
+    padding: 20px 20px; /* More horizontal padding */
 }
 
 .series-details-section {
@@ -94,7 +94,7 @@ body {
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-    padding: 20px 0; /* Padding top/bottom, no side padding as main-content has it */
+    padding: 20px 20px; /* Padding top/bottom, no side padding as main-content has it */
     margin-bottom: 30px;
 }
 
