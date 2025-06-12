@@ -23,7 +23,32 @@ const PRECACHE_URLS = [
   '/series-info.html',
   '/view.html',
   '/pdf.html',
-  '/Launch.html'
+  '/Launch.html',
+  // External links (deduplicated)
+  'https://fonts.googleapis.com',
+  'https://fonts.gstatic.com',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+  'https://arkm20-authapi.hf.space',
+  'https://cdn.myanimelist.net/images/anime/1463/145502l.jpg',
+  'https://cdn.myanimelist.net/images/anime/1448/147351.jpg',
+  'https://cdn.myanimelist.net/images/anime/1770/97704l.jpg',
+  'https://cdn.myanimelist.net/images/manga/2/253146.jpg',
+  'https://placehold.co/60x80/555/fff?text=N/A',
+  'https://placehold.co/60x80/444/fff?text=N/A',
+  'https://placehold.co/140x200/444/fff?text=N/A',
+  'https://cdn.i.haymarketmedia.asia/?n=campaign-asia%2Fcontent%2F20240719041444_Untitled+design+(12).png&h=570&w=855&q=100&v=20250320&c=1',
+  'https://placehold.co/80/cccccc/fff?text=?',
+  'https://placehold.co/80/cc0000/fff?text=${initial}',
+  'https://placehold.co/60x80/444/fff?text=${encodeURIComponent(seriesName.substring(0,3))}',
+  'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js',
+  'https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js',
+  'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+  'https://arkm20-authapi.hf.space/users/me/watch-history?${params.toString()}',
+  'https://placehold.co/1200x700/1A2B3C/FFF?text=No+Image+Available',
+  'https://arkm20-animex-player-api.hf.space',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
 ];
 
 // Install: cache critical assets
