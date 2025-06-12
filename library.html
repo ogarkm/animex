@@ -24,6 +24,9 @@
             font-size: 1em;
             font-weight: 500;
             cursor: pointer;
+            backdrop-filter: blur(8px);
+            background: rgba(60, 60, 80, 0.65);
+            box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
         }
         .import-button:hover {
             opacity: 0.9;
@@ -34,11 +37,21 @@
         .status-message {
             color: var(--text-secondary);
             margin-top: 10px;
+            backdrop-filter: blur(4px);
+            background: rgba(32, 32, 33, 0.35);
+            border-radius: 8px;
+            padding: 6px 12px;
+            display: inline-block;
         }
         .navigation-header {
             display: flex;
             align-items: center;
             margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            background: rgba(40, 40, 60, 0.55);
+            border-radius: 14px;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.10);
+            padding: 8px 18px;
         }
         .back-button {
             background: none;
@@ -66,33 +79,35 @@
             width: 100%;
             min-height: 60vh; /* Give it some minimum height */
             padding: 0; /* Takes full width of its parent */
+            backdrop-filter: blur(16px);
+            background: rgba(39, 39, 42, 0.4);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.18);
         }
         .player-header {
             width: 100%; /* Full width of the player container */
             padding: 16px 0 8px 0;
             text-align: center;
-            background-color: var(--bg-content-elements, #3A3A3C); /* Use theme color */
+            background-color: var(--bg-content-elements, rgba(58,58,60,0.70));
             color: var(--text-primary, #fff);
             font-size: 1.2em;
             font-weight: 600;
             letter-spacing: 0.5px;
-            /* Rounded corners only if not edge-to-edge */
-            /* border-top-left-radius: 18px; */
-            /* border-top-right-radius: 18px; */
-            /* box-shadow: 0 2px 8px rgba(0,0,0,0.12); */
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+            backdrop-filter: blur(8px);
         }
         .player-iframe-box { /* Box that holds the iframe itself */
             width: 100%; /* Take full width of player-iframe-container */
-            /* max-width: 900px; Let parent control max-width */
             aspect-ratio: 16/9;
-            background: #000;
-            /* border-radius: 18px; Removed for edge-to-edge possibility */
-            /* box-shadow: 0 8px 32px rgba(0,0,0,0.28); */
+            background: rgba(0,0,0,0.75);
             overflow: hidden;
-            /* margin: 0 auto; Centering handled by parent */
             display: flex;
             align-items: center;
             justify-content: center;
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            backdrop-filter: blur(6px);
         }
         .player-iframe-box iframe {
             width: 100%;
@@ -102,6 +117,23 @@
             display: block;
         }
 
+        /* Glassmorphism for list items */
+        .list-item {
+            background: rgba(44, 44, 60, 0.45);
+            border-radius: 14px;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.10);
+            backdrop-filter: blur(8px);
+            margin-bottom: 14px;
+            transition: background 0.2s;
+        }
+        .list-item:hover {
+            background: rgba(60, 60, 80, 0.60);
+        }
+        .item-thumbnail img {
+            border-radius: 8px;
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+        }
+
         /* Media queries for iframe player structure */
         @media (max-width: 900px) { /* Example breakpoint */
             /* .player-iframe-box { max-width: 100vw; border-radius: 0; } */
@@ -109,19 +141,32 @@
         }
         @media (max-width: 600px) {
             .player-header { font-size: 1em; padding: 10px 0 6px 0; }
-            .player-iframe-box { aspect-ratio: 16/9; /* min-height: 180px; aspect-ratio handles this */ }
-            .player-iframe-container { min-height: 40vh; }
+            .player-iframe-box { aspect-ratio: 16/9; }
+            .player-iframe-container { min-height: 40vh; border-radius: 10px; }
+            .list-item { border-radius: 8px; }
         }
 
         /* Continue Watching section styles */
         #continueWatchingSection {
             margin-top: 40px;
+            background: rgba(44, 44, 60, 0.35);
+            border-radius: 16px;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.08);
+            padding: 18px 12px;
         }
         #continueWatchingContent {
             margin-top: 1em;
         }
         .show {
             margin-bottom: 1.5em;
+            background: rgba(60, 60, 80, 0.30);
+            border-radius: 10px;
+            padding: 10px 8px;
+            display: flex;
+            align-items: flex-start;
+            box-shadow: 0 1px 6px 0 rgba(0,0,0,0.06);
+            backdrop-filter: blur(4px);
         }
         .season {
             margin-left: 1em;
@@ -166,8 +211,6 @@
                 </div>
 
                 <!-- Continue Watching section -->
-                <section id="continueWatchingSection">
-                </section>
             </section>
         </main>
     </div>
@@ -337,7 +380,7 @@
         function processFiles(filesArray) { // filesArray is an array of File objects
             seriesData = {}; // Reset
             const posterRegex = /\/(poster\.(png|jpg|jpeg|webp))$/i;
-            const videoRegex = /\.mp4$/i;
+            const videoRegex = /\.(mp4|mkv)$/i; // Now matches both MP4 and MKV
 
             filesArray.forEach(file => {
                 if (!file.webkitRelativePath) {
@@ -362,14 +405,13 @@
                 const seriesName = pathParts.length > 1 ? pathParts[pathParts.length - 2] : "Default Series";
                 const fileName = pathParts[pathParts.length - 1];
 
-
                 if (!seriesData[seriesName]) {
                     seriesData[seriesName] = { posterFile: null, episodes: [] };
                 }
 
                 if (posterRegex.test(file.webkitRelativePath)) { // Check full path for poster
                     seriesData[seriesName].posterFile = file;
-                } else if (videoRegex.test(fileName)) { // Check just filename for MP4
+                } else if (videoRegex.test(fileName)) { // Now matches .mp4 and .mkv
                     const episodeName = fileName.replace(videoRegex, '');
                     seriesData[seriesName].episodes.push({
                         name: episodeName,
@@ -439,14 +481,29 @@
             }
             episodes.sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
 
+            // Ensure episode list container uses flex column for consistent layout
+            episodeListContainer.style.display = 'flex';
+            episodeListContainer.style.flexDirection = 'column';
+            episodeListContainer.style.gap = '0';
 
             episodes.forEach(episode => {
                 const listItem = document.createElement('div');
-                listItem.className = 'list-item';
+                listItem.className = 'list-item episode'; // Add both classes
                 listItem.style.cursor = 'pointer';
+                listItem.style.display = 'flex';
+                listItem.style.alignItems = 'stretch';
+                listItem.style.marginBottom = '12px';
+                listItem.style.background = 'none'; // Remove background from list-item, handled by child
+                listItem.style.border = 'none';
+                listItem.style.boxShadow = 'none';
 
                 const detailsDiv = document.createElement('div');
                 detailsDiv.className = 'episode-item-details';
+                detailsDiv.style.flex = '1';
+                detailsDiv.style.display = 'flex';
+                detailsDiv.style.flexDirection = 'column';
+                detailsDiv.style.justifyContent = 'center';
+
                 const titleH3 = document.createElement('h3');
                 titleH3.className = 'item-title';
                 titleH3.textContent = episode.name;
@@ -469,6 +526,10 @@
                 const arrowDiv = document.createElement('div');
                 arrowDiv.className = 'item-arrow';
                 arrowDiv.innerHTML = '<i class="fas fa-play"></i>';
+                arrowDiv.style.display = 'flex';
+                arrowDiv.style.alignItems = 'center';
+                arrowDiv.style.marginLeft = '12px';
+
                 listItem.appendChild(detailsDiv);
                 listItem.appendChild(arrowDiv);
 
@@ -536,8 +597,9 @@
             importFolderButton.style.display = 'none';
             statusMessage.style.display = 'none';
 
-            // Hide Continue Watching section by default
+            // Hide Continue Watching and Import Controls by default
             continueWatchingSection.style.display = 'none';
+            document.querySelector('.import-controls').style.display = 'none';
 
             if (viewName === 'series') {
                 currentViewTitle.textContent = 'Downloads (Series)';
@@ -545,8 +607,9 @@
                 navigationHeader.style.display = 'none';
                 importFolderButton.style.display = 'block';
                 statusMessage.style.display = 'block';
-                // Show Continue Watching only on main series view
+                // Show Continue Watching and Import Controls only on main series view
                 continueWatchingSection.style.display = 'block';
+                document.querySelector('.import-controls').style.display = 'block';
             } else if (viewName === 'episodes') {
                 currentViewTitle.textContent = title || 'Episodes';
                 episodeListContainer.style.display = 'flex';
