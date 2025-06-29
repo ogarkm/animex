@@ -8,192 +8,237 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="Resources/styles.css"> <!-- Your main CSS file -->
     <style>
-        /* --- Continue Watching Hero --- */
-        #continue-watching-hero {
-            display: none; /* Hidden until populated */
+        /* Base styles from original file */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            margin: 0;
+            color: #fff;
         }
-        .hero-details .title-text {
+
+        /* --- NEW: Carousel Section Styles --- */
+        #featured-carousel-container {
+            position: relative;
+            min-height: 450px; /* Provides space for the loader */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            overflow: hidden;
+            padding-bottom: 20px;
+        }
+        .carousel-background {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            transition: opacity 0.7s ease-in-out;
+        }
+        .carousel-background::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, #121212 5%, transparent 40%), radial-gradient(circle, transparent 30%, #121212 95%);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        #carousel-bg-1 { opacity: 1; }
+        #carousel-bg-2 { opacity: 0; }
+        .carousel { perspective: 1000px; position: relative; z-index: 2; height: 60%; margin-top: 50px; }
+        .carousel-wrapper {
+            position: absolute; width: 100%; height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .carousel-slide {
+            position: absolute; left: 0; right: 0; margin: auto;
+            width: 45%; max-width: 200px; height: 100%;
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.6s ease;
+        }
+        .carousel-slide img {
+            width: 100%; height: 100%; object-fit: cover; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            -webkit-box-reflect: below 5px linear-gradient(to bottom, transparent 80%, rgba(255,255,255,0.2));
+        }
+        .carousel-nav {
+            position: absolute; top: 40%; transform: translateY(-50%); z-index: 3;
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);
+            color: white; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        #nav-left { left: 5px; } #nav-right { right: 5px; }
+        .carousel-info { position: relative; z-index: 2; text-align: center; padding: 0 20px; }
+        .carousel-info .title-text {
             font-size: 2.5em; font-weight: 700; color: #fff;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
             margin: 10px 0; line-height: 1.1;
         }
-
-        /* --- NEW: Horizontal Scrolling Section Styles (Netflix Style) --- */
-        .content-section {
-            margin-bottom: 30px;
+        .carousel-info .continue-button {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            background: #FF7A00; color: #fff; padding: 12px 24px; border-radius: 50px;
+            font-weight: 600; text-decoration: none; transition: transform 0.2s ease;
         }
-        .section-title { /* Added styling for section titles */
-            font-size: 1.4em;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 15px;
-        }
+        .carousel-info .continue-button:hover { transform: scale(1.05); }
 
+        /* --- NEW: Loader --- */
+        .loader {
+            border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #FF7A00;
+            border-radius: 50%; width: 50px; height: 50px;
+            animation: spin 1s linear infinite; margin: 150px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+        /* --- Horizontal Scrolling Section Styles (Netflix Style) --- */
+        .content-section { margin-bottom: 30px; padding: 0 20px; }
+        .section-title { font-size: 1.4em; font-weight: 600; color: #fff; margin-bottom: 15px; }
         .horizontal-scroll-container {
-            display: flex;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding-bottom: 15px; /* Space for scrollbar if visible */
-            gap: 15px; /* Space between posters */
+            display: flex; overflow-x: auto; overflow-y: hidden;
+            padding-bottom: 15px; gap: 15px;
         }
-        
-        /* Hide scrollbar for a cleaner look */
-        .horizontal-scroll-container::-webkit-scrollbar {
-            display: none; /* For Chrome, Safari, and Opera */
-        }
-        .horizontal-scroll-container {
-            -ms-overflow-style: none;  /* For Internet Explorer and Edge */
-            scrollbar-width: none;  /* For Firefox */
-        }
-
+        .horizontal-scroll-container::-webkit-scrollbar { display: none; }
+        .horizontal-scroll-container { -ms-overflow-style: none; scrollbar-width: none; }
         .poster-card {
-            flex-shrink: 0; /* Prevents cards from shrinking */
-            width: 160px; /* Width of the poster card */
-            cursor: pointer;
+            flex-shrink: 0; width: 160px; cursor: pointer;
             transition: transform 0.2s ease-in-out;
-            background-color: rgba(0, 0, 0, 0.2); /* Slightly transparent background */
-            padding: 10px;
-            backdrop-filter: blur(5px); /* Adds a blur effect to the background */
-            border-radius: 10px;
+            background-color: rgba(30, 30, 30, 0.5);
+            padding: 10px; backdrop-filter: blur(5px); border-radius: 10px;
         }
-
-        .poster-card img:hover {
-            transform: scale(1.02);
-            filter: brightness(1.1);
-        }
-
+        .poster-card:hover { transform: scale(1.02); }
         .poster-card img {
-            width: 100%;
-            height: 230px; /* Taller poster aspect ratio */
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 8px;
+            width: 100%; height: 230px; object-fit: cover;
+            border-radius: 8px; margin-bottom: 8px;
         }
-
         .poster-card .poster-title {
-            font-size: 0.9em;
-            font-weight: 500;
-            color: #e5e5e5;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 0.9em; font-weight: 500; color: #e5e5e5;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .error-message { /* Added for better error display */
-             color: #e5e5e5;
-             font-style: italic;
-        }
-        .hero-section {
-            min-height: 250px;
-            align-items: center;
-        }
-        .hero-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+        .error-message { color: #e5e5e5; font-style: italic; }
+
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- The hero section remains the same -->
-        <header id="continue-watching-hero" class="hero-section">
-            <div class="hero-content">
-                <div class="hero-poster">
-                    <img id="hero-poster-img" src="" alt="Series Poster">
-                </div>
-                <div class="hero-details">
-                    <span id="hero-episode-info" class="episode-info"></span>
-                    <h2 id="hero-title-text" class="title-text"></h2>
-                    <a id="hero-continue-btn" href="#" class="continue-button" style="text-decoration: none;">
-                        <i class="fas fa-play"></i> Explore Series
-                    </a>
-                </div>
-            </div>
+        <!-- The hero section is now the dynamic carousel -->
+        <header id="featured-carousel-container" class="hero-section">
+            <div class="loader"></div>
         </header>
 
         <!-- Main content area will be dynamically populated with sections -->
-        <main class="main-content" id="main-content-area">
-            <!-- Sections like "Top Airing", "Popular", etc., will be inserted here -->
-        </main>
+        <main class="main-content" id="main-content-area"></main>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- CONFIGURATION ---
-            const API_BASE_URL = 'https://arkm20-authapi.hf.space';
             const JIKAN_API_BASE_URL = 'https://api.jikan.moe/v4';
 
             // --- ELEMENT SELECTORS ---
             const mainContentArea = document.getElementById('main-content-area');
-            const heroSection = document.getElementById('continue-watching-hero');
-            const heroPosterImg = document.getElementById('hero-poster-img');
-            const heroEpisodeInfo = document.getElementById('hero-episode-info');
-            const heroTitleText = document.getElementById('hero-title-text');
-            const heroContinueBtn = document.getElementById('hero-continue-btn');
 
-            // --- "CONTINUE WATCHING" LOGIC (UPDATED to show LAST WATCHED) ---
-            async function fetchContinueWatching() {
-                
-                    displayHero();
-            }
+            // --- CAROUSEL STATE ---
+            let carouselData = [];
+            let currentIndex = 0;
+            let carouselWrapper;
+            let isBg1Active = true;
+            let bg1, bg2;
 
-            function displayHero() {
-                const bgImageUrl = "https://cdn.myanimelist.net/images/anime/1463/145502l.jpg";
-                if (bgImageUrl) {
-                    heroSection.style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.8) 20%, rgba(0,0,0,0) 80%), url('${bgImageUrl}')`;
+            // --- CAROUSEL LOGIC ---
+            async function initializeCarousel() {
+                const container = document.getElementById('featured-carousel-container');
+                try {
+                    const response = await fetch(`${JIKAN_API_BASE_URL}/seasons/now?limit=7`);
+                    if (!response.ok) throw new Error(`Carousel fetch error: ${response.status}`);
+                    const animeList = (await response.json()).data;
+                    
+                    if (!animeList || !animeList.length) {
+                        throw new Error("No carousel data returned from API.");
+                    }
+                    carouselData = animeList;
+                    
+                    container.innerHTML = `
+                        <div id="carousel-bg-1" class="carousel-background"></div>
+                        <div id="carousel-bg-2" class="carousel-background"></div>
+                        <div class="carousel">
+                            <div class="carousel-wrapper">
+                                ${carouselData.map(anime => `
+                                    <div class="carousel-slide"><img src="${anime.images.jpg.large_image_url}" alt=""></div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <button id="nav-left" class="carousel-nav"><i class="fa-solid fa-chevron-left"></i></button>
+                        <button id="nav-right" class="carousel-nav"><i class="fa-solid fa-chevron-right"></i></button>
+                        <div class="carousel-info">
+                            <h2 id="carousel-title-text" class="title-text"></h2>
+                            <a id="carousel-continue-btn" href="#" class="continue-button" style="text-decoration: none;">
+                                <i class="fas fa-play"></i> Explore Series
+                            </a>
+                        </div>
+                    `;
+
+                    carouselWrapper = container.querySelector('.carousel-wrapper');
+                    bg1 = document.getElementById('carousel-bg-1');
+                    bg2 = document.getElementById('carousel-bg-2');
+                    
+                    container.querySelector('#nav-left').addEventListener('click', () => navigateCarousel(-1));
+                    container.querySelector('#nav-right').addEventListener('click', () => navigateCarousel(1));
+                    
+                    updateCarousel();
+                } catch (error) {
+                    console.error("Failed to initialize carousel:", error);
+                    container.innerHTML = `<p class="error-message" style="text-align: center; padding: 50px 0;">Could not load featured content.</p>`;
                 }
-                heroPosterImg.src = "https://cdn.myanimelist.net/images/anime/1448/147351.jpg";
-                
-                heroEpisodeInfo.textContent = `Popular Today`; // Changed text for clarity
-                heroTitleText.textContent = "Solo Leveling";
-                
-                // Set button link to the *next* episode, or current one if it's the last
-                const totalEpisodes = 13;
-                const nextEpisode = 11;
-                heroContinueBtn.href = `series-info.html?anime=true&id=52299`;
-                
-                heroSection.style.display = 'block';
             }
 
+            function navigateCarousel(direction) {
+                currentIndex = (currentIndex + direction + carouselData.length) % carouselData.length;
+                updateCarousel();
+            }
+            
+            function updateCarousel() {
+                const angle = 360 / carouselData.length;
+                const zDistance = (carouselWrapper.offsetWidth / 2) / Math.tan((angle / 2) * (Math.PI / 180));
+                
+                carouselWrapper.style.transform = `translateZ(${-zDistance}px) rotateY(${-currentIndex * angle}deg)`;
 
-            // --- HORIZONTAL SECTION LOGIC (No changes needed here) ---
+                document.querySelectorAll('.carousel-slide').forEach((slide) => {
+                    slide.style.transform = `rotateY(${slide.angle}deg) translateZ(${zDistance}px)`;
+                });
+                
+                const currentAnime = carouselData[currentIndex];
+                document.getElementById('carousel-title-text').textContent = currentAnime.title_english || currentAnime.title;
+                document.getElementById('carousel-continue-btn').href = `series-info.html?anime=true&id=${currentAnime.mal_id}`;
+                updateCarouselBackground(currentAnime.images.jpg.large_image_url);
+            }
 
-            /**
-             * Creates and appends a complete horizontal scrolling section.
-             * @param {string} title - The title of the section (e.g., "Top Airing").
-             * @param {string} apiUrl - The full Jikan API URL to fetch data from.
-             */
+            function updateCarouselBackground(imageUrl) {
+                if (isBg1Active) {
+                    bg2.style.backgroundImage = `url(${imageUrl})`;
+                    bg1.style.opacity = '0';
+                    bg2.style.opacity = '1';
+                } else {
+                    bg1.style.backgroundImage = `url(${imageUrl})`;
+                    bg2.style.opacity = '0';
+                    bg1.style.opacity = '1';
+                }
+                isBg1Active = !isBg1Active;
+            }
+
+            // --- HORIZONTAL SECTION LOGIC ---
             async function createHorizontalSection(title, apiUrl) {
                 try {
-                    // Create section elements
                     const section = document.createElement('section');
                     section.classList.add('content-section');
-                    
                     const sectionTitle = document.createElement('h2');
                     sectionTitle.classList.add('section-title');
                     sectionTitle.textContent = title;
-
                     const scrollContainer = document.createElement('div');
                     scrollContainer.classList.add('horizontal-scroll-container');
-                    scrollContainer.innerHTML = `<p style="color: #ccc;">Loading...</p>`; // Placeholder
-
+                    scrollContainer.innerHTML = `<p style="color: #ccc;">Loading...</p>`;
                     section.appendChild(sectionTitle);
                     section.appendChild(scrollContainer);
                     mainContentArea.appendChild(section);
 
-                    // Fetch data and render
                     const response = await fetch(apiUrl);
                     if (!response.ok) throw new Error(`Jikan API error: ${response.status}`);
-                    
                     const data = await response.json();
                     displayAnimePosters(data.data, scrollContainer);
-
                 } catch (error) {
                     console.error(`Failed to load section "${title}":`, error);
-                    // Update the section with an error message
                     const sectionWithError = Array.from(mainContentArea.getElementsByTagName('h2')).find(h2 => h2.textContent === title);
                     if (sectionWithError) {
                         sectionWithError.nextElementSibling.innerHTML = `<p class="error-message">Could not load this section.</p>`;
@@ -201,47 +246,32 @@
                 }
             }
 
-            /**
-             * Renders anime poster cards into a given container element.
-             * @param {Array} animeData - An array of anime objects from Jikan.
-             * @param {HTMLElement} container - The container element to append cards to.
-             */
             function displayAnimePosters(animeData, container) {
-                container.innerHTML = ''; // Clear "Loading..." message
+                container.innerHTML = '';
                 if (!animeData || animeData.length === 0) {
                      container.innerHTML = `<p class="error-message">No results found.</p>`;
                      return;
                 }
-                
                 animeData.forEach(anime => {
-                    if (!anime.images?.jpg?.image_url) return; // Skip items without an image
-
+                    if (!anime.images?.jpg?.image_url) return;
                     const card = document.createElement('div');
                     card.classList.add('poster-card');
-                    card.addEventListener('click', () => {
-                        window.location.href = `series-info.html?anime=true&id=${anime.mal_id}`;
-                    });
-
+                    card.addEventListener('click', () => { window.location.href = `series-info.html?anime=true&id=${anime.mal_id}`; });
                     const img = document.createElement('img');
                     img.src = anime.images.jpg.image_url;
                     img.alt = anime.title_english || anime.title;
-                    
                     const title = document.createElement('p');
                     title.classList.add('poster-title');
                     title.textContent = anime.title_english || anime.title;
-
                     card.appendChild(img);
                     card.appendChild(title);
                     container.appendChild(card);
                 });
             }
             
-            /**
-             * Initializes the page by fetching all necessary data.
-             */
             function initializePage() {
-                // Attempt to show the "Continue Watching" hero first
-                fetchContinueWatching();
+                // Initialize the new dynamic carousel first
+                initializeCarousel();
 
                 // Create all the horizontal sections
                 createHorizontalSection("Top Airing Anime", `${JIKAN_API_BASE_URL}/top/anime?filter=airing&limit=20`);
