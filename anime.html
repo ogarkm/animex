@@ -189,21 +189,33 @@
                 updateCarousel();
             }
             
-            function updateCarousel() {
-                const angle = 360 / carouselData.length;
-                const zDistance = (carouselWrapper.offsetWidth / 2) / Math.tan((angle / 2) * (Math.PI / 180));
-                
-                carouselWrapper.style.transform = `translateZ(${-zDistance}px) rotateY(${-currentIndex * angle}deg)`;
+            // --- JAVASCRIPT SNIPPET (Corrected Function) ---
 
-                document.querySelectorAll('.carousel-slide').forEach((slide) => {
-                    slide.style.transform = `rotateY(${slide.angle}deg) translateZ(${zDistance}px)`;
-                });
-                
-                const currentAnime = carouselData[currentIndex];
-                document.getElementById('carousel-title-text').textContent = currentAnime.title_english || currentAnime.title;
-                document.getElementById('carousel-continue-btn').href = `series-info.html?anime=true&id=${currentAnime.mal_id}`;
-                updateCarouselBackground(currentAnime.images.jpg.large_image_url);
-            }
+function updateCarousel() {
+    // This part calculates the geometry of the circle
+    const angle = 360 / carouselData.length;
+    // We calculate zDistance based on the container width to make it responsive
+    const zDistance = (carouselWrapper.offsetWidth / 2) / Math.tan((angle / 2) * (Math.PI / 180));
+    
+    // This rotates the entire wrapper to bring the active card to the front
+    carouselWrapper.style.transform = `translateZ(${-zDistance}px) rotateY(${-currentIndex * angle}deg)`;
+
+    // ----- THIS IS THE FIX -----
+    // We MUST loop through each slide and apply its individual position and rotation.
+    // This was the missing piece.
+    document.querySelectorAll('.carousel-slide').forEach((slide, index) => {
+        const slideAngle = index * angle;
+        // The transform order is crucial: Rotate first, then push it out.
+        slide.style.transform = `rotateY(${slideAngle}deg) translateZ(${zDistance}px)`;
+    });
+    // ----- END OF FIX -----
+    
+    // The rest of the function updates the UI text and background
+    const currentAnime = carouselData[currentIndex];
+    document.getElementById('carousel-title-text').textContent = currentAnime.title_english || currentAnime.title;
+    document.getElementById('carousel-continue-btn').href = `series-info.html?anime=true&id=${currentAnime.mal_id}`;
+    updateCarouselBackground(currentAnime.images.jpg.large_image_url);
+}}
 
             function updateCarouselBackground(imageUrl) {
                 if (isBg1Active) {
