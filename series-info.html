@@ -72,6 +72,14 @@
         </main>
     </div>
 
+    <!-- Episode Pop-up Overlay -->
+    <div id="episode-popup-overlay" class="episode-popup-overlay" style="display:none;">
+        <div class="episode-popup-content">
+            <button class="episode-popup-close" title="Close">&times;</button>
+            <iframe id="episode-popup-iframe" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // ****** START: BACK BUTTON LOGIC ******
@@ -387,15 +395,10 @@
                         const animeId = currentSeriesId || '52991';
                         let quality = localStorage.getItem('quality');
                         if (!quality || typeof quality !== 'string') quality = '720p';
-                        let episode = 1;
-                        const urlParams = new URLSearchParams(window.location.search);
-                        if (urlParams.has('ep')) {
-                            const epParam = parseInt(urlParams.get('ep'), 10);
-                            if (!isNaN(epParam)) episode = epParam;
-                        }
+                        let episodeNum = episode.mal_id; // Use the correct episode number
                         const isDub = true;
                         // Directly open the download link, no JSON parsing needed
-                        window.open(`https://arkm20-animex-player-api.hf.space/download?id=${animeId}&episode=${episode}&dub=${isDub}&quality=${quality}`, '_blank');
+                        window.open(`https://arkm20-animex-player-api.hf.space/download?id=${animeId}&episode=${episodeNum}&dub=${isDub}&quality=${quality}`, '_blank');
                     });
                     episodeItem.appendChild(downloadBtn);
                     // --- End Glassy Download Icon Button ---
@@ -423,19 +426,12 @@
                     episodeItem.appendChild(episodeNumberSpan);
                     episodeItem.appendChild(episodeInfoDiv);
 
-                    episodeItem.addEventListener('click', () => {
-                        console.log(`Navigating to episode ${episode.mal_id} of ${currentSeriesTitle} -> ${currentSeriesId}`);
-                        /*updateWatchHistory(
-                            currentSeriesId,        // The ID of the show, already stored
-                            currentSeriesTitle,     // The title of the show, which we now store
-                            1,                      // Assumed Season Number
-                            episode.mal_id          // The episode number from the Jikan object
-                        );*/
-
-                        // --- YOUR ORIGINAL NAVIGATION LOGIC (RUNS IMMEDIATELY) ---
-                        // The user is navigated away without waiting for the API call to finish.
+                    // Remove any window.location.href navigation!
+                    episodeItem.addEventListener('click', (event) => {
+                        // Only open popup if not clicking the download button
+                        if (event.target.closest('.episode-download-icon')) return;
                         const url = `view.html?id=${encodeURIComponent(currentSeriesId)}&ep=${encodeURIComponent(episode.mal_id)}`;
-                        window.location.href = url;
+                        openEpisodePopup(url);
                     });
 
                     episodeListContainer.appendChild(episodeItem);
@@ -589,6 +585,37 @@
                 // renderEpisodesPageGlobal(1); // Initial call for the secondary system
             }
 
+            // --- POPUP OVERLAY LOGIC ---
+            const popupOverlay = document.getElementById('episode-popup-overlay');
+            const popupContent = popupOverlay.querySelector('.episode-popup-content');
+            const popupIframe = document.getElementById('episode-popup-iframe');
+            const popupCloseBtn = popupOverlay.querySelector('.episode-popup-close');
+
+            function openEpisodePopup(url) {
+                popupIframe.src = url;
+                popupOverlay.style.display = 'flex';
+                // Trigger animation
+                setTimeout(() => {
+                    popupOverlay.classList.add('active');
+                }, 10);
+                document.body.style.overflow = 'hidden'; // Prevent background scroll
+            }
+
+            function closeEpisodePopup() {
+                popupOverlay.classList.remove('active');
+                // Wait for animation to finish before hiding
+                setTimeout(() => {
+                    popupOverlay.style.display = 'none';
+                    popupIframe.src = '';
+                    document.body.style.overflow = '';
+                }, 300);
+            }
+
+            popupCloseBtn.addEventListener('click', closeEpisodePopup);
+            popupOverlay.addEventListener('click', (e) => {
+                if (e.target === popupOverlay) closeEpisodePopup();
+            });
+            // --- END POPUP OVERLAY LOGIC ---
 
             init();
         });
@@ -664,6 +691,116 @@
         .episode-title {
             font-size: 1em;
         }
+    }
+
+    /* --- Episode Pop-up Overlay Styles --- */
+    .episode-popup-overlay {
+        position: fixed;
+        z-index: 9999;
+        top: 0; left: 0; right: 0; bottom: 0;
+        width: 100vw; height: 100vh;
+        background: rgba(18, 22, 34, 0.92);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s cubic-bezier(.4,0,.2,1);
+        animation: none;
+    }
+    .episode-popup-overlay.active {
+        animation: popupFadeIn 0.3s cubic-bezier(.4,0,.2,1) forwards;
+        display: flex;
+    }
+    @keyframes popupFadeIn {
+        from { background: rgba(18,22,34,0); }
+        to { background: rgba(18,22,34,0.92); }
+    }
+    .episode-popup-content {
+        position: relative;
+        width: 92vw;
+        max-width: 1100px;
+        height: 88vh;
+        background: rgba(30,34,44,0.98);
+        border-radius: 18px;
+        box-shadow: 0 8px 48px 0 rgba(0,0,0,0.25);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0.97) translateY(30px);
+        transition: opacity 0.3s cubic-bezier(.4,0,.2,1), transform 0.3s cubic-bezier(.4,0,.2,1);
+        overflow: hidden;
+        animation: none;
+    }
+    .episode-popup-overlay.active .episode-popup-content {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        animation: popupContentIn 0.3s cubic-bezier(.4,0,.2,1) forwards;
+    }
+    @keyframes popupContentIn {
+        from { opacity: 0; transform: scale(0.97) translateY(30px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .episode-popup-close {
+        position: absolute;
+        top: 18px;
+        right: 24px;
+        z-index: 2;
+        font-size: 2.2em;
+        color: #fff;
+        background: rgba(40,40,50,0.18);
+        border: none;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s;
+        box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+    }
+    .episode-popup-close:hover {
+        background: rgba(58,122,254,0.18);
+    }
+    .episode-popup-content iframe {
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 0 0 18px 18px;
+        background: #181a22;
+        min-height: 400px;
+    }
+    @media (max-width: 900px) {
+        .episode-popup-content {
+            width: 99vw;
+            height: 97vh;
+            border-radius: 0;
+        }
+        .episode-popup-content iframe {
+            border-radius: 0;
+        }
+    }
+    @media (max-width: 600px) {
+        .episode-popup-content {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+        }
+        .episode-popup-close {
+            top: 8px;
+            right: 10px;
+            font-size: 1.7em;
+            width: 36px;
+            height: 36px;
+        }
+    }
+    /* Subtle closing animation */
+    .episode-popup-overlay:not(.active)[style*="display: flex"] .episode-popup-content {
+        opacity: 0;
+        transform: scale(0.97) translateY(30px);
+        transition: opacity 0.3s cubic-bezier(.4,0,.2,1), transform 0.3s cubic-bezier(.4,0,.2,1);
     }
     </style>
 </body>

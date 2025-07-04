@@ -1,4 +1,7 @@
 {
+  "name": "Animex",
+  "short_name": "Animex",
+  "description": "Animex - Anime and Manga Search and Player",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
@@ -6,8 +9,18 @@
   "theme_color": "#FF9500",
   "icons": [
     {
-      "src": "/Resources/Images/app-icon.png",
+      "src": "/Resources/Images/icon-400.png",
       "sizes": "400x400",
+      "type": "image/png"
+    },
+    {
+      "src": "/Resources/Images/icon-196.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/Resources/Images/icon-512.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]

@@ -8,7 +8,7 @@
   />
   <title>Episode Player</title>
 
-  <!-- Inter font + Font Awesome for back button -->
+  <!-- Inter font + Font Awesome for icons (if needed) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link 
     rel="preconnect" 
@@ -19,169 +19,200 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
     rel="stylesheet"
   />
-  <link 
-    rel="stylesheet" 
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-  />
-
   <style>
-    body, html {
+    :root {
+      --accent-color-active: #FF9500;
+    }
+    html, body {
       margin: 0;
       padding: 0;
       height: 100%;
       width: 100%;
-      background-color: #000;
+      background: #000;
       font-family: 'Inter', sans-serif;
       color: #fff;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
     }
-    #header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 50px;
-      background: rgba(0,0,0,0.75);
+    body {
+      min-height: 100vh;
       display: flex;
-      align-items: center;
-      padding: 0 1rem;
-      z-index: 10;
-    }
-    #back-button {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 1.2rem;
-      cursor: pointer;
-      margin-right: 1rem;
-    }
-    #header-title {
-      font-size: 1rem;
-      font-weight: 600;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
     }
     #player-container {
-      position: absolute;
-      top: 50px;
-      left: 0;
-      right: 0;
-      bottom: 120px; /* leave space for the info bar */
-      background: #000000;
+      flex: 1 1 auto;
+      width: 100vw;
+      max-width: 100vw;
+      min-height: 220px;
+      max-height: 60vh;
+      background: #000;
       display: flex;
       align-items: center;
       justify-content: center;
-      max-height: 300px;
+      position: relative;
+      box-shadow: 0 2px 16px 0 #000a;
+      border-bottom: 1px solid #222;
     }
     #player-container iframe {
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 56vw;
+      max-height: 60vh;
+      min-height: 220px;
       border: none;
+      border-radius: 10px;
+      background: #111;
+      display: block;
     }
     #info-container {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0,0,0,0.85);
-      padding: 0.75rem 1rem;
+      width: 100vw;
+      background: rgba(0,0,0,0.92);
+      padding: 1.1rem 1.2rem 1.5rem 1.2rem;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      font-size: 0.95rem;
-    }
-    #info-container span {
-      display: inline-block;
+      gap: 0.7rem;
+      font-size: 1.05rem;
+      box-sizing: border-box;
+      border-top-left-radius: 18px;
+      border-top-right-radius: 18px;
+      box-shadow: 0 -2px 16px 0 #000a;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
     }
     #series-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.1rem;
+      letter-spacing: 0.01em;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
     }
     #meta-line {
-      font-size: 0.9rem;
-      opacity: 0.8;
+      font-size: 0.98rem;
+      opacity: 0.85;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7em;
     }
     #error-message {
       color: #ff6b6b;
       text-align: center;
-      padding: 2rem;
+      padding: 2rem 1rem;
       font-size: 1.1rem;
     }
-
     .search-options-list {
-            display: flex;
-            gap: 18px;
-            margin: 18px 0 10px 0;
-            padding: 0 2px;
-            list-style: none;
-        }
-        .search-option-btn {
-            background: none;
-            border: none;
-            color: #aaa;
-            font-size: 0.7em;
-            font-weight: 700;
-            padding: 7px 18px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background 0.18s, color 0.18s;
-        }
-        .search-option-btn.active {
-            background: var(--accent-color-active, #FF9500);
-            color: #fff;
-        }
+      display: flex;
+      gap: 18px;
+      margin: 10px 0 0 0;
+      padding: 0 2px;
+      list-style: none;
+      justify-content: center;
+    }
+    .search-option-btn {
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 1.05em;
+      font-weight: 700;
+      padding: 10px 28px;
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+      outline: none;
+      letter-spacing: 0.04em;
+      box-shadow: 0 1px 4px 0 #0003;
+      touch-action: manipulation;
+    }
+    .search-option-btn.active {
+      background: var(--accent-color-active, #FF9500);
+      color: #fff;
+    }
+    #next-episode-btn {
+      margin: 18px auto 0 auto !important;
+      display: block;
+      background: var(--accent-color-active, #FF9500);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.08em;
+      border: none;
+      border-radius: 22px;
+      padding: 12px 38px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px 0 #0002;
+      letter-spacing: 0.03em;
+      transition: background 0.18s;
+    }
+    #series-over-msg {
+      margin: 18px auto 0 auto !important;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.08em;
+      color: var(--accent-color-active, #FF9500);
+    }
+    @media (max-width: 600px) {
+      #player-container iframe {
+        min-height: 180px;
+        height: 56vw;
+      }
+      #info-container {
+        font-size: 1.01rem;
+        padding: 0.9rem 0.7rem 1.2rem 0.7rem;
+      }
+      .search-option-btn {
+        padding: 9px 18px;
+        font-size: 1em;
+      }
+      #next-episode-btn {
+        padding: 10px 22px;
+        font-size: 1em;
+      }
+    }
   </style>
 </head>
-
 <body>
-  <!-- Header with back button -->
-  <header id="header">
-    <button id="back-button" aria-label="Go Back">
-      <i class="fas fa-arrow-left"></i>
-    </button>
-    <div id="header-title">Loading…</div>
-  </header>
-
-  <!-- Where the video iframe will go -->
+  <!-- Video Player -->
   <div id="player-container">
     <!-- JS will inject the <iframe> here -->
   </div>
-
-  <!-- Minimal info below -->
+  <!-- Info and Controls -->
   <div id="info-container">
     <div id="series-title">
-      Series: <span id="series-name">—</span>
+      <span id="series-name">—</span>
     </div>
     <div id="meta-line">
-      Type: <span id="series-type">—</span>
-      &nbsp;|&nbsp;
-      Year: <span id="series-year">—</span>
-      &nbsp;|&nbsp;
-      Episode: <span id="episode-number">—</span>
+      <span>Type: <span id="series-type">—</span></span>
+      <span>|</span>
+      <span>Year: <span id="series-year">—</span></span>
+      <span>|</span>
+      <span>Episode: <span id="episode-number">—</span></span>
     </div>
     <ul class="search-options-list" id="search-options-list">
-                <li>
-                    <button class="search-option-btn active" id="sub-option-btn" type="button">
-                        SUB
-                    </button>
-                </li>
-                <li>
-                    <button class="search-option-btn" id="dub-option-btn" type="button">
-                        DUB
-                    </button>
-                </li>
+      <li>
+        <button class="search-option-btn active" id="sub-option-btn" type="button">
+          SUB
+        </button>
+      </li>
+      <li>
+        <button class="search-option-btn" id="dub-option-btn" type="button">
+          DUB
+        </button>
+      </li>
     </ul>
   </div>
-
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       // 1) Read query params
       const params = new URLSearchParams(window.location.search);
       const jikanId = params.get('id');
       const episode = params.get('ep');
-
       const subOptionBtn = document.getElementById('sub-option-btn');
       const dubOptionBtn = document.getElementById('dub-option-btn');
       let currentDub = false;
-
       // Show error if missing
       if (!jikanId || !episode) {
         document.getElementById('player-container').innerHTML = `
@@ -189,15 +220,12 @@
             Missing “id” or “ep” parameter in URL.<br>
             Example: view.html?id=21&ep=104
           </div>`;
-        document.getElementById('header-title').textContent = 'Error';
         return;
       }
-
       // 2) Fetch minimal anime info from Jikan
       let title = 'Unknown';
       let type = 'N/A';
       let year = 'N/A';
-
       try {
         const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
         if (resp.ok) {
@@ -212,14 +240,11 @@
       } catch (err) {
         console.warn('Failed to fetch Jikan info:', err);
       }
-
-      // 3) Update header + info section
-      document.getElementById('header-title').textContent = `${title} — Ep ${episode}`;
+      // 3) Update info section
       document.getElementById('series-name').textContent = title;
       document.getElementById('series-type').textContent = type;
       document.getElementById('series-year').textContent = year;
       document.getElementById('episode-number').textContent = episode;
-
       // --- NEXT EPISODE BUTTON LOGIC ---
       // Fetch total episodes from Jikan info (if available)
       let totalEpisodes = null;
@@ -233,7 +258,6 @@
       } catch (err) {
         // fallback: leave totalEpisodes as null
       }
-
       // Add next episode button or series over message
       const infoContainer = document.getElementById('info-container');
       let nextEpBtn = document.getElementById('next-episode-btn');
@@ -245,16 +269,6 @@
         nextEpBtn = document.createElement('button');
         nextEpBtn.id = 'next-episode-btn';
         nextEpBtn.textContent = `Next Episode →`;
-        nextEpBtn.style.margin = '12px auto 0 auto';
-        nextEpBtn.style.display = 'block';
-        nextEpBtn.style.background = 'var(--accent-color-active, #FF9500)';
-        nextEpBtn.style.color = '#fff';
-        nextEpBtn.style.fontWeight = '700';
-        nextEpBtn.style.fontSize = '1em';
-        nextEpBtn.style.border = 'none';
-        nextEpBtn.style.borderRadius = '18px';
-        nextEpBtn.style.padding = '10px 32px';
-        nextEpBtn.style.cursor = 'pointer';
         nextEpBtn.addEventListener('click', () => {
           // Replace current page with next episode
           const params = new URLSearchParams(window.location.search);
@@ -266,14 +280,8 @@
         seriesOverMsg = document.createElement('div');
         seriesOverMsg.id = 'series-over-msg';
         seriesOverMsg.textContent = 'Wow... The Series is over';
-        seriesOverMsg.style.margin = '12px auto 0 auto';
-        seriesOverMsg.style.textAlign = 'center';
-        seriesOverMsg.style.fontWeight = '700';
-        seriesOverMsg.style.fontSize = '1.1em';
-        seriesOverMsg.style.color = 'var(--accent-color-active, #FF9500)';
         infoContainer.appendChild(seriesOverMsg);
       }
-
       // Helper to load iframe with dub/sub
       async function loadIframe(dub) {
         // Remove any existing iframe
@@ -310,53 +318,42 @@
         iframe.style.height = '100%';
         playerContainer.appendChild(iframe);
       }
-
       // --- Watch History Update Logic ---
-    async function updateWatchHistory(showId, showTitle, episodeNumber) {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        console.log("User not logged in. Skipping watch history update.");
-        return;
-      }
-      try {
-        const params = new URLSearchParams({
-            show_id: String(showId),
-            show_title: String(showTitle),
-            season_number: 1,
-            episode_number: Number(episodeNumber)
-        });
-
-        const url = `https://arkm20-authapi.hf.space/users/me/watch-history?${params.toString()}`;
-
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        if (response.ok) {
-          console.log("Watch history updated successfully.");
-        } else {
-          const result = await response.json().catch(() => ({}));
-          console.warn("Failed to update watch history:", result.message || response.status);
+      async function updateWatchHistory(showId, showTitle, episodeNumber) {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          console.log("User not logged in. Skipping watch history update.");
+          return;
         }
-      } catch (error) {
-        console.error("Network error while updating watch history:", error);
+        try {
+          const params = new URLSearchParams({
+              show_id: String(showId),
+              show_title: String(showTitle),
+              season_number: 1,
+              episode_number: Number(episodeNumber)
+          });
+          const url = `https://arkm20-authapi.hf.space/users/me/watch-history?${params.toString()}`;
+          const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                  'Authorization': `Bearer ${token}`
+              }
+          });
+          if (response.ok) {
+            console.log("Watch history updated successfully.");
+          } else {
+            const result = await response.json().catch(() => ({}));
+            console.warn("Failed to update watch history:", result.message || response.status);
+          }
+        } catch (error) {
+          console.error("Network error while updating watch history:", error);
+        }
       }
-    }
-
       // 5) Initial load (SUB by default)
       await loadIframe(false);
       // Update watch history after loading the episode
       updateWatchHistory(jikanId, title, episode);
-
-      // 6) Back button logic
-      document.getElementById('back-button').addEventListener('click', () => {
-        // Go directly to series-info.html for this anime
-        window.location.href = `series-info.html?id=${encodeURIComponent(jikanId)}`;
-      });
-
-      // 7) Dub/Sub toggle logic
+      // 6) Dub/Sub toggle logic
       subOptionBtn.addEventListener('click', async () => {
         if (!subOptionBtn.classList.contains('active')) {
           subOptionBtn.classList.add('active');
