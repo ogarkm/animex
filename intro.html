@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Welcome to Animex</title>
+  <!-- I've kept the resources inline for this single-file format, but in a real project, these would be separate files. -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* --- Modern Theming and Base Styles --- */
+    :root {
+      --brand-primary: #F07028;
+      --brand-primary-dark: #DE541E;
+      --bg-main: #121212;
+      --bg-card: #1E1E1E;
+      --text-primary: #F5F5F7;
+      --text-secondary: #AEAEB2;
+      --text-tertiary: #636366;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --shadow-color: rgba(0, 0, 0, 0.25);
+      --shadow-brand: rgba(240, 112, 40, 0.2);
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --radius-l: 24px;
+      --radius-m: 12px;
+      --transition-speed: 0.3s;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      overflow: hidden;
+    }
+
+    /* --- Main Onboarding Container --- */
+    .onboarding-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      width: 100vw;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    /* --- The Card --- */
+    .onboarding-card {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-l);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 16px 48px var(--shadow-color);
+      padding: 32px;
+      max-width: 400px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    /* --- Content Area --- */
+    #onboarding-content {
+      text-align: center;
+      min-height: 280px; /* Provides consistent height between slides */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
+    }
+
+    #onboarding-content.is-changing {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    
+    .content-icon {
+        color: var(--brand-primary);
+        margin-bottom: 24px;
+    }
+
+    .content-icon svg {
+        width: 80px;
+        height: 80px;
+        filter: drop-shadow(0 4px 12px var(--shadow-brand));
+    }
+    
+    .content-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 12px;
+    }
+
+    .content-desc {
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    /* PWA Guide specific styles */
+    .pwa-guide {
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        text-align: left;
+        width: 100%;
+        margin-top: 16px;
+    }
+    .pwa-guide li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .pwa-guide-icon {
+        background-color: var(--brand-primary);
+        color: white;
+        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* --- Navigation Footer --- */
+    #onboarding-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-inner {
+      height: 100%;
+      width: 0%; /* Controlled by JS */
+      background-color: var(--brand-primary);
+      border-radius: 3px;
+      transition: width var(--transition-speed) ease;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    /* --- Button Styles --- */
+    .btn {
+      font-family: var(--font-family);
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: var(--radius-m);
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition-speed) ease;
+      -webkit-tap-highlight-color: transparent; /* Better mobile tap feedback */
+    }
+
+    .btn-primary {
+      background-color: var(--brand-primary);
+      color: white;
+      box-shadow: 0 4px 12px var(--shadow-brand);
+      flex-grow: 1; /* Makes "Next" and "Get Started" more prominent */
+    }
+    .btn-primary:hover { background-color: var(--brand-primary-dark); }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+    .btn-secondary:hover { background-color: var(--border-color); color: var(--text-primary); }
+
+    .btn-tertiary {
+      background: none;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+    .btn-tertiary:hover { color: var(--text-secondary); }
+
+    /* Hide buttons by default, JS will show them */
+    #back-btn, #next-btn, #finish-btn, #skip-btn { display: none; }
+
+    /* --- Keyframe Animations --- */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* --- Responsive Design --- */
+    @media (max-width: 480px) {
+        .onboarding-card {
+            padding: 24px;
+        }
+        .content-title {
+            font-size: 1.5rem;
+        }
+        #onboarding-content {
+            min-height: 250px;
+        }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="onboarding-container">
+    <div class="onboarding-card">
+      <main id="onboarding-content" aria-live="polite">
+        <!-- Content injected by JavaScript -->
+      </main>
+      <footer id="onboarding-nav">
+        <div class="progress-bar">
+          <div class="progress-bar-inner" id="progress-bar-inner"></div>
+        </div>
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" id="back-btn">Back</button>
+          <button class="btn btn-tertiary" id="skip-btn">Skip</button>
+          <button class="btn btn-primary" id="next-btn">Next</button>
+          <button class="btn btn-primary" id="finish-btn">Get Started</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Adding Font Awesome for the PWA guide, as it's a small specific use case -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+  <script>
+    (function() {
+      // --- DATA ---
+      // Using SVG strings for better scalability and no external dependencies for core icons.
+      const introPages = [
+        {
+          icon: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M85 24.3333C85 22.5111 83.5222 21 81.6667 21H18.3333C16.4778 21 15 22.5111 15 24.3333V75.6667C15 77.4889 16.4778 79 18.3333 79H81.6667C83.5222 79 85 77.4889 85 75.6667V24.3333Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 35.6667L64.3333 50L41 64.3333V35.6667Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+          title: 'Welcome to Animex',
+          desc: 'Your all-in-one Anime & Manga hub. Enjoy a seamless, beautiful experience across all your devices.'
+        },
+        {
+          icon: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M79 17H21C18.7909 17 17 18.7909 17 21V79C17 81.2091 18.7909 83 21 83H79C81.2091 83 83 81.2091 83 79V21C83 18.7909 81.2091 17 79 17Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 67C59.3888 67 67 59.3888 67 50C67 40.6112 59.3888 33 50 33C40.6112 33 33 40.6112 33 50C33 59.3888 40.6112 67 50 67Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M33 17V83" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+          title: 'Anime & Manga',
+          desc: 'Stream your favorite shows and read manga with our beautifully integrated, modern interfaces.'
+        },
+        {
+          icon: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M47.5 19H22C20.3431 19 19 20.3431 19 22V78C19 79.6569 20.3431 81 22 81H78C79.6569 81 81 79.6569 81 78V52.5" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M43 45.8333H67.5M43 58.1667H55.25" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M72.25 21.5L80.5 29.75L62.75 47.5H54.5V39.25L72.25 21.5Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+          title: 'Personal Library',
+          desc: 'Track your progress, save your favorites, and continue where you left off, anytime.'
+        },
+        {
+          pwa: true, // Special flag for the PWA slide
+          icon: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 17V33.3333" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M28 28L39.1667 39.1667" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 50H33.3333" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M28 72L39.1667 60.8333" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 83V66.6667" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M72 72L60.8333 60.8333" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M83 50H66.6667" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M72 28L60.8333 39.1667" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+          title: 'Install the App',
+          desc: 'For the best experience, add Animex to your home screen. It works offline and feels like a native app.',
+          pwaGuide: `
+            <ul class="pwa-guide">
+                <li><span class="pwa-guide-icon"><i class="fas fa-share-alt"></i></span> <span>Tap the <b>Share</b> icon in your browser.</span></li>
+                <li><span class="pwa-guide-icon"><i class="fas fa-plus-square"></i></span> <span>Select <b>'Add to Home Screen'</b>.</span></li>
+            </ul>
+          `
+        }
+      ];
+
+      // --- DOM ELEMENTS ---
+      const contentEl = document.getElementById('onboarding-content');
+      const navEl = document.getElementById('onboarding-nav');
+      const progressBarInnerEl = document.getElementById('progress-bar-inner');
+      const backBtn = document.getElementById('back-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const finishBtn = document.getElementById('finish-btn');
+      const skipBtn = document.getElementById('skip-btn');
+
+      // --- STATE ---
+      let currentPage = 0;
+      let availablePages = [];
+
+      // --- LOGIC ---
+      function finishOnboarding() {
+        localStorage.setItem('introSeen', 'true');
+        // Try to use the Web Share API to prompt install/add to home screen
+        if (navigator.share) {
+          navigator.share({
+            title: 'Animex',
+            text: 'Install Animex for the best anime & manga experience!',
+            url: 'https://animex-app.vercel.app/'
+          }).then(() => {
+            console.log('Share successful!');
+          }).catch((error) => {
+            console.warn('Share failed or was cancelled:', error);
+            alert('Onboarding Complete! You can now add Animex to your home screen.');
+          });
+        } else {
+          alert('Onboarding Complete! You can now add Animex to your home screen.');
+        }
+        document.body.style.opacity = 0;
+        document.body.style.transition = 'opacity 0.5s';
+        setTimeout(() => {
+          document.body.style.opacity = 1;
+        }, 500);
+      }
+
+      function updateNavigation() {
+        const total = availablePages.length;
+        const isFirstPage = currentPage === 0;
+        const isLastPage = currentPage === total - 1;
+
+        // Progress Bar
+        const progress = isLastPage ? 100 : ((currentPage) / (total - 1)) * 100;
+        progressBarInnerEl.style.width = `${progress}%`;
+
+        // Buttons
+        backBtn.style.display = isFirstPage ? 'none' : 'inline-block';
+        skipBtn.style.display = isLastPage ? 'none' : 'inline-block';
+        nextBtn.style.display = isLastPage ? 'none' : 'inline-block';
+        finishBtn.style.display = isLastPage ? 'inline-block' : 'none';
+      }
+
+      function updateContent() {
+        const pageData = availablePages[currentPage];
+        
+        contentEl.classList.add('is-changing');
+
+        // Allow fade-out animation to run
+        // Get transition speed from CSS variable and convert to ms
+        const transitionSpeed = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--transition-speed')) || 0.3;
+        setTimeout(() => {
+            let html = `
+                <div class="content-icon">${pageData.icon}</div>
+                <h1 class="content-title">${pageData.title}</h1>
+                <p class="content-desc">${pageData.desc}</p>
+            `;
+            if (pageData.pwaGuide) {
+                html += pageData.pwaGuide;
+            }
+            contentEl.innerHTML = html;
+            
+            // Allow content to be rendered before fading in
+            requestAnimationFrame(() => {
+                contentEl.classList.remove('is-changing');
+            });
+        }, (transitionSpeed * 1000 / 2));
+      }
+
+      function handleNavClick(e) {
+        const action = e.target.id;
+        switch (action) {
+          case 'next-btn':
+            if (currentPage < availablePages.length - 1) {
+              currentPage++;
+              updateContent();
+              updateNavigation();
+            }
+            break;
+          case 'back-btn':
+            if (currentPage > 0) {
+              currentPage--;
+              updateContent();
+              updateNavigation();
+            }
+            break;
+          case 'finish-btn':
+          case 'skip-btn':
+            finishOnboarding();
+            break;
+        }
+      }
+
+      function init() {
+        // **Smart PWA Check:** If running as a standalone app, filter out the PWA guide page.
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        if (isStandalone) {
+          availablePages = introPages.filter(p => !p.pwa);
+        } else {
+          availablePages = [...introPages];
+        }
+
+        // Redirect if already seen
+        if (localStorage.getItem('introSeen') === 'true') {
+           console.log("Intro already seen, skipping.");
+           // In a real app, this redirect would be immediate
+           // finishOnboarding(); 
+           // For this demo, we'll allow re-running it.
+           // localStorage.removeItem('introSeen'); 
+        }
+
+        // Initial render
+        updateContent();
+        updateNavigation();
+
+        // Attach a single, efficient event listener
+        navEl.addEventListener('click', handleNavClick);
+      }
+
+      // Start the onboarding flow
+      init();
+
+    })();
+  </script>
+</body>
+</html>

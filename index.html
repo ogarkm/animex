@@ -442,6 +442,11 @@
     </div>
   </div>
 
+    <!-- INTRO OVERLAY (hidden by default) -->
+    <div id="intro-overlay" style="display:none; position:fixed; z-index:2000; top:0; left:0; width:100vw; height:100vh; background:#111;">
+        <iframe id="intro-iframe" src="" style="width:100vw; height:100vh; border:none; background:#111;"></iframe>
+    </div>
+
     <script>
   let deferredPrompt;
 
@@ -449,6 +454,15 @@
   function isInStandaloneMode() {
     return window.matchMedia('(display-mode: standalone)').matches 
         || window.navigator.standalone === true;
+  }
+
+  // --- Intro Cover Logic ---
+  function shouldShowIntro() {
+    return !localStorage.getItem('introSeen');
+  }
+
+  function showIntroCover() {
+    window.location.href = 'intro.html';
   }
 
   // Show the banner with optional custom message
@@ -477,6 +491,11 @@
 
   // Handle banner button clicks
   document.addEventListener('DOMContentLoaded', () => {
+    // --- Show intro.html if needed ---
+    if (shouldShowIntro()) {
+      showIntroCover();
+      return;
+    }
     const installBtn = document.getElementById('pwa-install-btn');
     const closeBtn   = document.getElementById('pwa-install-close');
 
@@ -550,6 +569,25 @@
                 setTimeout(() => {
                     splashScreen.style.display = 'none';
                     document.querySelector('.app-container').style.animation = 'fadeIn 0.5s ease-out forwards';
+
+                    // --- Show intro overlay if needed ---
+                    if (shouldShowIntro()) {
+                        const introOverlay = document.getElementById('intro-overlay');
+                        const introIframe = document.getElementById('intro-iframe');
+                        introOverlay.style.display = 'block';
+                        introIframe.src = 'intro.html';
+                        document.querySelector('.app-container').style.display = 'none';
+                        // Listen for message from intro.html to close overlay
+                        window.addEventListener('message', function handleIntroMsg(e) {
+                            if (e.data === 'introDone') {
+                                introOverlay.style.display = 'none';
+                                document.querySelector('.app-container').style.display = '';
+                                localStorage.setItem('introSeen', '1');
+                                window.removeEventListener('message', handleIntroMsg);
+                            }
+                        });
+                        return;
+                    }
                 }, 600);
             }, 2200); // 0.7s logo zoom + 0.7s flash + 0.8s spinner
 
