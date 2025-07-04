@@ -444,7 +444,7 @@
 
     <!-- INTRO OVERLAY (hidden by default) -->
     <div id="intro-overlay" style="display:none; position:fixed; z-index:2000; top:0; left:0; width:100vw; height:100vh; background:#111;">
-        <iframe id="intro-iframe" src="" style="width:100vw; height:100vh; border:none; background:#111;"></iframe>
+        <iframe id="intro-iframe" src="intro.html" style="width:100vw; height:100vh; border:none; background:#111;"></iframe>
     </div>
 
     <script>
@@ -462,7 +462,8 @@
   }
 
   function showIntroCover() {
-    window.location.href = 'intro.html';
+    const intro = document.getElement('intro-overlay');
+    intro.style.display = "block";
   }
 
   // Show the banner with optional custom message
