@@ -492,10 +492,6 @@
   // Handle banner button clicks
   document.addEventListener('DOMContentLoaded', () => {
     // --- Show intro.html if needed ---
-    if (shouldShowIntro()) {
-      showIntroCover();
-      return;
-    }
     const installBtn = document.getElementById('pwa-install-btn');
     const closeBtn   = document.getElementById('pwa-install-close');
 
@@ -514,7 +510,8 @@
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const isInStandalone = isInStandaloneMode();
     if (isIos && !isInStandalone) {
-      showBanner('Tap “Share” then “Add to Home Screen”');
+      showIntroCover();
+      return;
       installBtn.style.display = 'none';
     }
   });
