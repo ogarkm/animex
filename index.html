@@ -15,7 +15,12 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="manifest" href="Resources/manifest.json/>
+    <!-- Theme color for browser UI -->
+    <meta name="theme-color" content="#FF9500" />
 
+    <!-- iOS support -->
+    <link rel="apple-touch-icon" href="/Resources/Images/icon-192.png">
     <style>
         /* --- GENERAL LAYOUT STYLES --- */
         body, html {
@@ -450,52 +455,57 @@
     <script>
   let deferredPrompt;
 
-  // Utility: Are we already in standalone (installed) mode?
-  function isInStandaloneMode() {
-    return window.matchMedia('(display-mode: standalone)').matches 
-        || window.navigator.standalone === true;
-  }
+// Check if the app is running as a PWA
+function isInStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches 
+      || window.navigator.standalone === true;
+}
 
-  // --- Intro Cover Logic ---
-  function shouldShowIntro() {
-    return !localStorage.getItem('introSeen');
-  }
+// Should we show the intro?
+function shouldShowIntro() {
+  return !isInStandaloneMode() && !localStorage.getItem('introSeen');
+}
 
-  function showIntroCover() {
-    const intro = document.getElement('intro-overlay');
+// Show the intro overlay
+function showIntroCover() {
+  const intro = document.getElementById('intro-overlay');
+  if (intro) {
     intro.style.display = "block";
+    localStorage.setItem('introSeen', 'true');
   }
+}
 
-  // Show the banner with optional custom message
-  function showBanner(message = 'Install Animex for a better experience') {
-    if (isInStandaloneMode()) return;
-    const banner = document.getElementById('pwa-install-banner');
-    document.getElementById('pwa-install-message').textContent = message;
-    banner.classList.remove('hidden');
-    // force layout then slide in
-    requestAnimationFrame(() => banner.classList.add('show'));
-  }
+// Show the install banner
+function showBanner(message = 'Install Animex for a better experience') {
+  if (isInStandaloneMode()) return;
+  const banner = document.getElementById('pwa-install-banner');
+  document.getElementById('pwa-install-message').textContent = message;
+  banner.classList.remove('hidden');
+  requestAnimationFrame(() => banner.classList.add('show'));
+}
 
-  // Hide & remove banner
-  function hideBanner() {
-    const banner = document.getElementById('pwa-install-banner');
-    banner.classList.remove('show');
-    banner.addEventListener('transitionend', () => banner.classList.add('hidden'), { once: true });
-  }
+// Hide the banner
+function hideBanner() {
+  const banner = document.getElementById('pwa-install-banner');
+  banner.classList.remove('show');
+  banner.addEventListener('transitionend', () => {
+    banner.classList.add('hidden');
+  }, { once: true });
+}
 
-  // Listen for Android / Chrome-style install prompt
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    showBanner();  // use default message
-  });
+// Listen for beforeinstallprompt (Chrome / Android)
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showBanner(); // use default message
+});
 
-  // Handle banner button clicks
-  document.addEventListener('DOMContentLoaded', () => {
-    // --- Show intro.html if needed ---
-    const installBtn = document.getElementById('pwa-install-btn');
-    const closeBtn   = document.getElementById('pwa-install-close');
+// DOM loaded: set up install buttons and intro logic
+document.addEventListener('DOMContentLoaded', () => {
+  const installBtn = document.getElementById('pwa-install-btn');
+  const closeBtn = document.getElementById('pwa-install-close');
 
+  if (installBtn) {
     installBtn.addEventListener('click', async () => {
       hideBanner();
       if (deferredPrompt) {
@@ -504,18 +514,17 @@
         deferredPrompt = null;
       }
     });
+  }
 
+  if (closeBtn) {
     closeBtn.addEventListener('click', hideBanner);
+  }
 
-    // iOS detection: show a “manual” install hint
-    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isInStandalone = isInStandaloneMode();
-    if (isIos && !isInStandalone) {
-      showIntroCover();
-      return;
-      installBtn.style.display = 'none';
-    }
-  });
+  // Show intro cover only if not in PWA
+  if (shouldShowIntro()) {
+    showIntroCover();
+  }
+});
 </script>
 
     <script>
