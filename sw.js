@@ -59,11 +59,27 @@ const PRECACHE_URLS = [
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
 ];
 
-// Install: cache critical assets
+// Helper: filter out external URLs (http/https)
+function isLocalURL(url) {
+  return typeof url === 'string' && !/^https?:\/\//.test(url);
+}
+
+// Install: cache critical assets (local only, skip errors)
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(PRECACHE_URLS))
+      .then(cache => {
+        // Only cache local URLs
+        const localUrls = PRECACHE_URLS.filter(isLocalURL);
+        return Promise.all(
+          localUrls.map(url =>
+            cache.add(url).catch(err => {
+              // Optionally log failed URLs
+              console.warn('SW cache add failed:', url, err);
+            })
+          )
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });
