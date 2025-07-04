@@ -463,7 +463,7 @@ function isInStandaloneMode() {
 
 // Should we show the intro?
 function shouldShowIntro() {
-  return !isInStandaloneMode() && !localStorage.getItem('introSeen');
+  return !isInStandaloneMode();
 }
 
 // Show the intro overlay
@@ -471,7 +471,6 @@ function showIntroCover() {
   const intro = document.getElementById('intro-overlay');
   if (intro) {
     intro.style.display = "block";
-    localStorage.setItem('introSeen', 'true');
   }
 }
 
