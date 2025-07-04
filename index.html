@@ -455,6 +455,68 @@
                 font-size: 20px;
             }
         }
+        
+          /* --- PWA Install Banner Styles --- */
+  #pwa-install-banner {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(25,25,25,0.95);
+    backdrop-filter: blur(20px);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.5);
+    z-index: 200;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-out;
+  }
+  #pwa-install-banner.show {
+    transform: translateY(0);
+  }
+  #pwa-install-banner .banner-content {
+    max-width: 480px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ccc;
+    font-family: 'Inter', sans-serif;
+  }
+  #pwa-install-banner .banner-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+  #pwa-install-banner .banner-text i {
+    font-size: 18px;
+    color: #E8772E;
+  }
+  #pwa-install-banner .banner-actions button {
+    background: #E8772E;
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    margin-left: 8px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  #pwa-install-banner .banner-actions button#pwa-install-close {
+    background: transparent;
+    color: #888;
+    font-size: 18px;
+    margin-left: 4px;
+  }
+  #pwa-install-banner .banner-actions button:hover {
+    opacity: 0.8;
+  }
+  /* hidden utility */
+  #pwa-install-banner.hidden {
+    display: none;
+  }
     </style>
 </head>
 <body>
@@ -518,6 +580,79 @@
             </a>
         </nav>
     </div>
+    
+      <!-- PWA Install Banner -->
+  <div id="pwa-install-banner" class="hidden">
+    <div class="banner-content">
+      <div class="banner-text">
+        <i class="fas fa-download"></i>
+        <span id="pwa-install-message">Install Animex for a better experience</span>
+      </div>
+      <div class="banner-actions">
+        <button id="pwa-install-btn">Install</button>
+        <button id="pwa-install-close"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+  </div>
+
+    <script>
+  let deferredPrompt;
+
+  // Utility: Are we already in standalone (installed) mode?
+  function isInStandaloneMode() {
+    return window.matchMedia('(display-mode: standalone)').matches 
+        || window.navigator.standalone === true;
+  }
+
+  // Show the banner with optional custom message
+  function showBanner(message = 'Install Animex for a better experience') {
+    if (isInStandaloneMode()) return;
+    const banner = document.getElementById('pwa-install-banner');
+    document.getElementById('pwa-install-message').textContent = message;
+    banner.classList.remove('hidden');
+    // force layout then slide in
+    requestAnimationFrame(() => banner.classList.add('show'));
+  }
+
+  // Hide & remove banner
+  function hideBanner() {
+    const banner = document.getElementById('pwa-install-banner');
+    banner.classList.remove('show');
+    banner.addEventListener('transitionend', () => banner.classList.add('hidden'), { once: true });
+  }
+
+  // Listen for Android / Chrome-style install prompt
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    showBanner();  // use default message
+  });
+
+  // Handle banner button clicks
+  document.addEventListener('DOMContentLoaded', () => {
+    const installBtn = document.getElementById('pwa-install-btn');
+    const closeBtn   = document.getElementById('pwa-install-close');
+
+    installBtn.addEventListener('click', async () => {
+      hideBanner();
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      }
+    });
+
+    closeBtn.addEventListener('click', hideBanner);
+
+    // iOS detection: show a “manual” install hint
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isInStandalone = isInStandaloneMode();
+    if (isIos && !isInStandalone) {
+      showBanner('Tap “Share” then “Add to Home Screen”');
+      installBtn.style.display = 'none';
+    }
+  });
+</script>
 
     <script>
         // Audio setup for splash screen (mobile-compatible)
