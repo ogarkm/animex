@@ -8,135 +8,276 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="Resources/styles.css"> <!-- Your CSS file -->
+    <style>
+        /* Base styles from original file */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            margin: 0;
+            color: #fff;
+        }
+
+        /* --- NEW: Carousel Section Styles --- */
+        #featured-carousel-container {
+            position: relative;
+            min-height: 450px; /* Provides space for the loader */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            overflow: hidden;
+            padding-bottom: 20px;
+        }
+        .carousel-background {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            transition: opacity 0.7s ease-in-out;
+        }
+        .carousel-background::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, #121212 5%, transparent 40%), radial-gradient(circle, transparent 30%, #121212 95%);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        #carousel-bg-1 { opacity: 1; }
+        #carousel-bg-2 { opacity: 0; }
+        .carousel { perspective: 1000px; position: relative; z-index: 2; height: 60%; margin-top: 50px; min-height: 320px; }
+        .carousel-wrapper {
+            position: absolute; width: 100%; height: 320px; /* Explicit height for visibility */
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .carousel-slide {
+            position: absolute; left: 0; right: 0; margin: auto;
+            width: 45%; max-width: 200px; height: 300px; /* Explicit height for card */
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.6s ease;
+        }
+        .carousel-slide img {
+            width: 100%; height: 100%; object-fit: cover; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            -webkit-box-reflect: below 5px linear-gradient(to bottom, transparent 80%, rgba(255,255,255,0.2));
+        }
+        .carousel-nav {
+            position: absolute; top: 40%; transform: translateY(-50%); z-index: 3;
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);
+            color: white; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        #nav-left { left: 5px; } #nav-right { right: 5px; }
+        .carousel-info { position: relative; z-index: 2; text-align: center; padding: 0 20px; }
+        .carousel-info .title-text {
+            font-size: 2.5em; font-weight: 700; color: #fff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+            margin: 10px 0; line-height: 1.1;
+        }
+        .carousel-info .continue-button {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            background: #FF7A00; color: #fff; padding: 12px 24px; border-radius: 50px;
+            font-weight: 600; text-decoration: none; transition: transform 0.2s ease;
+        }
+        .carousel-info .continue-button:hover { transform: scale(1.05); }
+
+        /* --- NEW: Loader --- */
+        .loader {
+            border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #FF7A00;
+            border-radius: 50%; width: 50px; height: 50px;
+            animation: spin 1s linear infinite; margin: 150px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+        /* --- Horizontal Scrolling Section Styles (Netflix Style) --- */
+        .content-section { margin-bottom: 30px; padding: 0 20px; }
+        .section-title { font-size: 1.4em; font-weight: 600; color: #fff; margin-bottom: 15px; }
+        .horizontal-scroll-container {
+            display: flex; overflow-x: auto; overflow-y: hidden;
+            padding-bottom: 15px; gap: 15px;
+        }
+        .horizontal-scroll-container::-webkit-scrollbar { display: none; }
+        .horizontal-scroll-container { -ms-overflow-style: none; scrollbar-width: none; }
+        .poster-card {
+            flex-shrink: 0; width: 160px; cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+            background-color: rgba(30, 30, 30, 0.5);
+            padding: 10px; backdrop-filter: blur(5px); border-radius: 10px;
+        }
+        .poster-card:hover { transform: scale(1.02); }
+        .poster-card img {
+            width: 100%; height: 230px; object-fit: cover;
+            border-radius: 8px; margin-bottom: 8px;
+        }
+        .poster-card .poster-title {
+            font-size: 0.9em; font-weight: 500; color: #e5e5e5;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .error-message { color: #e5e5e5; font-style: italic; }
+
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <header class="hero-section" style="background-image: url('https://cdn.myanimelist.net/images/anime/1770/97704l.jpg');">
-            <div class="hero-content">
-                <div class="hero-poster">
-                    <img src="https://cdn.myanimelist.net/images/manga/2/253146.jpg" alt="Manga Poster">
-                </div>
-                <div class="hero-details">
-                    <span class="title-logo" style="padding-bottom: 10px;">One Piece</span> <!-- Placeholder -->
-                    <a class="continue-button" href="/series-info.html?manga=true&id=13">
-                        <i class="fas fa-book-open"></i> Explore Manga
-                    </a>
-                </div>
-            </div>
+        <!-- The hero section is now the dynamic carousel -->
+        <header id="featured-carousel-container" class="hero-section">
+            <div class="loader"></div>
         </header>
 
-        <main class="main-content">
-            <section id="manga-explore-section">
-                <h2 class="section-title">Explore Manga</h2>
-                <div class="item-list" id="manga-list">
-                    <!-- Manga items will be populated here by JavaScript -->
-                    <!-- Example static item removed to be replaced by dynamic content -->
-                </div>
-            </section>
-            <!-- You can add more sections here -->
-        </main>
-    </div> <!-- .app-container ends -->
+        <!-- Main content area will be dynamically populated with sections -->
+        <main class="main-content" id="main-content-area"></main>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const mangaListContainer = document.getElementById('manga-list');
+            // --- CONFIGURATION ---
+            const JIKAN_API_BASE_URL = 'https://api.jikan.moe/v4';
 
-            // Function to fetch top manga from Jikan API
-            async function fetchTopManga() {
+            // --- ELEMENT SELECTORS ---
+            const mainContentArea = document.getElementById('main-content-area');
+
+            // --- CAROUSEL STATE ---
+            let carouselData = [];
+            let currentIndex = 0;
+            let carouselWrapper;
+            let isBg1Active = true;
+            let bg1, bg2;
+
+            // --- CAROUSEL LOGIC ---
+            async function initializeCarousel() {
+                const container = document.getElementById('featured-carousel-container');
                 try {
-                    // Jikan API endpoint for top manga
-                    const response = await fetch('https://api.jikan.moe/v4/top/manga?limit=10'); // Fetching top 10 manga
-                    if (!response.ok) {
-                        throw new Error(`Jikan API error: ${response.status} ${response.statusText}`);
+                    // Fetch top manga for carousel
+                    const response = await fetch(`${JIKAN_API_BASE_URL}/top/manga?limit=7`);
+                    if (!response.ok) throw new Error(`Carousel fetch error: ${response.status}`);
+                    const mangaList = (await response.json()).data;
+                    
+                    if (!mangaList || !mangaList.length) {
+                        throw new Error("No carousel data returned from API.");
                     }
-                    const data = await response.json();
-                    displayManga(data.data);
+                    carouselData = mangaList;
+                    
+                    container.innerHTML = `
+                        <div id="carousel-bg-1" class="carousel-background"></div>
+                        <div id="carousel-bg-2" class="carousel-background"></div>
+                        <div class="carousel">
+                            <div class="carousel-wrapper">
+                                ${carouselData.map(manga => `
+                                    <div class="carousel-slide"><img src="${manga.images.jpg.large_image_url}" alt=""></div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <button id="nav-left" class="carousel-nav"><i class="fa-solid fa-chevron-left"></i></button>
+                        <button id="nav-right" class="carousel-nav"><i class="fa-solid fa-chevron-right"></i></button>
+                        <div class="carousel-info">
+                            <h2 id="carousel-title-text" class="title-text"></h2>
+                            <a id="carousel-continue-btn" href="#" class="continue-button" style="text-decoration: none;">
+                                <i class="fas fa-book-open"></i> Explore Manga
+                            </a>
+                        </div>
+                    `;
+
+                    carouselWrapper = container.querySelector('.carousel-wrapper');
+                    bg1 = document.getElementById('carousel-bg-1');
+                    bg2 = document.getElementById('carousel-bg-2');
+                    
+                    container.querySelector('#nav-left').addEventListener('click', () => navigateCarousel(-1));
+                    container.querySelector('#nav-right').addEventListener('click', () => navigateCarousel(1));
+                    
+                    updateCarousel();
                 } catch (error) {
-                    console.error("Failed to fetch manga data:", error);
-                    if (mangaListContainer) {
-                        mangaListContainer.innerHTML = '<p>Error loading manga. Please try again later.</p>';
+                    console.error("Failed to initialize carousel:", error);
+                    container.innerHTML = `<p class="error-message" style="text-align: center; padding: 50px 0;">Could not load featured content.</p>`;
+                }
+            }
+
+            function navigateCarousel(direction) {
+                currentIndex = (currentIndex + direction + carouselData.length) % carouselData.length;
+                updateCarousel();
+            }
+            
+            function updateCarousel() {
+                const angle = 360 / carouselData.length;
+                const zDistance = (carouselWrapper.offsetWidth / 2) / Math.tan((angle / 2) * (Math.PI / 180));
+                carouselWrapper.style.transform = `translateZ(${-zDistance}px) rotateY(${-currentIndex * angle}deg)`;
+                document.querySelectorAll('.carousel-slide').forEach((slide, index) => {
+                    const slideAngle = index * angle;
+                    slide.style.transform = `rotateY(${slideAngle}deg) translateZ(${zDistance}px)`;
+                });
+                const currentManga = carouselData[currentIndex];
+                document.getElementById('carousel-title-text').textContent = currentManga.title_english || currentManga.title;
+                document.getElementById('carousel-continue-btn').href = `series-info.html?manga=true&id=${currentManga.mal_id}`;
+                updateCarouselBackground(currentManga.images.jpg.large_image_url);
+            }
+
+            function updateCarouselBackground(imageUrl) {
+                if (isBg1Active) {
+                    bg2.style.backgroundImage = `url(${imageUrl})`;
+                    bg1.style.opacity = '0';
+                    bg2.style.opacity = '1';
+                } else {
+                    bg1.style.backgroundImage = `url(${imageUrl})`;
+                    bg2.style.opacity = '0';
+                    bg1.style.opacity = '1';
+                }
+                isBg1Active = !isBg1Active;
+            }
+
+            // --- HORIZONTAL SECTION LOGIC ---
+            async function createHorizontalSection(title, apiUrl) {
+                try {
+                    const section = document.createElement('section');
+                    section.classList.add('content-section');
+                    const sectionTitle = document.createElement('h2');
+                    sectionTitle.classList.add('section-title');
+                    sectionTitle.textContent = title;
+                    const scrollContainer = document.createElement('div');
+                    scrollContainer.classList.add('horizontal-scroll-container');
+                    scrollContainer.innerHTML = `<p style="color: #ccc;">Loading...</p>`;
+                    section.appendChild(sectionTitle);
+                    section.appendChild(scrollContainer);
+                    mainContentArea.appendChild(section);
+
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`Jikan API error: ${response.status}`);
+                    const data = await response.json();
+                    displayMangaPosters(data.data, scrollContainer);
+                } catch (error) {
+                    console.error(`Failed to load section "${title}":`, error);
+                    const sectionWithError = Array.from(mainContentArea.getElementsByTagName('h2')).find(h2 => h2.textContent === title);
+                    if (sectionWithError) {
+                        sectionWithError.nextElementSibling.innerHTML = `<p class="error-message">Could not load this section.</p>`;
                     }
                 }
             }
 
-            // Function to display manga data in the list
-            function displayManga(mangaData) {
-                if (!mangaListContainer) return;
-                mangaListContainer.innerHTML = ''; // Clear any existing content or placeholders
-
+            function displayMangaPosters(mangaData, container) {
+                container.innerHTML = '';
                 if (!mangaData || mangaData.length === 0) {
-                    mangaListContainer.innerHTML = '<p>No manga found.</p>';
-                    return;
+                     container.innerHTML = `<p class="error-message">No results found.</p>`;
+                     return;
                 }
-
                 mangaData.forEach(manga => {
-                    const listItem = document.createElement('div');
-                    listItem.classList.add('list-item');
-                    listItem.style.cursor = 'pointer'; // Make it visually clickable
-                    // Consider adding a type parameter if series-info.html handles both anime and manga
-                    listItem.addEventListener('click', () => {
-                        window.location.href = `series-info.html?id=${manga.mal_id}&manga=true`;
-                    });
-
-                    const thumbnailDiv = document.createElement('div');
-                    thumbnailDiv.classList.add('item-thumbnail');
-                    const thumbnailImg = document.createElement('img');
-                    thumbnailImg.src = manga.images?.jpg?.image_url || 'https://placehold.co/60x80/555/fff?text=N/A';
-                    thumbnailImg.alt = manga.title_english || manga.title;
-                    thumbnailDiv.appendChild(thumbnailImg);
-
-                    const detailsDiv = document.createElement('div');
-                    detailsDiv.classList.add('item-details');
-                    const titleH3 = document.createElement('h3');
-                    titleH3.classList.add('item-title');
-                    titleH3.textContent = manga.title_english || manga.title;
-                    detailsDiv.appendChild(titleH3);
-
-                    const metaDiv = document.createElement('div');
-                    metaDiv.classList.add('item-meta');
-
-                    if (manga.score) {
-                        const scoreSpan = document.createElement('span');
-                        scoreSpan.classList.add('meta-pill');
-                        scoreSpan.textContent = `${manga.score}/10`;
-                        metaDiv.appendChild(scoreSpan);
-                    }
-
-                    if (manga.chapters) {
-                        const chaptersSpan = document.createElement('span');
-                        chaptersSpan.classList.add('meta-pill');
-                        chaptersSpan.textContent = `${manga.chapters} CH`;
-                        metaDiv.appendChild(chaptersSpan);
-                    } else if (manga.volumes) { // Fallback to volumes if chapters not available
-                        const volumesSpan = document.createElement('span');
-                        volumesSpan.classList.add('meta-pill');
-                        volumesSpan.textContent = `${manga.volumes} VOL`;
-                        metaDiv.appendChild(volumesSpan);
-                    }
-                    detailsDiv.appendChild(metaDiv);
-                    
-
-                    const arrowDiv = document.createElement('div');
-                    arrowDiv.classList.add('item-arrow');
-                    const arrowIcon = document.createElement('i');
-                    arrowIcon.classList.add('fas', 'fa-chevron-right');
-                    arrowDiv.appendChild(arrowIcon);
-
-                    listItem.appendChild(thumbnailDiv);
-                    listItem.appendChild(detailsDiv);
-                    listItem.appendChild(arrowDiv);
-
-                    mangaListContainer.appendChild(listItem);
+                    if (!manga.images?.jpg?.image_url) return;
+                    const card = document.createElement('div');
+                    card.classList.add('poster-card');
+                    card.addEventListener('click', () => { window.location.href = `series-info.html?manga=true&id=${manga.mal_id}`; });
+                    const img = document.createElement('img');
+                    img.src = manga.images.jpg.image_url;
+                    img.alt = manga.title_english || manga.title;
+                    const title = document.createElement('p');
+                    title.classList.add('poster-title');
+                    title.textContent = manga.title_english || manga.title;
+                    card.appendChild(img);
+                    card.appendChild(title);
+                    container.appendChild(card);
                 });
             }
             
-            // Initial fetch of manga data
-            if (mangaListContainer) { // Ensure the container exists before trying to fetch
-                fetchTopManga();
-            } else {
-                console.error("Manga list container not found.");
+            function initializePage() {
+                // Initialize the new dynamic carousel first
+                initializeCarousel();
+
+                // Create all the horizontal sections
+                createHorizontalSection("Top Manga", `${JIKAN_API_BASE_URL}/top/manga?limit=20`);
+                createHorizontalSection("Most Popular All-Time", `${JIKAN_API_BASE_URL}/top/manga?filter=bypopularity&limit=15`);
             }
+
+            initializePage();
         });
     </script>
 </body>

@@ -3,400 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watch History Client</title>
+    <title>Anime Downloader</title>
     <style>
-        :root {
-            --bg-color: #1a1a1b;
-            --card-bg: #272729;
-            --text-color: #d7dadc;
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --border-color: #4d4d50;
-            --success-color: #16a34a;
-            --error-color: #dc2626;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 700px;
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        h1, h2 {
-            text-align: center;
-            color: white;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
-            margin-top: 0;
-        }
-
-        h2 {
-            margin-top: 2rem;
-        }
-        
-        .section {
-            margin-bottom: 2rem;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-
-        input, textarea, button {
-            font-family: inherit;
-            font-size: 1rem;
-            padding: 0.75rem;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.4);
-        }
-
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        button:hover {
-            background-color: var(--primary-hover);
-        }
-        
-        button:disabled {
-            background-color: #3f3f46;
-            cursor: not-allowed;
-        }
-
-        .status {
-            text-align: center;
-            padding: 0.75rem;
-            margin-top: 1rem;
-            border-radius: 6px;
-            font-weight: 500;
-            display: none; /* Hidden by default */
-        }
-        
-        .status.success {
-            background-color: var(--success-color);
-            color: white;
-            display: block;
-        }
-        
-        .status.error {
-            background-color: var(--error-color);
-            color: white;
-            display: block;
-        }
-
-        #history-container {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            border: 1px dashed var(--border-color);
-            border-radius: 6px;
-            min-height: 50px;
-        }
-        
-        .show {
-            margin-bottom: 1.5rem;
-            padding-left: 1rem;
-            border-left: 3px solid var(--primary-color);
-        }
-        .show h3 { margin: 0 0 0.5rem 0; }
-        .season { margin-bottom: 1rem; padding-left: 1.5rem; }
-        .season h4 { margin: 0 0 0.5rem 0; color: #a1a1aa; }
-        .episode-list { list-style: none; padding-left: 1rem; margin: 0;}
-        .episode { 
-            padding: 0.25rem 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .episode:last-child { border-bottom: none; }
-        .episode-time { font-size: 0.8em; color: #a1a1aa; margin-left: 0.5rem; }
-
+        body { font-family: sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+        h1 { color: #333; }
+        .controls { margin: 1rem 0; }
+        select, input, button { padding: 0.5rem; font-size: 1rem; border-radius: 4px; border: 1px solid #ccc; margin: 0.25rem; }
+        button { background-color: #007bff; color: white; border-color: #007bff; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #status { margin-top: 1rem; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Watch History Client</h1>
-
-        <!-- Authentication Section -->
-        <div class="section">
-            <div class="form-group">
-                <label for="authToken">Auth Key (JWT Token)</label>
-                <textarea id="authToken" placeholder="Paste your Bearer token here..." required></textarea>
-            </div>
-        </div>
-
-        <!-- Section 1: Update Watch History -->
-        <div class="section">
-            <h2>Mark Episode as Watched</h2>
-            <form id="update-form">
-                <div class="form-group">
-                    <label for="showId">Show ID</label>
-                    <input type="text" id="showId" placeholder="e.g., tmdb-85271" required>
-                </div>
-                <div class="form-group">
-                    <label for="showTitle">Show Title</label>
-                    <input type="text" id="showTitle" placeholder="e.g., The Mandalorian" required>
-                </div>
-                <div class="form-group">
-                    <label for="seasonNumber">Season Number</label>
-                    <input type="number" id="seasonNumber" placeholder="e.g., 1" min="0" required>
-                </div>
-                <div class="form-group">
-                    <label for="episodeNumber">Episode Number</label>
-                    <input type="number" id="episodeNumber" placeholder="e.g., 1" min="1" required>
-                </div>
-                <button type="submit" id="update-btn">Update Watch History</button>
-            </form>
-            <div id="update-status" class="status"></div>
-        </div>
+        <h1>Anime Episode Downloader</h1>
+        <p>Example: Frieren: Beyond Journey's End (ID: 52991), Episode 5</p>
         
-        <hr style="border: 1px solid var(--border-color); margin: 2rem 0;">
-        
-        <!-- Section 2: View Watch History -->
-        <div class="section">
-            <h2>My Watch History</h2>
-            <button id="fetch-history-btn">Fetch My History</button>
-            <div id="fetch-status" class="status"></div>
-            <div id="history-container">
-                <p>Click "Fetch My History" to see your watched content.</p>
-            </div>
+        <div class="controls">
+            <label for="quality-select">Quality:</label>
+            <select id="quality-select">
+                <option value="360p">360p</option>
+                <option value="720p">720p</option>
+                <option value="1080p" selected>1080p</option>
+            </select>
+            
+            <button id="download-sub-btn">Download Sub</button>
+            <button id="download-dub-btn">Download Dub</button>
         </div>
+
+        <div id="status"></div>
     </div>
 
     <script>
-        const API_BASE_URL = 'https://arkm20-authapi.hf.space';
+        // --- JavaScript to call our FastAPI backend ---
 
-        // --- DOM Element References ---
-        const authTokenInput = document.getElementById('authToken');
+        const jikanId = '52299'; // Frieren: Beyond Journey's End
+        const episode = 1;
+
+        const qualitySelect = document.getElementById('quality-select');
+        const downloadSubBtn = document.getElementById('download-sub-btn');
+        const downloadDubBtn = document.getElementById('download-dub-btn');
+        const statusDiv = document.getElementById('status');
         
-        // Update Form Elements
-        const updateForm = document.getElementById('update-form');
-        const showIdInput = document.getElementById('showId');
-        const showTitleInput = document.getElementById('showTitle');
-        const seasonNumberInput = document.getElementById('seasonNumber');
-        const episodeNumberInput = document.getElementById('episodeNumber');
-        const updateBtn = document.getElementById('update-btn');
-        const updateStatus = document.getElementById('update-status');
+        // A function to handle the download logic
+        async function handleDownload(isDub) {
+            const quality = qualitySelect.value;
+            const subOrDub = isDub ? 'Dub' : 'Sub';
 
-        // Fetch History Elements
-        const fetchHistoryBtn = document.getElementById('fetch-history-btn');
-        const fetchStatus = document.getElementById('fetch-status');
-        const historyContainer = document.getElementById('history-container');
+            statusDiv.textContent = `Fetching ${quality} ${subOrDub} link... Please wait. This can take a moment.`;
+            statusDiv.style.color = 'orange';
 
-        // --- Helper Functions ---
-        function showStatus(element, message, isError = false) {
-            element.textContent = message;
-            element.className = 'status'; // Reset classes
-            element.classList.add(isError ? 'error' : 'success');
-        }
-
-        function hideStatus(element) {
-            element.style.display = 'none';
-        }
-        
-        function getAuthToken() {
-            return authTokenInput.value.trim();
-        }
-
-        // --- Event Handlers ---
-        
-        /**
-         * Handles the submission of the "Mark as Watched" form.
-         */
-        updateForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            hideStatus(updateStatus);
-            updateBtn.disabled = true;
-            updateBtn.textContent = 'Updating...';
-
-            const token = getAuthToken();
-            if (!token) {
-                showStatus(updateStatus, 'Auth Key is required.', true);
-                updateBtn.disabled = false;
-                updateBtn.textContent = 'Update Watch History';
-                return;
-            }
-
-            // Construct URL with query parameters as per the API definition
-            const url = new URL(`${API_BASE_URL}/users/me/watch-history`);
-            url.searchParams.append('show_id', showIdInput.value);
-            url.searchParams.append('show_title', showTitleInput.value);
-            url.searchParams.append('season_number', seasonNumberInput.value);
-            url.searchParams.append('episode_number', episodeNumberInput.value);
+            // Construct the API URL for our backend
+            const apiUrl = `https://arkm20-animex-player-api.hf.space/download-link?jikan_id=${jikanId}&episode=${episode}&dub=${isDub}&quality=${quality}`;
 
             try {
-                const response = await fetch(url.toString(), {
-                    method: 'GET', // As specified in the Python code
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await fetch(apiUrl);
+
+                // Handle errors from our API (e.g., 404 Not Found)
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `API Error: ${response.statusText}`);
+                }
 
                 const data = await response.json();
-
-                if (!response.ok) {
-                    // Throw an error to be caught by the catch block
-                    throw new Error(data.detail || `API Error: ${response.status}`);
-                }
+                const finalUrl = data.download_url;
                 
-                showStatus(updateStatus, data.message || 'Successfully updated!', false);
-                updateForm.reset(); // Clear the form on success
+                statusDiv.textContent = 'Success! Starting download...';
+                statusDiv.style.color = 'green';
+
+                // --- This is the key part for triggering the download ---
+                // Create a temporary anchor element
+                const a = document.createElement('a');
+                a.href = finalUrl;
+                
+                // The 'download' attribute suggests a filename to the browser
+                a.download = `anime-${jikanId}-ep${episode}-${subOrDub}-${quality}.mp4`; 
+                
+                // Append to the body, click, and then remove it
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                // --------------------------------------------------------
 
             } catch (error) {
-                console.error('Update Error:', error);
-                showStatus(updateStatus, error.message, true);
-            } finally {
-                updateBtn.disabled = false;
-                updateBtn.textContent = 'Update Watch History';
-            }
-        });
-
-        /**
-         * Handles the click of the "Fetch History" button.
-         */
-        fetchHistoryBtn.addEventListener('click', async () => {
-            hideStatus(fetchStatus);
-            historyContainer.innerHTML = '<p>Loading history...</p>';
-            fetchHistoryBtn.disabled = true;
-            fetchHistoryBtn.textContent = 'Fetching...';
-
-            const token = getAuthToken();
-            if (!token) {
-                showStatus(fetchStatus, 'Auth Key is required.', true);
-                historyContainer.innerHTML = '<p>Please provide an Auth Key first.</p>';
-                fetchHistoryBtn.disabled = false;
-                fetchHistoryBtn.textContent = 'Fetch My History';
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/users/me`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.detail || `API Error: ${response.status}`);
-                }
-                console.log('Fetched watch history:', data.watch_history_detailed);
-
-                renderWatchHistory(data.watch_history_detailed);
-
-            } catch (error) {
-                console.error('Fetch Error:', error);
-                showStatus(fetchStatus, error.message, true);
-                historyContainer.innerHTML = `<p style="color: var(--error-color);">Failed to load history.</p>`;
-            } finally {
-                fetchHistoryBtn.disabled = false;
-                fetchHistoryBtn.textContent = 'Fetch My History';
-            }
-        });
-
-        /**
-         * Renders the fetched watch history data into the DOM.
-         * @param {object} historyData - The nested watch history object from the API.
-         */
-        function renderWatchHistory(historyData) {
-            historyContainer.innerHTML = ''; // Clear previous content
-
-            const showIds = Object.keys(historyData);
-            if (showIds.length === 0) {
-                historyContainer.innerHTML = '<p>No watch history found.</p>';
-                return;
-            }
-
-            // Sort shows by title for consistent ordering
-            showIds.sort((a, b) => historyData[a].title.localeCompare(historyData[b].title));
-
-            for (const showId of showIds) {
-                const show = historyData[showId];
-
-                const showDiv = document.createElement('div');
-                showDiv.className = 'show';
-                
-                const showTitle = document.createElement('h3');
-                showTitle.textContent = show.title;
-                showDiv.appendChild(showTitle);
-
-                // Sort seasons numerically
-                const seasonNumbers = Object.keys(show.seasons).sort((a, b) => a - b);
-
-                for (const seasonNum of seasonNumbers) {
-                    const season = show.seasons[seasonNum];
-
-                    const seasonDiv = document.createElement('div');
-                    seasonDiv.className = 'season';
-                    
-                    const seasonTitle = document.createElement('h4');
-                    seasonTitle.textContent = `Season ${seasonNum}`;
-                    seasonDiv.appendChild(seasonTitle);
-
-                    const episodeList = document.createElement('ul');
-                    episodeList.className = 'episode-list';
-                    
-                    // Sort episodes numerically
-                    const episodeNumbers = Object.keys(season.episodes).sort((a, b) => a - b);
-
-                    for (const episodeNum of episodeNumbers) {
-                        const timestamp = season.episodes[episodeNum];
-                        const watchedDate = new Date(timestamp).toLocaleString();
-
-                        const episodeItem = document.createElement('li');
-                        episodeItem.className = 'episode';
-                        episodeItem.innerHTML = `Episode ${episodeNum} <span class="episode-time">(Watched: ${watchedDate})</span>`;
-                        episodeList.appendChild(episodeItem);
-                    }
-                    
-                    seasonDiv.appendChild(episodeList);
-                    showDiv.appendChild(seasonDiv);
-                }
-                historyContainer.appendChild(showDiv);
+                console.error('Download failed:', error);
+                statusDiv.textContent = `Error: ${error.message}`;
+                statusDiv.style.color = 'red';
             }
         }
+
+        // Add event listeners to buttons
+        downloadSubBtn.addEventListener('click', () => handleDownload(false));
+        downloadDubBtn.addEventListener('click', () => handleDownload(true));
+
     </script>
 
 </body>

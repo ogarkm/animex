@@ -495,14 +495,15 @@
         <iframe id="contentFrame" src="" title="Content Area"></iframe>
 
         <nav class="bottom-nav">
-            <a href="#" class="nav-item" data-src="manga.html">
-                <span class="nav-icon"><i class="fas fa-book-open"></i></span>
-                MANGA
-            </a>
             <a href="#" class="nav-item" data-src="anime.html">
                 <span class="nav-icon"><i class="fas fa-film"></i></span>
                 ANIME
             </a>
+            <a href="#" class="nav-item" data-src="manga.html">
+                <span class="nav-icon"><i class="fas fa-book-open"></i></span>
+                MANGA
+            </a>
+            
             <a href="#" class="nav-item" data-src="search.html">
                 <span class="nav-icon"><i class="fas fa-search"></i></span>
                 SEARCH
@@ -596,7 +597,7 @@
             // Enhanced navigation with smooth transitions
             const navItems = document.querySelectorAll('.bottom-nav .nav-item');
             const contentFrame = document.getElementById('contentFrame');
-            const defaultSrc = 'manga.html';
+            const defaultSrc = 'anime.html';
 
             function setActiveTab(selectedItem) {
                 navItems.forEach(item => {
@@ -610,6 +611,15 @@
                     
                     contentFrame.addEventListener('load', () => {
                         contentFrame.style.opacity = '1';
+                        // Inject bottom padding for scroll safe zone
+                        try {
+                            const iframeDoc = contentFrame.contentDocument || contentFrame.contentWindow.document;
+                            if (iframeDoc && iframeDoc.body) {
+                                iframeDoc.body.style.paddingBottom = '90px'; // Adjust as needed
+                            }
+                        } catch (e) {
+                            // Cross-origin or other error, ignore
+                        }
                     }, { once: true });
                 }
 
