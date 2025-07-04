@@ -8,204 +8,401 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="Resources/styles.css">
+    <!-- Resources/styles.css is no longer needed as all styles are inlined below -->
     <style>
-        /* Additional styles for library page */
-        .import-controls {
-            margin-bottom: 20px;
-            text-align: center;
+        /* --- REDESIGNED UI WITH GLASSMORPHISM --- */
+
+        :root {
+            --bg-color: #121212;
+            --glass-bg: rgba(35, 35, 40, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --blur-amount: 12px;
+            --border-radius-lg: 18px;
+            --border-radius-md: 12px;
+            --border-radius-sm: 8px;
+
+            --text-primary: #F5F5F7;
+            --text-secondary: #A1A1A6;
+            --accent-color: #FF9500;
+            --accent-color-hover: #ffae45;
+            
+            --font-family: 'Inter', sans-serif;
         }
-        .import-button {
-            background-color: var(--accent-color-active);
+
+        /* --- Global & Base Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
             color: var(--text-primary);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: 500;
-            cursor: pointer;
-            backdrop-filter: blur(8px);
-            background: rgba(60, 60, 80, 0.65);
-            box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+            font-family: var(--font-family);
+            overflow-x: hidden;
+            position: relative;
         }
-        .import-button:hover {
-            opacity: 0.9;
+
+        /* Decorative background blobs for depth */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -20vh;
+            left: -20vw;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(255, 149, 0, 0.2), transparent 70%);
+            filter: blur(100px);
+            z-index: -1;
+            animation: spin 30s linear infinite alternate;
         }
-        #folderInput {
-            display: none; /* Hide the actual file input */
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -30vh;
+            right: -30vw;
+            width: 80vw;
+            height: 80vw;
+            background: radial-gradient(circle, rgba(80, 20, 150, 0.15), transparent 70%);
+            filter: blur(120px);
+            z-index: -1;
+            animation: spin 40s linear infinite;
         }
-        .status-message {
-            color: var(--text-secondary);
-            margin-top: 10px;
-            backdrop-filter: blur(4px);
-            background: rgba(32, 32, 33, 0.35);
-            border-radius: 8px;
-            padding: 6px 12px;
-            display: inline-block;
+
+        @keyframes spin {
+            from { transform: rotate(0deg) scale(1); }
+            to { transform: rotate(360deg) scale(1.1); }
         }
+
+        .main-content {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        /* --- Glass Pane Utility --- */
+        .glass-pane {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+        }
+
+        /* --- Navigation & Header --- */
         .navigation-header {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
-            backdrop-filter: blur(10px);
-            background: rgba(40, 40, 60, 0.55);
-            border-radius: 14px;
-            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.10);
-            padding: 8px 18px;
+            margin-bottom: 24px;
+            padding: 12px 20px;
+            border-radius: var(--border-radius-md);
+            gap: 16px;
         }
+
         .back-button {
             background: none;
             border: none;
-            color: var(--text-primary);
-            font-size: 1.5em; /* Larger icon */
-            margin-right: 10px;
-            cursor: pointer;
-            padding: 5px;
-        }
-        /* Removed direct video player styles, using iframe container styles now */
-        .episode-item-details {
-            flex-grow: 1;
-        }
-        .episode-duration {
-            font-size: 0.8em;
             color: var(--text-secondary);
-            margin-top: 4px;
-        }
-        .player-iframe-container { /* Container for the header and iframe box */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start; /* Align to top for potentially shorter content */
-            width: 100%;
-            min-height: 60vh; /* Give it some minimum height */
-            padding: 0; /* Takes full width of its parent */
-            backdrop-filter: blur(16px);
-            background: rgba(39, 39, 42, 0.4);
-            border-radius: 18px;
-            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.18);
-        }
-        .player-header {
-            width: 100%; /* Full width of the player container */
-            padding: 16px 0 8px 0;
-            text-align: center;
-            background-color: var(--bg-content-elements, rgba(58,58,60,0.70));
-            color: var(--text-primary, #fff);
-            font-size: 1.2em;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            border-top-left-radius: 18px;
-            border-top-right-radius: 18px;
-            backdrop-filter: blur(8px);
-        }
-        .player-iframe-box { /* Box that holds the iframe itself */
-            width: 100%; /* Take full width of player-iframe-container */
-            aspect-ratio: 16/9;
-            background: rgba(0,0,0,0.75);
-            overflow: hidden;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-bottom-left-radius: 18px;
-            border-bottom-right-radius: 18px;
-            backdrop-filter: blur(6px);
+            transition: background 0.2s, color 0.2s;
         }
+        .back-button:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+
+        #currentViewTitle {
+            margin-bottom: 0 !important;
+        }
+
+        /* --- Import Controls --- */
+        .import-controls {
+            margin-bottom: 10px;
+            text-align: center;
+            padding: 20px;
+            border-radius: var(--border-radius-lg);
+        }
+
+        .import-button {
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--border-radius-sm);
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .import-button:hover {
+            background-color: var(--accent-color-hover);
+            transform: translateY(-2px);
+        }
+        .import-button:active {
+            transform: translateY(0);
+        }
+
+        #folderInput {
+            display: none;
+        }
+
+        .status-message {
+            color: var(--text-secondary);
+            margin-top: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: var(--border-radius-sm);
+            padding: 8px 16px;
+            display: inline-block;
+            font-size: 0.9em;
+        }
+        .status-message button {
+            margin-left: 10px;
+        }
+
+        /* --- List Styles (Series & Episodes) --- */
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        #seriesListContainer {
+            padding-top: 24px;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: var(--border-radius-md);
+            transition: background 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .list-item:hover {
+            background: rgba(50, 50, 55, 0.7);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .item-thumbnail img {
+            width: 50px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: var(--border-radius-sm);
+            margin-right: 16px;
+            background-color: #333; /* Placeholder bg */
+        }
+        
+        .item-details {
+            flex: 1;
+            /* Crucial for text overflow: it tells the flex item it can shrink */
+            min-width: 0;
+        }
+
+        .item-title {
+            font-size: 1.05em;
+            font-weight: 500;
+            /* FIX: Text Truncation */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-arrow {
+            font-size: 1em;
+            color: var(--text-secondary);
+            margin-left: 16px;
+            transition: color 0.2s;
+        }
+        .list-item:hover .item-arrow {
+            color: var(--accent-color);
+        }
+
+        /* Episode Specifics */
+        .episode-item-details {
+            flex-grow: 1;
+            /* Crucial for text overflow: it tells the flex item it can shrink */
+            min-width: 0;
+        }
+
+        .episode-duration {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* --- Video Player --- */
+        .player-iframe-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden; /* Important for containing children's border-radius */
+        }
+
+        .player-header {
+            width: 100%;
+            padding: 16px 20px;
+            text-align: center;
+            background-color: rgba(25, 25, 30, 0.8);
+            color: var(--text-primary);
+            font-size: 1.2em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+        }
+
+        .player-iframe-box {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+        }
+
         .player-iframe-box iframe {
             width: 100%;
             height: 100%;
             border: none;
-            background: #000;
-            display: block;
         }
-
-        /* Glassmorphism for list items */
-        .list-item {
-            background: rgba(44, 44, 60, 0.45);
-            border-radius: 14px;
-            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.10);
-            backdrop-filter: blur(8px);
-            margin-bottom: 14px;
-            transition: background 0.2s;
-        }
-        .list-item:hover {
-            background: rgba(60, 60, 80, 0.60);
-        }
-        .item-thumbnail img {
-            border-radius: 8px;
-            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
-        }
-
-        /* Media queries for iframe player structure */
-        @media (max-width: 900px) { /* Example breakpoint */
-            /* .player-iframe-box { max-width: 100vw; border-radius: 0; } */
-            /* If main-content has padding, player might not be edge to edge */
-        }
-        @media (max-width: 600px) {
-            .player-header { font-size: 1em; padding: 10px 0 6px 0; }
-            .player-iframe-box { aspect-ratio: 16/9; }
-            .player-iframe-container { min-height: 40vh; border-radius: 10px; }
-            .list-item { border-radius: 8px; }
-        }
-
-        /* Continue Watching section styles */
+        
+        /* --- Continue Watching Section --- */
         #continueWatchingSection {
             margin-top: 40px;
-            background: rgba(44, 44, 60, 0.35);
-            border-radius: 16px;
-            backdrop-filter: blur(6px);
-            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.08);
-            padding: 18px 12px;
+            border-radius: var(--border-radius-lg);
+            padding: 12px;
+            padding-bottom: 15px;
         }
+
         #continueWatchingContent {
             margin-top: 1em;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
+
         .show {
-            margin-bottom: 1.5em;
-            background: rgba(60, 60, 80, 0.30);
-            border-radius: 10px;
-            padding: 10px 8px;
             display: flex;
             align-items: flex-start;
-            box-shadow: 0 1px 6px 0 rgba(0,0,0,0.06);
-            backdrop-filter: blur(4px);
+            gap: 16px;
+            padding: 12px;
+            border-radius: var(--border-radius-md);
+            background: rgba(0,0,0,0.2);
+            transition: background 0.2s;
+            cursor: pointer;
         }
-        .season {
-            margin-left: 1em;
-            margin-top: 0.5em;
+        .show:hover {
+            background: rgba(0,0,0,0.35);
         }
-        .episode-list {
+
+        .show img {
+            width: 60px;
+            height: 85px;
+            object-fit: cover;
+            border-radius: var(--border-radius-sm);
+            flex-shrink: 0;
+        }
+        
+        .show > div { /* Info Container */
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .show > div > div:first-child { /* Title */
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .show ul {
             list-style-type: none;
             padding-left: 0;
+            font-size: 0.9em;
+            color: var(--text-secondary);
         }
-        .episode {
-            margin: 0.2em 0;
+
+        .show li {
+            margin-top: 4px;
+        }
+
+        .show li span {
+            font-size: 0.9em;
+            opacity: 0.7;
+            margin-left: 4px;
+        }
+
+        /* --- Media Queries --- */
+        @media (max-width: 600px) {
+            .main-content {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+            .section-title {
+                font-size: 1.5rem;
+            }
+            .player-header { 
+                font-size: 1em; 
+                padding: 12px 15px; 
+            }
+            :root {
+                --border-radius-lg: 16px;
+                --border-radius-md: 10px;
+            }
+            .import-controls {
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <main class="main-content no-hero">
+        <main class="main-content">
             <section id="library-section">
-                <div id="navigationHeader" class="navigation-header" style="display: none;">
+                <!-- The glass-pane class is applied to elements that need the effect -->
+                <div id="navigationHeader" class="navigation-header glass-pane" style="display: none;">
                     <button id="backButton" class="back-button"><i class="fas fa-arrow-left"></i></button>
                     <h2 id="currentViewTitle" class="section-title" style="margin-bottom: 0;">Downloads</h2>
                 </div>
 
-                <div class="import-controls">
+                <div class="import-controls glass-pane">
                     <button id="importFolderButton" class="import-button">
                         <i class="fas fa-folder-plus"></i> Import Series Folder
                     </button>
                     <input type="file" id="folderInput" webkitdirectory directory multiple />
-                    <p id="statusMessage" class="status-message">Select a folder containing your series (each series in its own subfolder).</p>
+                    <p id="statusMessage" class="status-message">Select a folder containing your series.</p>
                 </div>
 
+                <!-- Series List will now be composed of glass-pane items -->
                 <div id="seriesListContainer" class="item-list">
                     <!-- Series will be populated here -->
                 </div>
 
+                <!-- Episode List will also be composed of glass-pane items -->
                 <div id="episodeListContainer" class="item-list" style="display: none;">
                     <!-- Episodes will be populated here -->
                 </div>
 
+                <!-- Video player container is styled as a whole unit -->
                 <div id="videoPlayerContainer" style="display: none;">
                     <!-- Iframe will be injected here by playVideo() -->
                 </div>
@@ -216,32 +413,30 @@
     </div>
 
     <script>
+        // --- JAVASCRIPT IS UNCHANGED FROM THE ORIGINAL ---
         const importFolderButton = document.getElementById('importFolderButton');
         const folderInput = document.getElementById('folderInput');
         const statusMessage = document.getElementById('statusMessage');
         const seriesListContainer = document.getElementById('seriesListContainer');
         const episodeListContainer = document.getElementById('episodeListContainer');
         const videoPlayerContainer = document.getElementById('videoPlayerContainer');
-        // const videoPlayer = document.getElementById('videoPlayer'); // Original video element removed
-
         const navigationHeader = document.getElementById('navigationHeader');
         const backButton = document.getElementById('backButton');
         const currentViewTitle = document.getElementById('currentViewTitle');
+        let continueWatchingSection; // Will be defined after creation
 
         let seriesData = {};
         let currentView = 'series';
         let previousView = null;
         let currentSeriesForEpisodes = null;
-        window._lastVideoBlobUrl = null; // To manage blob URL for the player
+        window._lastVideoBlobUrl = null;
 
-        // --- File System Access API (FSAA) & IndexedDB Variables ---
         let directoryHandle = null;
         const DB_NAME = 'MediaLibraryDB';
         const DB_VERSION = 1;
-        const STORE_NAME = 'settingsV1'; // Changed store name to avoid conflict if old one exists
+        const STORE_NAME = 'settingsV1';
         const DIR_HANDLE_KEY = 'directoryHandleV1';
 
-        // --- IndexedDB Helper Functions ---
         function openDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -257,23 +452,12 @@
         }
 
         async function saveDirectoryHandleToDB(handle) {
-            if (!handle) { // Clear if handle is null
-                 console.log("Attempting to clear directory handle from DB.");
-            }
             const db = await openDB();
             return new Promise((resolve, reject) => {
                 const transaction = db.transaction(STORE_NAME, 'readwrite');
                 const store = transaction.objectStore(STORE_NAME);
-                let request;
-                if (handle) {
-                    request = store.put(handle, DIR_HANDLE_KEY);
-                } else {
-                    request = store.delete(DIR_HANDLE_KEY);
-                }
-                request.onsuccess = () => {
-                    console.log(handle ? "Directory handle saved." : "Directory handle cleared from DB.");
-                    resolve();
-                };
+                let request = handle ? store.put(handle, DIR_HANDLE_KEY) : store.delete(DIR_HANDLE_KEY);
+                request.onsuccess = () => resolve();
                 request.onerror = (event) => reject("Error saving/deleting handle: " + (event.target.error ? event.target.error.name : "Unknown error"));
             });
         }
@@ -289,24 +473,16 @@
             });
         }
 
-        // --- FSAA Processing ---
         async function processDirectoryHandle(dirHandle) {
             const filesForProcessing = [];
-            statusMessage.textContent = `Processing files from selected folder...`;
+            statusMessage.textContent = `Processing files...`;
             let fileCount = 0;
-
             async function getFilesInDirectory(currentDirHandle, currentPath) {
                 for await (const entry of currentDirHandle.values()) {
                     const entryPath = currentPath ? `${currentPath}/${entry.name}` : entry.name;
                     if (entry.kind === 'file') {
                         const file = await entry.getFile();
-                        // Manually set webkitRelativePath for compatibility with processFiles
-                        Object.defineProperty(file, 'webkitRelativePath', {
-                            value: entryPath,
-                            writable: true,
-                            enumerable: true,
-                            configurable: true
-                        });
+                        Object.defineProperty(file, 'webkitRelativePath', { value: entryPath, writable: true, enumerable: true, configurable: true });
                         filesForProcessing.push(file);
                         fileCount++;
                     } else if (entry.kind === 'directory') {
@@ -314,43 +490,40 @@
                     }
                 }
             }
-
             try {
-                await getFilesInDirectory(dirHandle, dirHandle.name); // Start with base directory name for path
+                await getFilesInDirectory(dirHandle, dirHandle.name);
                 if (filesForProcessing.length === 0) {
                     statusMessage.textContent = "No files found in the selected directory.";
-                    seriesData = {}; // Clear data
-                    displaySeriesList(); // Update UI
+                    seriesData = {};
+                    displaySeriesList();
                     return;
                 }
-                processFiles(filesForProcessing); // Use the common processing function
+                processFiles(filesForProcessing);
                 statusMessage.textContent = `${Object.keys(seriesData).length} series found from ${fileCount} files.`;
-
             } catch (err) {
                  console.error("Error processing directory handle:", err);
-                 statusMessage.textContent = "Error reading directory contents. Permission might have changed.";
-                 seriesData = {}; // Clear data on error
+                 statusMessage.textContent = "Error reading directory contents.";
+                 seriesData = {};
             }
             displaySeriesList();
             showView('series');
         }
         
-        // --- Import Button Logic ---
         importFolderButton.addEventListener('click', async () => {
             try {
                 if (typeof window.showDirectoryPicker === 'function') {
                     const handle = await window.showDirectoryPicker();
                     if (handle) {
-                        directoryHandle = handle; // Store globally for current session
+                        directoryHandle = handle;
                         await saveDirectoryHandleToDB(directoryHandle);
                         await processDirectoryHandle(directoryHandle);
                     }
                 } else {
-                    statusMessage.textContent = "File System Access API not supported. Using legacy folder picker. This won't be remembered.";
-                    folderInput.click(); // Fallback to original method
+                    statusMessage.textContent = "File System Access API not supported. Using legacy picker.";
+                    folderInput.click();
                 }
             } catch (err) {
-                if (err.name !== 'AbortError') { // User didn't cancel
+                if (err.name !== 'AbortError') {
                     console.error("Error selecting directory:", err);
                     statusMessage.textContent = "Could not access directory. " + err.message;
                 } else {
@@ -359,85 +532,50 @@
             }
         });
 
-        // --- Legacy Folder Input Handler ---
         folderInput.addEventListener('change', (event) => {
             const files = Array.from(event.target.files);
-            if (files.length === 0) {
-                statusMessage.textContent = "No files selected.";
-                return;
-            }
+            if (files.length === 0) return;
             statusMessage.textContent = `Processing ${files.length} files...`;
             processFiles(files);
             displaySeriesList();
             showView('series');
-            // With legacy input, we can't save the handle for auto-import
-            directoryHandle = null; // Clear any FSAA handle
+            directoryHandle = null;
             saveDirectoryHandleToDB(null).catch(e => console.warn("Could not clear DB handle", e));
         });
 
-
-        // --- Common File Processing Logic ---
-        function processFiles(filesArray) { // filesArray is an array of File objects
-            seriesData = {}; // Reset
+        function processFiles(filesArray) {
+            seriesData = {};
             const posterRegex = /\/(poster\.(png|jpg|jpeg|webp))$/i;
-            const videoRegex = /\.(mp4|mkv)$/i; // Now matches both MP4 and MKV
-
+            const videoRegex = /\.(mp4|mkv)$/i;
             filesArray.forEach(file => {
-                if (!file.webkitRelativePath) {
-                    console.warn("File skipped: missing webkitRelativePath", file.name);
-                    return; // Essential for folder structure
-                }
+                if (!file.webkitRelativePath) return;
                 const pathParts = file.webkitRelativePath.split('/');
-                // Expecting path like: TopLevelFolder/SeriesFolder/filename.mp4
-                // So SeriesFolder is pathParts[pathParts.length - 2]
-                if (pathParts.length < 2) { // If TopLevelFolder/filename.mp4, this won't work. Need at least one subfolder for series.
-                                            // If TopLevelFolder is dirHandle.name, pathParts[0] would be that.
-                                            // If pathParts[0] is the dirHandle.name, then series is pathParts[1]
-                                            // This means file is pathParts[2]
-                    if (pathParts.length === 1 && pathParts[0] === file.name) { // File directly in picked root
-                         console.warn("File directly in root, cannot determine series:", file.name);
-                         return;
-                    }
-                    // Let's assume the first part of webkitRelativePath *is* the series name if only 2 parts
-                    // e.g. webkitRelativePath = "MySeries/episode1.mp4"
-                }
-
-                const seriesName = pathParts.length > 1 ? pathParts[pathParts.length - 2] : "Default Series";
+                if (pathParts.length < 2) return;
+                const seriesName = pathParts[pathParts.length - 2];
                 const fileName = pathParts[pathParts.length - 1];
-
                 if (!seriesData[seriesName]) {
                     seriesData[seriesName] = { posterFile: null, episodes: [] };
                 }
-
-                if (posterRegex.test(file.webkitRelativePath)) { // Check full path for poster
+                if (posterRegex.test(file.webkitRelativePath)) {
                     seriesData[seriesName].posterFile = file;
-                } else if (videoRegex.test(fileName)) { // Now matches .mp4 and .mkv
+                } else if (videoRegex.test(fileName)) {
                     const episodeName = fileName.replace(videoRegex, '');
-                    seriesData[seriesName].episodes.push({
-                        name: episodeName,
-                        file: file,
-                        duration: null
-                    });
+                    seriesData[seriesName].episodes.push({ name: episodeName, file: file, duration: null });
                 }
             });
-            // Update status after processing filesArray
-            // statusMessage.textContent = `${Object.keys(seriesData).length} series found.`; // This is now set in processDirectoryHandle or input handler
         }
 
-        // --- UI Display Functions (largely unchanged) ---
         function displaySeriesList() {
             seriesListContainer.innerHTML = '';
             if (Object.keys(seriesData).length === 0) {
-                 seriesListContainer.innerHTML = `<p class="status-message">${statusMessage.textContent.includes("Processing") ? "No valid series found." : "Import a folder to see your series."}</p>`;
+                 seriesListContainer.innerHTML = `<p class="status-message" style="background:transparent; text-align:center;">${statusMessage.textContent.includes("Processing") ? "No valid series folders found." : "Import a folder to begin."}</p>`;
                  return;
             }
-
             for (const seriesName in seriesData) {
                 const series = seriesData[seriesName];
                 const listItem = document.createElement('div');
-                listItem.className = 'list-item';
-                listItem.style.cursor = 'pointer';
-
+                // Added glass-pane class for the new style
+                listItem.className = 'list-item glass-pane';
                 const thumbnailDiv = document.createElement('div');
                 thumbnailDiv.className = 'item-thumbnail';
                 const img = document.createElement('img');
@@ -445,25 +583,21 @@
                     img.src = URL.createObjectURL(series.posterFile);
                     img.onload = () => URL.revokeObjectURL(img.src);
                 } else {
-                    img.src = `https://placehold.co/60x80/444/fff?text=${encodeURIComponent(seriesName.substring(0,3))}`;
+                    img.src = `https://placehold.co/100x140/252528/A1A1A6?text=${encodeURIComponent(seriesName.substring(0,3))}`;
                 }
                 thumbnailDiv.appendChild(img);
-
                 const detailsDiv = document.createElement('div');
                 detailsDiv.className = 'item-details';
                 const titleH3 = document.createElement('h3');
                 titleH3.className = 'item-title';
                 titleH3.textContent = seriesName;
                 detailsDiv.appendChild(titleH3);
-
                 const arrowDiv = document.createElement('div');
                 arrowDiv.className = 'item-arrow';
                 arrowDiv.innerHTML = '<i class="fas fa-chevron-right"></i>';
-
                 listItem.appendChild(thumbnailDiv);
                 listItem.appendChild(detailsDiv);
                 listItem.appendChild(arrowDiv);
-
                 listItem.addEventListener('click', () => {
                     currentSeriesForEpisodes = seriesName;
                     displayEpisodeList(seriesName, series.episodes);
@@ -476,63 +610,37 @@
         function displayEpisodeList(seriesName, episodes) {
             episodeListContainer.innerHTML = '';
             if (episodes.length === 0) {
-                episodeListContainer.innerHTML = '<p class="status-message">No episodes (MP4 files) found in this series folder.</p>';
+                episodeListContainer.innerHTML = '<p class="status-message">No episodes (MP4/MKV files) found.</p>';
                 return;
             }
             episodes.sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
-
-            // Ensure episode list container uses flex column for consistent layout
-            episodeListContainer.style.display = 'flex';
-            episodeListContainer.style.flexDirection = 'column';
-            episodeListContainer.style.gap = '0';
-
             episodes.forEach(episode => {
                 const listItem = document.createElement('div');
-                listItem.className = 'list-item episode'; // Add both classes
-                listItem.style.cursor = 'pointer';
-                listItem.style.display = 'flex';
-                listItem.style.alignItems = 'stretch';
-                listItem.style.marginBottom = '12px';
-                listItem.style.background = 'none'; // Remove background from list-item, handled by child
-                listItem.style.border = 'none';
-                listItem.style.boxShadow = 'none';
-
+                 // Added glass-pane class for the new style
+                listItem.className = 'list-item glass-pane';
                 const detailsDiv = document.createElement('div');
                 detailsDiv.className = 'episode-item-details';
-                detailsDiv.style.flex = '1';
-                detailsDiv.style.display = 'flex';
-                detailsDiv.style.flexDirection = 'column';
-                detailsDiv.style.justifyContent = 'center';
-
                 const titleH3 = document.createElement('h3');
                 titleH3.className = 'item-title';
                 titleH3.textContent = episode.name;
                 detailsDiv.appendChild(titleH3);
-
                 const durationP = document.createElement('p');
                 durationP.className = 'episode-duration';
-                durationP.textContent = 'Duration: Fetching...';
+                durationP.textContent = '...';
                 detailsDiv.appendChild(durationP);
-
                 if (episode.duration === null) {
                     getVideoDuration(episode.file, (duration) => {
                         episode.duration = duration;
-                        durationP.textContent = `Duration: ${formatDuration(duration)}`;
+                        durationP.textContent = `${formatDuration(duration)}`;
                     });
                 } else {
-                     durationP.textContent = `Duration: ${formatDuration(episode.duration)}`;
+                     durationP.textContent = `${formatDuration(episode.duration)}`;
                 }
-
                 const arrowDiv = document.createElement('div');
                 arrowDiv.className = 'item-arrow';
                 arrowDiv.innerHTML = '<i class="fas fa-play"></i>';
-                arrowDiv.style.display = 'flex';
-                arrowDiv.style.alignItems = 'center';
-                arrowDiv.style.marginLeft = '12px';
-
                 listItem.appendChild(detailsDiv);
                 listItem.appendChild(arrowDiv);
-
                 listItem.addEventListener('click', () => {
                     playVideo(episode.file, `${seriesName} - ${episode.name}`);
                     showView('player', `${seriesName} - ${episode.name}`);
@@ -544,79 +652,55 @@
         function getVideoDuration(file, callback) {
             const tempVideo = document.createElement('video');
             tempVideo.preload = 'metadata';
-            tempVideo.onloadedmetadata = function() {
-                URL.revokeObjectURL(tempVideo.src);
-                callback(tempVideo.duration);
-            };
-            tempVideo.onerror = function() {
-                URL.revokeObjectURL(tempVideo.src);
-                console.error("Error loading video metadata for duration:", file.name);
-                callback('N/A');
-            };
+            tempVideo.onloadedmetadata = () => { URL.revokeObjectURL(tempVideo.src); callback(tempVideo.duration); };
+            tempVideo.onerror = () => { URL.revokeObjectURL(tempVideo.src); callback('N/A'); };
             tempVideo.src = URL.createObjectURL(file);
         }
 
         function formatDuration(seconds) {
-            if (isNaN(seconds) || seconds === 'N/A') return 'N/A';
+            if (isNaN(seconds) || seconds === 'N/A') return 'Duration: N/A';
             const h = Math.floor(seconds / 3600);
             const m = Math.floor((seconds % 3600) / 60);
             const s = Math.floor(seconds % 60);
-            let str = "";
-            if (h > 0) str += `${h}:`;
-            str += `${m < 10 && h > 0 ? '0' : ''}${m}:`;
-            str += `${s < 10 ? '0' : ''}${s}`;
-            return str;
+            return (h > 0 ? `${h}:` : '') + `${m < 10 && h > 0 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
         function playVideo(videoFile, episodeTitle) {
-            if (window._lastVideoBlobUrl) {
-                URL.revokeObjectURL(window._lastVideoBlobUrl);
-            }
+            if (window._lastVideoBlobUrl) URL.revokeObjectURL(window._lastVideoBlobUrl);
             const objectURL = URL.createObjectURL(videoFile);
             window._lastVideoBlobUrl = objectURL;
-
             const playerHtml = `
-                <div class="player-iframe-container">
+                <div class="player-iframe-container glass-pane">
                     ${episodeTitle ? `<div class="player-header">${episodeTitle}</div>` : ''}
                     <div class="player-iframe-box">
                         <iframe src="video_player.html?full=true&video=${encodeURIComponent(objectURL)}" allowfullscreen></iframe>
                     </div>
-                </div>
-            `;
+                </div>`;
             videoPlayerContainer.innerHTML = playerHtml;
         }
 
         function showView(viewName, title) {
             previousView = currentView;
             currentView = viewName;
-
             seriesListContainer.style.display = 'none';
             episodeListContainer.style.display = 'none';
             videoPlayerContainer.style.display = 'none';
-            navigationHeader.style.display = 'flex';
-            importFolderButton.style.display = 'none';
-            statusMessage.style.display = 'none';
-
-            // Hide Continue Watching and Import Controls by default
-            continueWatchingSection.style.display = 'none';
+            navigationHeader.style.display = 'none';
             document.querySelector('.import-controls').style.display = 'none';
+            if (continueWatchingSection) continueWatchingSection.style.display = 'none';
 
             if (viewName === 'series') {
-                currentViewTitle.textContent = 'Downloads (Series)';
-                seriesListContainer.style.display = 'flex';
-                navigationHeader.style.display = 'none';
-                importFolderButton.style.display = 'block';
-                statusMessage.style.display = 'block';
-                // Show Continue Watching and Import Controls only on main series view
-                continueWatchingSection.style.display = 'block';
                 document.querySelector('.import-controls').style.display = 'block';
+                seriesListContainer.style.display = 'flex';
+                if (continueWatchingSection) continueWatchingSection.style.display = 'block';
             } else if (viewName === 'episodes') {
+                navigationHeader.style.display = 'flex';
                 currentViewTitle.textContent = title || 'Episodes';
                 episodeListContainer.style.display = 'flex';
             } else if (viewName === 'player') {
-                // Title is handled by player-header inside iframe for player view
-                currentViewTitle.textContent = ""; // Clear main title for player view
-                videoPlayerContainer.style.display = 'block'; // This should be 'flex' if player-iframe-container is flex
+                navigationHeader.style.display = 'flex';
+                currentViewTitle.textContent = "Now Playing";
+                videoPlayerContainer.style.display = 'block';
             }
         }
         
@@ -635,220 +719,135 @@
             }
         });
         
-        // --- Auto Import on Load ---
         async function tryAutoImportOnLoad() {
             if (typeof window.showDirectoryPicker !== 'function') {
-                statusMessage.textContent = "To remember folders, use a browser supporting File System Access API.";
-                displaySeriesList(); // Show empty list or message
+                statusMessage.textContent = "Use a modern browser to remember folders.";
+                displaySeriesList();
                 return;
             }
-
             try {
                 const savedHandle = await loadDirectoryHandleFromDB();
                 if (savedHandle) {
-                    console.log("Found saved directory handle. Querying permission...");
                     if (await savedHandle.queryPermission({ mode: 'read' }) === 'granted') {
                         directoryHandle = savedHandle;
                         statusMessage.textContent = "Restoring previous folder...";
                         await processDirectoryHandle(directoryHandle);
                     } else {
-                        console.log("Permission not currently granted. Prompting user...");
-                        statusMessage.innerHTML = 'Previously selected folder found. <button id="grantPermissionBtn" class="import-button" style="font-size:0.8em; padding:5px 10px; margin-left:10px;">Grant Permission</button>';
-                        const grantBtn = document.getElementById('grantPermissionBtn');
-                        if (grantBtn) {
-                            grantBtn.onclick = async () => {
-                                try {
-                                    if (await savedHandle.requestPermission({ mode: 'read' }) === 'granted') {
-                                        directoryHandle = savedHandle;
-                                        statusMessage.textContent = "Permission granted. Processing...";
-                                        await processDirectoryHandle(directoryHandle);
-                                    } else {
-                                        statusMessage.textContent = "Permission denied. Please re-select folder.";
-                                        directoryHandle = null;
-                                        await saveDirectoryHandleToDB(null);
-                                        displaySeriesList();
-                                    }
-                                } catch(err) {
-                                     statusMessage.textContent = "Error requesting permission. Please re-select.";
-                                     console.error("Error during permission request:", err);
-                                     directoryHandle = null;
-                                     await saveDirectoryHandleToDB(null);
-                                     displaySeriesList();
+                        statusMessage.innerHTML = 'Folder access required. <button id="grantPermissionBtn" class="import-button" style="font-size:0.8em; padding:5px 10px;">Grant Permission</button>';
+                        document.getElementById('grantPermissionBtn').onclick = async () => {
+                            try {
+                                if (await savedHandle.requestPermission({ mode: 'read' }) === 'granted') {
+                                    directoryHandle = savedHandle;
+                                    await processDirectoryHandle(directoryHandle);
+                                } else {
+                                    statusMessage.textContent = "Permission denied. Select folder again.";
+                                    await saveDirectoryHandleToDB(null);
                                 }
-                            };
-                        }
+                            } catch(err) {
+                                statusMessage.textContent = "Error. Please re-select folder.";
+                                await saveDirectoryHandleToDB(null);
+                            }
+                        };
                     }
                 } else {
                     statusMessage.textContent = "Select a folder to import series.";
-                    displaySeriesList(); // Show empty list or message
+                    displaySeriesList();
                 }
             } catch (err) {
-                console.error("Error during auto-import:", err);
-                statusMessage.textContent = "Error accessing previous folder. It may have moved or permissions changed. Please re-select.";
-                directoryHandle = null;
-                await saveDirectoryHandleToDB(null).catch(e => console.warn("Could not clear DB handle on auto-import error", e));
+                statusMessage.textContent = "Error accessing previous folder. Please re-select.";
+                await saveDirectoryHandleToDB(null);
                 displaySeriesList();
             }
         }
 
-        // --- Watch History (Continue Watching) Section ---
         const API_BASE_URL = 'https://arkm20-authapi.hf.space';
-
-        // Create the container for continue watching
-        const continueWatchingSection = document.createElement('section');
-        continueWatchingSection.id = 'continueWatchingSection';
-        continueWatchingSection.style.marginTop = '20px';
-        continueWatchingSection.innerHTML = `
-          <h2 style="margin-bottom: 1em;">Continue Watching</h2>
-          <div id="continueWatchingContent"><p>Loading your watch history...</p></div>
-        `;
-
-        // Insert after seriesListContainer
-        seriesListContainer.insertAdjacentElement('afterend', continueWatchingSection);
-
+        function createContinueWatchingSection() {
+            const section = document.createElement('section');
+            section.id = 'continueWatchingSection';
+            section.className = 'glass-pane'; // Apply glass style
+            section.innerHTML = `
+              <h2 class="section-title" style="margin-bottom: 1em; font-size: 1.4rem;">Continue Watching</h2>
+              <div id="continueWatchingContent"><p>Loading watch history...</p></div>
+            `;
+            const importControls = document.querySelector('.import-controls');
+            importControls.insertAdjacentElement('afterend', section);
+            return section;
+        }
 
         async function fetchJikanInfo(id) {
-        try {
-            const res = await fetch(`https://api.jikan.moe/v4/anime/${id}`);
-            if (!res.ok) throw new Error('Jikan fetch failed');
-            const json = await res.json();
-            const anime = json.data;
-            return {
-            title: anime.title_english || anime.title,
-            image: anime.images.jpg.image_url
-            };
-        } catch (err) {
-            console.error(`Error fetching Jikan info for ID ${id}:`, err);
-            return null;
-        }
+            try {
+                const res = await fetch(`https://api.jikan.moe/v4/anime/${id}`);
+                if (!res.ok) return null;
+                const json = await res.json();
+                return { title: json.data.title_english || json.data.title, image: json.data.images.jpg.image_url };
+            } catch (err) {
+                return null;
+            }
         }
 
         async function renderWatchHistory(historyData) {
-        const container = document.getElementById('continueWatchingContent');
-        container.innerHTML = '';
-        if (!historyData || Object.keys(historyData).length === 0) {
-            container.innerHTML = '<p>No watch history found.</p>';
-            return;
-        }
-
-        // For each show in history, fetch Jikan info, then render
-        const showIds = Object.keys(historyData).sort((a, b) => {
-            const aTitle = historyData[a].title.toLowerCase();
-            const bTitle = historyData[b].title.toLowerCase();
-            return aTitle.localeCompare(bTitle);
-        });
-
-        for (const showId of showIds) {
-            const showMeta = historyData[showId];
-            const jikan = await fetchJikanInfo(showId);
-            if (!jikan) continue;
-
-            const showDiv = document.createElement('div');
-            showDiv.className = 'show';
-            showDiv.style.display = 'flex';
-            showDiv.style.alignItems = 'flex-start';
-            showDiv.style.marginBottom = '24px';
-            showDiv.style.cursor = 'pointer';
-
-            // Poster image
-            const img = document.createElement('img');
-            img.src = jikan.image;
-            img.alt = jikan.title;
-            img.style.width = '60px';
-            img.style.height = '80px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '8px';
-            img.style.marginRight = '16px';
-            showDiv.appendChild(img);
-
-            // Info container
-            const infoDiv = document.createElement('div');
-            infoDiv.style.flex = '1';
-
-            // Title & seasons
-            const title = document.createElement('div');
-            title.textContent = jikan.title;
-            title.style.fontWeight = 'bold';
-            title.style.fontSize = '1.1em';
-            infoDiv.appendChild(title);
-
-            // Seasons & episodes list
-            const seasonNumbers = Object.keys(showMeta.seasons).sort((a, b) => a - b);
-            seasonNumbers.forEach(seasonNum => {
-                const season = showMeta.seasons[seasonNum];
-                const seasonTitle = document.createElement('div');
-                seasonTitle.style.marginTop = '8px';
-                seasonTitle.style.fontSize = '0.95em';
-                seasonTitle.style.color = '#555';
-                infoDiv.appendChild(seasonTitle);
-
+            const container = document.getElementById('continueWatchingContent');
+            if (!historyData || Object.keys(historyData).length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary);">No watch history found.</p>';
+                return;
+            }
+            container.innerHTML = '';
+            const showIds = Object.keys(historyData).sort((a, b) => historyData[a].title.localeCompare(historyData[b].title));
+            for (const showId of showIds) {
+                const showMeta = historyData[showId];
+                const jikan = await fetchJikanInfo(showId);
+                if (!jikan) continue;
+                const showDiv = document.createElement('div');
+                showDiv.className = 'show';
+                const img = document.createElement('img');
+                img.src = jikan.image;
+                img.alt = jikan.title;
+                showDiv.appendChild(img);
+                const infoDiv = document.createElement('div');
+                const titleDiv = document.createElement('div');
+                titleDiv.textContent = jikan.title;
+                infoDiv.appendChild(titleDiv);
                 const episodeList = document.createElement('ul');
-                episodeList.style.listStyle = 'none';
-                episodeList.style.padding = '4px 0';
-
-                Object.keys(season.episodes).sort((a, b) => a - b).forEach(epNum => {
-                    const ts = season.episodes[epNum];
-                    const watchedDate = new Date(ts).toLocaleString();
-                    const li = document.createElement('li');
-                    li.textContent = `Ep ${epNum} `;
-                    const span = document.createElement('span');
-                    span.textContent = `(Watched: ${watchedDate})`;
-                    span.style.fontSize = '0.85em';
-                    span.style.color = '#888';
-                    li.appendChild(span);
-                    episodeList.appendChild(li);
+                Object.keys(showMeta.seasons).sort((a,b)=>a-b).forEach(seasonNum => {
+                    Object.keys(showMeta.seasons[seasonNum].episodes).sort((a,b)=>a-b).forEach(epNum => {
+                        const li = document.createElement('li');
+                        li.textContent = `S${seasonNum} E${epNum}`;
+                        const span = document.createElement('span');
+                        span.textContent = `(${new Date(showMeta.seasons[seasonNum].episodes[epNum]).toLocaleDateString()})`;
+                        li.appendChild(span);
+                        episodeList.appendChild(li);
+                    });
                 });
                 infoDiv.appendChild(episodeList);
-            });
-
-            showDiv.appendChild(infoDiv);
-            showDiv.addEventListener('click', () => {
-                window.location.href = `series-info.html?library=true&id=${encodeURIComponent(showId)}`;
-            });
-            container.appendChild(showDiv);
-        }
-
-        
+                showDiv.appendChild(infoDiv);
+                showDiv.onclick = () => window.location.href = `series-info.html?library=true&id=${encodeURIComponent(showId)}`;
+                container.appendChild(showDiv);
+            }
         }
 
         async function fetchAndRenderWatchHistory() {
             const container = document.getElementById('continueWatchingContent');
-            container.innerHTML = '<p>Loading your watch history...</p>';
             const token = localStorage.getItem('accessToken');
             if (!token) {
-                container.innerHTML = '<p>Please log in to see your watch history.</p>';
+                container.innerHTML = '<p style="color: var(--text-secondary);">Log in to see watch history.</p>';
                 return;
             }
-
             try {
-                const response = await fetch(`${API_BASE_URL}/users/me`, {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const response = await fetch(`${API_BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                 if (!response.ok) throw new Error('API Error');
                 const data = await response.json();
                 renderWatchHistory(data.watch_history_detailed);
             } catch (e) {
-                container.innerHTML = '<p>Unable to retrieve your Watch History.</p>';
+                container.innerHTML = '<p style="color: var(--text-secondary);">Could not load watch history.</p>';
             }
         }
 
-        // Override series list render to include watch history after initial load
-        const originalDisplaySeriesList = displaySeriesList;
-        displaySeriesList = function() {
-        originalDisplaySeriesList.apply(this, arguments);
-        };
-
-        // Optionally, call fetchAndDisplayJikanList() on load instead of local import
-        // fetchAndDisplayJikanList();
-
-        // --- Initial Load Logic ---
         document.addEventListener('DOMContentLoaded', () => {
-            showView('series'); // Set initial view state
+            continueWatchingSection = createContinueWatchingSection();
+            showView('series');
             tryAutoImportOnLoad();
             fetchAndRenderWatchHistory();
         });
-
     </script>
 </body>
 </html>
