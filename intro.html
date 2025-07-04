@@ -262,6 +262,11 @@
           desc: 'Track your progress, save your favorites, and continue where you left off, anytime.'
         },
         {
+          icon: `<svg width="75" height="100" viewBox="0 0 75 100" fill="none" xmlns="http://www.w3.org/2000/svg"> <path d="M43.75 26.5625V0H4.6875C2.08984 0 0 2.08984 0 4.6875V95.3125C0 97.9102 2.08984 100 4.6875 100H70.3125C72.9102 100 75 97.9102 75 95.3125V31.25H48.4375C45.8594 31.25 43.75 29.1406 43.75 26.5625ZM58.6816 67.8437L39.8496 86.5352C38.5508 87.8262 36.4531 87.8262 35.1543 86.5352L16.3223 67.8437C14.3398 65.877 15.7305 62.5 18.5195 62.5H31.25V46.875C31.25 45.1484 32.6484 43.75 34.375 43.75H40.625C42.3516 43.75 43.75 45.1484 43.75 46.875V62.5H56.4805C59.2695 62.5 60.6602 65.877 58.6816 67.8437ZM73.6328 20.5078L54.5117 1.36719C53.6328 0.488281 52.4414 0 51.1914 0H50V25H75V23.8086C75 22.5781 74.5117 21.3867 73.6328 20.5078Z" fill="currentcolor"/> </svg>`,          
+          title: 'Downloads',
+          desc: 'Save the Episodes you want, and access them offline. Make sure to follow the Folder structure for easy access.'
+        },
+        {
           pwa: true, // Special flag for the PWA slide
           icon: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 17V33.3333" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M28 28L39.1667 39.1667" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 50H33.3333" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M28 72L39.1667 60.8333" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 83V66.6667" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M72 72L60.8333 60.8333" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M83 50H66.6667" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M72 28L60.8333 39.1667" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
           title: 'Install the App',
@@ -326,7 +331,7 @@
         backBtn.style.display = isFirstPage ? 'none' : 'inline-block';
         skipBtn.style.display = isLastPage ? 'none' : 'inline-block';
         nextBtn.style.display = isLastPage ? 'none' : 'inline-block';
-        finishBtn.style.display = isLastPage ? 'inline-block' : 'none';
+        finishBtn.style.display = 'none';
       }
 
       function updateContent() {
