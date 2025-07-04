@@ -384,36 +384,18 @@
                     if (!quality || typeof quality !== 'string') quality = '720p';
                     downloadBtn.addEventListener('click', async (event) => {
                         event.stopPropagation(); // Prevent episode item click
-                        // Use currentSeriesId and currentSeriesTitle if available
                         const animeId = currentSeriesId || '52991';
-                        // Get quality from localStorage or default to '720p'
                         let quality = localStorage.getItem('quality');
                         if (!quality || typeof quality !== 'string') quality = '720p';
-                        // Get episode number from the currently selected episode, fallback to 1
                         let episode = 1;
-                        // Try to get the selected episode from the URL (if present)
                         const urlParams = new URLSearchParams(window.location.search);
                         if (urlParams.has('ep')) {
                             const epParam = parseInt(urlParams.get('ep'), 10);
                             if (!isNaN(epParam)) episode = epParam;
                         }
                         const isDub = true;
-                        try {
-                            const response = await fetch(`https://arkm20-animex-player-api.hf.space/download-link?id=${animeId}&episode=${episode}&dub=${isDub}&quality=${quality}`);
-                            console.log(`Fetching download link: https://arkm20-animex-player-api.hf.space/download-link?id=${animeId}&episode=${episode}&dub=${isDub}&quality=${quality}`);
-                            if (!response.ok) {
-                                let errorData = {};
-                                try { errorData = await response.json(); } catch {}
-                                throw new Error(errorData.detail || 'Failed to get download link');
-                            }
-                            const data = await response.json();
-                            const downloadUrl = data.download_url;
-                            console.log(`Download link for episode ${episode} of ${currentSeriesTitle}:`, downloadUrl);
-                            window.open(downloadUrl, '_blank');
-                        } catch (error) {
-                            console.error('Error:', error);
-                            alert('Could not retrieve the download link. Please try again later.');
-                        }
+                        // Directly open the download link, no JSON parsing needed
+                        window.open(`https://arkm20-animex-player-api.hf.space/download?id=${animeId}&episode=${episode}&dub=${isDub}&quality=${quality}`, '_blank');
                     });
                     episodeItem.appendChild(downloadBtn);
                     // --- End Glassy Download Icon Button ---
