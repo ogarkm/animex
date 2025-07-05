@@ -206,171 +206,182 @@
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1) Read query params
+  const params = new URLSearchParams(window.location.search);
+  const jikanId = params.get('id');
+  const episode = params.get('ep');
+  const subOptionBtn = document.getElementById('sub-option-btn');
+  const dubOptionBtn = document.getElementById('dub-option-btn');
+
+  if (!jikanId || !episode) {
+    document.getElementById('player-container').innerHTML = `
+      <div id="error-message">
+        Missing “id” or “ep” parameter in URL.<br>
+        Example: view.html?id=21&ep=104
+      </div>`;
+    return;
+  }
+
+  // Get preference from localStorage or default to 'sub'
+  let userPref = localStorage.getItem('animeDubPref');
+  if (!userPref || (userPref !== 'sub' && userPref !== 'dub')) {
+    userPref = 'sub';
+    localStorage.setItem('animeDubPref', 'sub');
+  }
+
+  // Fetch anime info
+  let title = 'Unknown';
+  let type = 'N/A';
+  let year = 'N/A';
+  try {
+    const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
+    if (resp.ok) {
+      const data = await resp.json();
+      const anime = data.data || {};
+      title = anime.title_english || anime.title || 'Unknown';
+      type = anime.type || 'N/A';
+      year = anime.year || anime.aired?.prop?.from?.year || 'N/A';
+    }
+  } catch (err) {
+    console.warn('Failed to fetch Jikan info:', err);
+  }
+
+  document.getElementById('series-name').textContent = title;
+  document.getElementById('series-type').textContent = type;
+  document.getElementById('series-year').textContent = year;
+  document.getElementById('episode-number').textContent = episode;
+
+  // Fetch total episodes
+  let totalEpisodes = null;
+  try {
+    const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
+    if (resp.ok) {
+      const data = await resp.json();
+      totalEpisodes = data.data?.episodes || null;
+    }
+  } catch (err) {}
+
+  const infoContainer = document.getElementById('info-container');
+  let nextEpBtn = document.getElementById('next-episode-btn');
+  let seriesOverMsg = document.getElementById('series-over-msg');
+  if (nextEpBtn) nextEpBtn.remove();
+  if (seriesOverMsg) seriesOverMsg.remove();
+
+  const currentEpNum = parseInt(episode, 10);
+  if (totalEpisodes && currentEpNum < totalEpisodes) {
+    nextEpBtn = document.createElement('button');
+    nextEpBtn.id = 'next-episode-btn';
+    nextEpBtn.textContent = `Next Episode →`;
+    nextEpBtn.addEventListener('click', () => {
       const params = new URLSearchParams(window.location.search);
-      const jikanId = params.get('id');
-      const episode = params.get('ep');
-      const subOptionBtn = document.getElementById('sub-option-btn');
-      const dubOptionBtn = document.getElementById('dub-option-btn');
-      let currentDub = false;
-      // Show error if missing
-      if (!jikanId || !episode) {
-        document.getElementById('player-container').innerHTML = `
-          <div id="error-message">
-            Missing “id” or “ep” parameter in URL.<br>
-            Example: view.html?id=21&ep=104
-          </div>`;
-        return;
-      }
-      // 2) Fetch minimal anime info from Jikan
-      let title = 'Unknown';
-      let type = 'N/A';
-      let year = 'N/A';
-      try {
-        const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
-        if (resp.ok) {
-          const data = await resp.json();
-          const anime = data.data || {};
-          title = anime.title_english || anime.title || 'Unknown';
-          type = anime.type || 'N/A';
-          year = anime.year ||
-                 (anime.aired?.prop?.from?.year) ||
-                 'N/A';
-        }
-      } catch (err) {
-        console.warn('Failed to fetch Jikan info:', err);
-      }
-      // 3) Update info section
-      document.getElementById('series-name').textContent = title;
-      document.getElementById('series-type').textContent = type;
-      document.getElementById('series-year').textContent = year;
-      document.getElementById('episode-number').textContent = episode;
-      // --- NEXT EPISODE BUTTON LOGIC ---
-      // Fetch total episodes from Jikan info (if available)
-      let totalEpisodes = null;
-      try {
-        const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
-        if (resp.ok) {
-          const data = await resp.json();
-          const anime = data.data || {};
-          totalEpisodes = anime.episodes || null;
-        }
-      } catch (err) {
-        // fallback: leave totalEpisodes as null
-      }
-      // Add next episode button or series over message
-      const infoContainer = document.getElementById('info-container');
-      let nextEpBtn = document.getElementById('next-episode-btn');
-      let seriesOverMsg = document.getElementById('series-over-msg');
-      if (nextEpBtn) nextEpBtn.remove();
-      if (seriesOverMsg) seriesOverMsg.remove();
-      const currentEpNum = parseInt(episode, 10);
-      if (totalEpisodes && currentEpNum < totalEpisodes) {
-        nextEpBtn = document.createElement('button');
-        nextEpBtn.id = 'next-episode-btn';
-        nextEpBtn.textContent = `Next Episode →`;
-        nextEpBtn.addEventListener('click', () => {
-          // Replace current page with next episode
-          const params = new URLSearchParams(window.location.search);
-          params.set('ep', currentEpNum + 1);
-          window.location.search = params.toString();
-        });
-        infoContainer.appendChild(nextEpBtn);
-      } else if (totalEpisodes && currentEpNum >= totalEpisodes) {
-        seriesOverMsg = document.createElement('div');
-        seriesOverMsg.id = 'series-over-msg';
-        seriesOverMsg.textContent = 'Wow... The Series is over';
-        infoContainer.appendChild(seriesOverMsg);
-      }
-      // Helper to load iframe with dub/sub
-      async function loadIframe(dub) {
-        // Remove any existing iframe
-        const playerContainer = document.getElementById('player-container');
-        playerContainer.innerHTML = '';
-        // 4) Call your FastAPI proxy to get the raw iframe URL
-        const proxyBase = 'https://arkm20-animex-player-api.hf.space';
-        const iframeSrcURL = `${proxyBase}/iframe-src?id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
-        let embedSrc = null;
-        try {
-          const res = await fetch(iframeSrcURL);
-          if (res.ok) {
-            const json = await res.json();
-            embedSrc = json.src;
-          } else {
-            console.warn('Proxy returned HTTP', res.status);
-          }
-        } catch (err) {
-          console.error('Error calling proxy:', err);
-        }
-        if (!embedSrc) {
-          playerContainer.innerHTML = `
-            <div id="error-message">
-              Could not load player. Please try again later.
-            </div>`;
-          return;
-        }
-        const iframe = document.createElement('iframe');
-        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-        iframe.setAttribute('src', embedSrc);
-        iframe.setAttribute('allowfullscreen', 'true');
-        iframe.setAttribute('scrolling', 'no');
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-        playerContainer.appendChild(iframe);
-      }
-      // --- Watch History Update Logic ---
-      async function updateWatchHistory(showId, showTitle, episodeNumber) {
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
-          console.log("User not logged in. Skipping watch history update.");
-          return;
-        }
-        try {
-          const params = new URLSearchParams({
-              show_id: String(showId),
-              show_title: String(showTitle),
-              season_number: 1,
-              episode_number: Number(episodeNumber)
-          });
-          const url = `https://arkm20-authapi.hf.space/users/me/watch-history?${params.toString()}`;
-          const response = await fetch(url, {
-              method: 'GET',
-              headers: {
-                  'Authorization': `Bearer ${token}`
-              }
-          });
-          if (response.ok) {
-            console.log("Watch history updated successfully.");
-          } else {
-            const result = await response.json().catch(() => ({}));
-            console.warn("Failed to update watch history:", result.message || response.status);
-          }
-        } catch (error) {
-          console.error("Network error while updating watch history:", error);
-        }
-      }
-      // 5) Initial load (SUB by default)
-      await loadIframe(false);
-      // Update watch history after loading the episode
-      updateWatchHistory(jikanId, title, episode);
-      // 6) Dub/Sub toggle logic
-      subOptionBtn.addEventListener('click', async () => {
-        if (!subOptionBtn.classList.contains('active')) {
-          subOptionBtn.classList.add('active');
-          dubOptionBtn.classList.remove('active');
-          await loadIframe(false);
-          updateWatchHistory(jikanId, title, episode);
-        }
-      });
-      dubOptionBtn.addEventListener('click', async () => {
-        if (!dubOptionBtn.classList.contains('active')) {
-          dubOptionBtn.classList.add('active');
-          subOptionBtn.classList.remove('active');
-          await loadIframe(true);
-          updateWatchHistory(jikanId, title, episode);
-        }
-      });
+      params.set('ep', currentEpNum + 1);
+      window.location.search = params.toString();
     });
+    infoContainer.appendChild(nextEpBtn);
+  } else if (totalEpisodes && currentEpNum >= totalEpisodes) {
+    seriesOverMsg = document.createElement('div');
+    seriesOverMsg.id = 'series-over-msg';
+    seriesOverMsg.textContent = 'Wow... The Series is over';
+    infoContainer.appendChild(seriesOverMsg);
+  }
+
+  async function loadIframe(dub) {
+    const playerContainer = document.getElementById('player-container');
+    playerContainer.innerHTML = '';
+    const proxyBase = 'https://arkm20-animex-player-api.hf.space';
+    const iframeSrcURL = `${proxyBase}/iframe-src?id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
+    let embedSrc = null;
+    try {
+      const res = await fetch(iframeSrcURL);
+      if (res.ok) {
+        const json = await res.json();
+        embedSrc = json.src;
+      } else {
+        console.warn('Proxy returned HTTP', res.status);
+      }
+    } catch (err) {
+      console.error('Error calling proxy:', err);
+    }
+    if (!embedSrc) {
+      playerContainer.innerHTML = `
+        <div id="error-message">
+          Could not load player. Please try again later.
+        </div>`;
+      return;
+    }
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+    iframe.setAttribute('src', embedSrc);
+    iframe.setAttribute('allowfullscreen', 'true');
+    iframe.setAttribute('scrolling', 'no');
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    playerContainer.appendChild(iframe);
+  }
+
+  async function updateWatchHistory(showId, showTitle, episodeNumber) {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      console.log("User not logged in. Skipping watch history update.");
+      return;
+    }
+    try {
+      const params = new URLSearchParams({
+        show_id: String(showId),
+        show_title: String(showTitle),
+        season_number: 1,
+        episode_number: Number(episodeNumber)
+      });
+      const url = `https://arkm20-authapi.hf.space/users/me/watch-history?${params.toString()}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        console.log("Watch history updated successfully.");
+      } else {
+        const result = await response.json().catch(() => ({}));
+        console.warn("Failed to update watch history:", result.message || response.status);
+      }
+    } catch (error) {
+      console.error("Network error while updating watch history:", error);
+    }
+  }
+
+  // Set active button style and load correct iframe
+  if (userPref === 'dub') {
+    dubOptionBtn.classList.add('active');
+    subOptionBtn.classList.remove('active');
+    await loadIframe(true);
+  } else {
+    subOptionBtn.classList.add('active');
+    dubOptionBtn.classList.remove('active');
+    await loadIframe(false);
+  }
+
+  updateWatchHistory(jikanId, title, episode);
+
+  subOptionBtn.addEventListener('click', async () => {
+    if (!subOptionBtn.classList.contains('active')) {
+      subOptionBtn.classList.add('active');
+      dubOptionBtn.classList.remove('active');
+      localStorage.setItem('animeDubPref', 'sub');
+      await loadIframe(false);
+      updateWatchHistory(jikanId, title, episode);
+    }
+  });
+
+  dubOptionBtn.addEventListener('click', async () => {
+    if (!dubOptionBtn.classList.contains('active')) {
+      dubOptionBtn.classList.add('active');
+      subOptionBtn.classList.remove('active');
+      localStorage.setItem('animeDubPref', 'dub');
+      await loadIframe(true);
+      updateWatchHistory(jikanId, title, episode);
+    }
+  });
+});
   </script>
 </body>
 </html>
