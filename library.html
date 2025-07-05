@@ -133,7 +133,7 @@
 
         /* --- Import Controls --- */
         .import-controls {
-            margin-bottom: 10px;
+            margin-bottom: 24px; /* Increased margin */
             text-align: center;
             padding: 20px;
             border-radius: var(--border-radius-lg);
@@ -204,7 +204,7 @@
         }
 
         #seriesListContainer {
-            padding-top: 24px;
+            padding-top: 0; /* Removed top padding */
         }
 
         .list-item {
@@ -300,49 +300,6 @@
             border: none;
         }
         
-        /* --- Continue Watching Section --- */
-        #continueWatchingSection {
-            margin-top: 40px;
-            border-radius: var(--border-radius-lg);
-            padding: 12px;
-            padding-bottom: 15px;
-        }
-
-        #continueWatchingContent {
-            margin-top: 1em;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .show {
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-            padding: 12px;
-            border-radius: var(--border-radius-md);
-            background: rgba(0,0,0,0.2);
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-        .show:hover {
-            background: rgba(0,0,0,0.35);
-        }
-
-        .show img {
-            width: 60px;
-            height: 85px;
-            object-fit: cover;
-            border-radius: var(--border-radius-sm);
-            flex-shrink: 0;
-        }
-        
-        .show > div { flex: 1; min-width: 0; }
-        .show > div > div:first-child { font-weight: 600; font-size: 1.1em; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .show ul { list-style-type: none; padding-left: 0; font-size: 0.9em; color: var(--text-secondary); }
-        .show li { margin-top: 4px; }
-        .show li span { font-size: 0.9em; opacity: 0.7; margin-left: 4px; }
-
         /* --- Media Queries --- */
         @media (max-width: 600px) {
             .main-content { margin: 20px auto; padding: 0 15px; }
@@ -362,7 +319,7 @@
                     <h2 id="currentViewTitle" class="section-title" style="margin-bottom: 0;">Downloads</h2>
                 </div>
 
-                <!-- === UPDATED IMPORT CONTROLS === -->
+                <!-- === IMPORT CONTROLS (Main Page) === -->
                 <div class="import-controls glass-pane">
                     <button id="getOfflineFolderButton" class="import-button">
                         <i class="fas fa-download"></i> Get Offline Folder
@@ -371,12 +328,33 @@
                         <i class="fas fa-folder-plus"></i> Import Series Folder
                     </button>
                     <input type="file" id="folderInput" webkitdirectory directory multiple />
-                    <p id="statusMessage" class="status-message">1. Get folder structure. 2. Add videos. 3. Import here.</p>
+                    <p id="statusMessage" class="status-message">1. Get folder. 2. Add videos. 3. Import here.</p>
                 </div>
 
+                <!-- === SERIES LIST (Main Page) === -->
                 <div id="seriesListContainer" class="item-list"></div>
+                
+                <!-- === PAGINATION TO CONTINUE WATCHING (Main Page) === -->
+                <div id="paginationControls" style="display: none; margin-top: 20px;">
+                    <div id="goToContinueWatchingBtn" class="list-item glass-pane" style="background: rgba(35, 35, 40, 0.8);">
+                        <div class="item-details" style="text-align: center;">
+                            <h3 class="item-title">View Watch History</h3>
+                        </div>
+                        <div class="item-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === EPISODE LIST (Sub-Page) === -->
                 <div id="episodeListContainer" class="item-list" style="display: none;"></div>
+                
+                <!-- === VIDEO PLAYER (Sub-Page) === -->
                 <div id="videoPlayerContainer" style="display: none;"></div>
+
+                <!-- === CONTINUE WATCHING (Sub-Page) === -->
+                <div id="continueWatchingPageContainer" class="item-list" style="display: none;"></div>
+
             </section>
         </main>
     </div>
@@ -393,7 +371,11 @@
         const navigationHeader = document.getElementById('navigationHeader');
         const backButton = document.getElementById('backButton');
         const currentViewTitle = document.getElementById('currentViewTitle');
-        let continueWatchingSection; // Will be defined after creation
+        
+        // New Elements for Continue Watching Page
+        const continueWatchingPageContainer = document.getElementById('continueWatchingPageContainer');
+        const paginationControls = document.getElementById('paginationControls');
+        const goToContinueWatchingBtn = document.getElementById('goToContinueWatchingBtn');
 
         // --- STATE VARIABLES ---
         let seriesData = {};
@@ -444,12 +426,9 @@
             });
         }
 
-        // === NEW EVENT LISTENER for Get Offline Folder button ===
+        // === EVENT LISTENERS ===
         getOfflineFolderButton.addEventListener('click', () => {
             const authToken = localStorage.getItem('accessToken');
-            console.log("Auth Token:", authToken);
-            // Navigate to the UI for generating the zip file with folders
-            // This URL should correspond to the endpoint in your Python backend.
             window.open(`https://arkm20-authapi.hf.space/download-ui?token=${authToken}`, '_blank');
         });
 
@@ -485,6 +464,7 @@
             saveDirectoryHandleToDB(null).catch(e => console.warn("Could not clear DB handle", e));
         });
 
+        // --- FILE PROCESSING ---
         async function processDirectoryHandle(dirHandle) {
             const filesForProcessing = [];
             statusMessage.textContent = `Processing folder: ${dirHandle.name}...`;
@@ -503,7 +483,7 @@
                 }
             }
             try {
-                await getFilesInDirectory(dirHandle, ''); // Start with an empty path
+                await getFilesInDirectory(dirHandle, '');
                 if (filesForProcessing.length === 0) {
                     statusMessage.textContent = "No files found in the selected directory.";
                     seriesData = {};
@@ -520,59 +500,40 @@
             showView('series');
         }
 
-        // === UPDATED AND ROBUST processFiles FUNCTION ===
         function processFiles(filesArray) {
-    seriesData = {};
-    const videoRegex = /\.(mp4|mkv)$/i;
+            seriesData = {};
+            const videoRegex = /\.(mp4|mkv)$/i;
+            const prefixes = filesArray.map(f => f.webkitRelativePath.split('/')[0]);
+            const uniquePrefixes = [...new Set(prefixes)];
+            const skipRoot = uniquePrefixes.length === 1;
 
-    // 1️⃣ Detect if every file shares the same first path segment
-    const prefixes = filesArray
-      .map(f => f.webkitRelativePath.split('/')[0]);
-    const uniquePrefixes = [...new Set(prefixes)];
-    const skipRoot = uniquePrefixes.length === 1;
+            filesArray.forEach(file => {
+                let pathParts = file.webkitRelativePath.split('/');
+                if (skipRoot) { pathParts.shift(); }
+                if (pathParts.length < 2) return;
+                const seriesName = pathParts[0];
+                const fileName = pathParts[pathParts.length - 1];
 
-    filesArray.forEach(file => {
-        let pathParts = file.webkitRelativePath.split('/');
-
-        // 2️⃣ If they all start with one common folder, drop that segment
-        if (skipRoot) {
-            pathParts.shift();
-        }
-
-        // 3️⃣ Now pathParts[0] is your true series folder
-        if (pathParts.length < 2) return;  // no series + file
-
-        const seriesName = pathParts[0];
-        const fileName = pathParts[pathParts.length - 1];
-
-        
-                // Initialize series data if it's the first file found for this series.
                 if (!seriesData[seriesName]) {
                     seriesData[seriesName] = { posterFile: null, episodes: [] };
                 }
-
-                // Check if the file is a poster located directly in the series folder.
-                // e.g., "Series Name/poster.png"
                 if (pathParts.length === 2 && fileName.match(/^poster\.(png|jpg|jpeg|webp)$/i)) {
                     seriesData[seriesName].posterFile = file;
-                } 
-                // Check if it's a video file anywhere within the series folder.
-                else if (videoRegex.test(fileName)) {
-                    // Create a descriptive episode name from the path, excluding the series name.
-                    // e.g., "Season 1/01. The Strongest Hero"
+                } else if (videoRegex.test(fileName)) {
                     const episodePath = pathParts.slice(1).join(' / ').replace(videoRegex, '');
                     seriesData[seriesName].episodes.push({ name: episodePath, file: file, duration: null });
                 }
             });
         }
 
-
+        // --- UI DISPLAY FUNCTIONS ---
         function displaySeriesList() {
             seriesListContainer.innerHTML = '';
             const sortedSeriesNames = Object.keys(seriesData).sort((a,b) => a.localeCompare(b));
 
             if (sortedSeriesNames.length === 0) {
                  seriesListContainer.innerHTML = `<p class="status-message" style="background:transparent; text-align:center;">No series found. Try importing a folder.</p>`;
+                 paginationControls.style.display = 'none'; // Hide chevron button
                  return;
             }
 
@@ -613,6 +574,7 @@
                 });
                 seriesListContainer.appendChild(listItem);
             }
+            paginationControls.style.display = 'block'; // Show chevron button
         }
 
         function displayEpisodeList(seriesName, episodes) {
@@ -684,22 +646,28 @@
                     </div>
                 </div>`;
         }
-
+        
+        // --- VIEW MANAGEMENT ---
         function showView(viewName, title) {
             currentView = viewName;
             const importControls = document.querySelector('.import-controls');
             
+            // Hide all containers by default
             seriesListContainer.style.display = 'none';
             episodeListContainer.style.display = 'none';
             videoPlayerContainer.style.display = 'none';
             navigationHeader.style.display = 'none';
             importControls.style.display = 'none';
-            if (continueWatchingSection) continueWatchingSection.style.display = 'none';
+            continueWatchingPageContainer.style.display = 'none';
+            paginationControls.style.display = 'none';
 
             if (viewName === 'series') {
                 importControls.style.display = 'flex';
                 seriesListContainer.style.display = 'flex';
-                if (continueWatchingSection) continueWatchingSection.style.display = 'block';
+                // The pagination button visibility is handled by displaySeriesList()
+                if (Object.keys(seriesData).length > 0) {
+                   paginationControls.style.display = 'block';
+                }
             } else if (viewName === 'episodes') {
                 navigationHeader.style.display = 'flex';
                 currentViewTitle.textContent = title || 'Episodes';
@@ -708,6 +676,10 @@
                 navigationHeader.style.display = 'flex';
                 currentViewTitle.textContent = "Now Playing";
                 videoPlayerContainer.style.display = 'block';
+            } else if (viewName === 'continueWatching') {
+                navigationHeader.style.display = 'flex';
+                currentViewTitle.textContent = "Continue Watching";
+                continueWatchingPageContainer.style.display = 'flex';
             }
         }
         
@@ -720,12 +692,108 @@
                 videoPlayerContainer.innerHTML = "";
                 displayEpisodeList(currentSeriesForEpisodes, seriesData[currentSeriesForEpisodes].episodes);
                 showView('episodes', currentSeriesForEpisodes);
-            } else if (currentView === 'episodes') {
+            } else if (currentView === 'episodes' || currentView === 'continueWatching') {
                 showView('series');
                 currentSeriesForEpisodes = null;
             }
         });
+
+        goToContinueWatchingBtn.addEventListener('click', () => {
+            showView('continueWatching');
+        });
         
+        // --- CONTINUE WATCHING LOGIC ---
+        const API_BASE_URL = 'https://arkm20-authapi.hf.space';
+
+        async function fetchJikanInfo(id) {
+            try {
+                const res = await fetch(`https://api.jikan.moe/v4/anime/${id}`);
+                if (!res.ok) return null;
+                const json = await res.json();
+                return { title: json.data.title_english || json.data.title, image: json.data.images.jpg.image_url };
+            } catch (err) {
+                return null;
+            }
+        }
+
+        async function renderWatchHistory(historyData) {
+            const container = continueWatchingPageContainer;
+            if (!historyData || Object.keys(historyData).length === 0) {
+                container.innerHTML = '<p class="status-message glass-pane">No watch history found.</p>';
+                return;
+            }
+            container.innerHTML = '';
+            const showIds = Object.keys(historyData).sort((a, b) => historyData[b].last_watched - historyData[a].last_watched);
+            
+            for (const showId of showIds) {
+                const showMeta = historyData[showId];
+                const jikan = await fetchJikanInfo(showId);
+                if (!jikan) continue;
+
+                const listItem = document.createElement('div');
+                listItem.className = 'list-item glass-pane';
+                listItem.onclick = () => window.location.href = `series-info.html?library=true&id=${encodeURIComponent(showId)}`;
+
+                const thumbnailDiv = document.createElement('div');
+                thumbnailDiv.className = 'item-thumbnail';
+                const img = document.createElement('img');
+                img.src = jikan.image;
+                img.alt = jikan.title;
+                thumbnailDiv.appendChild(img);
+
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'item-details';
+                const titleH3 = document.createElement('h3');
+                titleH3.className = 'item-title';
+                titleH3.textContent = jikan.title;
+                detailsDiv.appendChild(titleH3);
+
+                const lastWatchedP = document.createElement('p');
+                lastWatchedP.className = 'episode-duration';
+                let lastWatchedTimestamp = 0;
+                let lastWatchedEp = '';
+                 Object.keys(showMeta.seasons).forEach(seasonNum => {
+                    Object.keys(showMeta.seasons[seasonNum].episodes).forEach(epNum => {
+                        const timestamp = showMeta.seasons[seasonNum].episodes[epNum];
+                        if (timestamp > lastWatchedTimestamp) {
+                            lastWatchedTimestamp = timestamp;
+                            lastWatchedEp = `S${seasonNum} E${epNum}`;
+                        }
+                    });
+                });
+                lastWatchedP.textContent = `Last: ${lastWatchedEp} on ${new Date(lastWatchedTimestamp).toLocaleDateString()}`;
+                detailsDiv.appendChild(lastWatchedP);
+
+                const arrowDiv = document.createElement('div');
+                arrowDiv.className = 'item-arrow';
+                arrowDiv.innerHTML = '<i class="fas fa-chevron-right"></i>';
+
+                listItem.appendChild(thumbnailDiv);
+                listItem.appendChild(detailsDiv);
+                listItem.appendChild(arrowDiv);
+                container.appendChild(listItem);
+            }
+        }
+
+        async function fetchAndRenderWatchHistory() {
+            const container = continueWatchingPageContainer;
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                container.innerHTML = '<p class="status-message glass-pane">Log in to see watch history.</p>';
+                return;
+            }
+            container.innerHTML = '<p class="status-message glass-pane">Loading watch history...</p>';
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!response.ok) throw new Error('API Error');
+                const data = await response.json();
+                renderWatchHistory(data.watch_history_detailed);
+            } catch (e) {
+                container.innerHTML = '<p class="status-message glass-pane">Could not load watch history.</p>';
+            }
+        }
+
+        // --- INITIALIZATION ---
         async function tryAutoImportOnLoad() {
             if (typeof window.showDirectoryPicker !== 'function') {
                 statusMessage.innerHTML += "<br>For a better experience, use Chrome/Edge on Desktop to remember your folder.";
@@ -759,94 +827,11 @@
                 displaySeriesList();
             }
         }
-
-        const API_BASE_URL = 'https://arkm20-authapi.hf.space';
-        function createContinueWatchingSection() {
-            const section = document.createElement('section');
-            section.id = 'continueWatchingSection';
-            section.className = 'glass-pane'; // Apply glass style
-            section.innerHTML = `
-              <h2 class="section-title" style="margin-bottom: 1em; font-size: 1.4rem;">Continue Watching</h2>
-              <div id="continueWatchingContent"><p>Loading watch history...</p></div>
-            `;
-            const importControls = document.querySelector('.import-controls');
-            importControls.insertAdjacentElement('afterend', section);
-            return section;
-        }
-
-        async function fetchJikanInfo(id) {
-            try {
-                const res = await fetch(`https://api.jikan.moe/v4/anime/${id}`);
-                if (!res.ok) return null;
-                const json = await res.json();
-                return { title: json.data.title_english || json.data.title, image: json.data.images.jpg.image_url };
-            } catch (err) {
-                return null;
-            }
-        }
-
-        async function renderWatchHistory(historyData) {
-            const container = document.getElementById('continueWatchingContent');
-            if (!historyData || Object.keys(historyData).length === 0) {
-                container.innerHTML = '<p style="color: var(--text-secondary);">No watch history found.</p>';
-                return;
-            }
-            container.innerHTML = '';
-            const showIds = Object.keys(historyData).sort((a, b) => historyData[a].title.localeCompare(historyData[b].title));
-            for (const showId of showIds) {
-                const showMeta = historyData[showId];
-                const jikan = await fetchJikanInfo(showId);
-                if (!jikan) continue;
-                const showDiv = document.createElement('div');
-                showDiv.className = 'show';
-                const img = document.createElement('img');
-                img.src = jikan.image;
-                img.alt = jikan.title;
-                showDiv.appendChild(img);
-                const infoDiv = document.createElement('div');
-                const titleDiv = document.createElement('div');
-                titleDiv.textContent = jikan.title;
-                infoDiv.appendChild(titleDiv);
-                const episodeList = document.createElement('ul');
-                Object.keys(showMeta.seasons).sort((a,b)=>a-b).forEach(seasonNum => {
-                    Object.keys(showMeta.seasons[seasonNum].episodes).sort((a,b)=>a-b).forEach(epNum => {
-                        const li = document.createElement('li');
-                        li.textContent = `S${seasonNum} E${epNum}`;
-                        const span = document.createElement('span');
-                        span.textContent = `(${new Date(showMeta.seasons[seasonNum].episodes[epNum]).toLocaleDateString()})`;
-                        li.appendChild(span);
-                        episodeList.appendChild(li);
-                    });
-                });
-                infoDiv.appendChild(episodeList);
-                showDiv.appendChild(infoDiv);
-                showDiv.onclick = () => window.location.href = `series-info.html?library=true&id=${encodeURIComponent(showId)}`;
-                container.appendChild(showDiv);
-            }
-        }
-
-        async function fetchAndRenderWatchHistory() {
-            const container = document.getElementById('continueWatchingContent');
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                container.innerHTML = '<p style="color: var(--text-secondary);">Log in to see watch history.</p>';
-                return;
-            }
-            try {
-                const response = await fetch(`${API_BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!response.ok) throw new Error('API Error');
-                const data = await response.json();
-                renderWatchHistory(data.watch_history_detailed);
-            } catch (e) {
-                container.innerHTML = '<p style="color: var(--text-secondary);">Could not load watch history.</p>';
-            }
-        }
         
         document.addEventListener('DOMContentLoaded', () => {
             showView('series');
-            continueWatchingSection = createContinueWatchingSection();
             tryAutoImportOnLoad();
-            fetchAndRenderWatchHistory();
+            fetchAndRenderWatchHistory(); // Fetch data for the new page on load
         });
     </script>
 </body>
