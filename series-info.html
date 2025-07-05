@@ -10,6 +10,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="Resources/styles.css">
     <link rel="stylesheet" href="Resources/series.css">
+    <style>
+        .episode-item.watched {
+            background: rgba(255, 149, 0, 0.1);
+            border-bottom: 3px solid #FF9500;
+        }
+
+        .episode-item.watched:hover {
+            background: rgba(255, 149, 0, 0.15);
+        }
+
+        /* Watched indicator icon */
+        .watched-indicator {
+            color: #FF9500;
+            font-size: 0.9em;
+        }
+
+        /* Enhanced episode number styling for watched episodes */
+        .episode-number.watched {
+            border-radius: 4px;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -89,7 +110,7 @@
             const isLibrary = urlParams.get('library') === 'true';
             const type = isManga ? 'manga' : 'anime';
             const API_BASE_URL = 'https://arkm20-authapi.hf.space';
-            let currentSeriesTitle = '';
+            let userWatchHistory = null;
             const backButton = document.getElementById('back-button');
             if (backButton) {
                 backButton.style.display = (isAnime || isManga || isLibrary) ? '' : 'none';
@@ -359,11 +380,102 @@
             }
 
 
+            async function fetchUserWatchHistory() {
+                const token = localStorage.getItem('accessToken');
+                console.log("Access token found:", token ? "Yes" : "No");
+                console.log("Token value:", token);
+                
+                if (!token) {
+                    console.log("No user token found, skipping watch history fetch.");
+                    return null;
+                }
+
+                try {
+                    console.log("Making API request to:", `${API_BASE_URL}/users/me`);
+                    
+                    const response = await fetch(`${API_BASE_URL}/users/me`, { 
+                        headers: { 'Authorization': `Bearer ${token}` } 
+                    });
+
+                    console.log("API response status:", response.status);
+                    console.log("API response ok:", response.ok);
+
+                    if (response.status === 401) {
+                        console.log("Token invalid, clearing token.");
+                        localStorage.removeItem('accessToken');
+                        return null;
+                    }
+                    
+                    if (!response.ok) {
+                        console.error(`API error: ${response.status} ${response.statusText}`);
+                        throw new Error(`API error: ${response.status}`);
+                    }
+
+                    const userData = await response.json();
+                    console.log("Full user data received:", userData);
+                    console.log("Watch history detailed:", userData.watch_history_detailed);
+                    
+                    if (!userData.watch_history_detailed) {
+                        console.log("No watch_history_detailed field in user data");
+                        return null;
+                    }
+                    
+                    if (Object.keys(userData.watch_history_detailed).length === 0) {
+                        console.log("Watch history is empty");
+                        return null;
+                    }
+                    
+                    console.log("Watch history successfully loaded with", Object.keys(userData.watch_history_detailed).length, "series");
+                    return userData.watch_history_detailed;
+
+                } catch (error) {
+                    console.error("Failed to fetch user watch history:", error);
+                    console.error("Error details:", error.message);
+                    return null;
+                }
+            }
+
+            function isEpisodeWatched(seriesId, seasonNumber, episodeNumber) {
+                console.log(`Checking if watched: Series ${seriesId}, Season ${seasonNumber}, Episode ${episodeNumber}`);
+                
+                if (!userWatchHistory) {
+                    console.log("No watch history available");
+                    return false;
+                }
+
+                console.log("Available series in watch history:", Object.keys(userWatchHistory));
+                
+                if (!userWatchHistory[seriesId]) {
+                    console.log(`Series ${seriesId} not found in watch history`);
+                    return false;
+                }
+
+                const series = userWatchHistory[seriesId];
+                console.log(`Series ${seriesId} data:`, series);
+                
+                if (!series.seasons || !series.seasons[seasonNumber]) {
+                    console.log(`Season ${seasonNumber} not found for series ${seriesId}`);
+                    console.log("Available seasons:", series.seasons ? Object.keys(series.seasons) : "No seasons");
+                    return false;
+                }
+
+                const season = series.seasons[seasonNumber];
+                console.log(`Season ${seasonNumber} data:`, season);
+                
+                const isWatched = season.episodes && season.episodes[episodeNumber];
+                console.log(`Episode ${episodeNumber} watched:`, isWatched);
+                
+                return isWatched;
+            }
+
             function renderEpisodePage() {
                 episodeListContainer.innerHTML = '';
                 const start = (currentPage - 1) * episodesPerPage;
                 const end = start + episodesPerPage;
                 const paginatedEpisodes = episodesData.slice(start, end);
+
+                console.log("Current series ID:", currentSeriesId);
+                console.log("Rendering episodes:", paginatedEpisodes.length);
 
                 paginatedEpisodes.forEach((episode) => {
                     const episodeItem = document.createElement('div');
@@ -372,6 +484,29 @@
                     episodeItem.style.alignItems = 'center';
                     episodeItem.style.gap = '12px';
 
+                    // Try multiple season numbers since we don't know which one is correct
+                    let isWatched = false;
+                    for (let season = 1; season <= 3; season++) {
+                        if (isEpisodeWatched(currentSeriesId, season, episode.mal_id)) {
+                            isWatched = true;
+                            console.log(`Found watched episode ${episode.mal_id} in season ${season}`);
+                            break;
+                        }
+                    }
+
+                    // Also try episode.mal_id as string
+                    if (!isWatched) {
+                        for (let season = 1; season <= 3; season++) {
+                            if (isEpisodeWatched(currentSeriesId, season, String(episode.mal_id))) {
+                                isWatched = true;
+                                console.log(`Found watched episode ${episode.mal_id} (as string) in season ${season}`);
+                                break;
+                            }
+                        }
+                    }
+
+                    console.log(`Episode ${episode.mal_id} final watched status:`, isWatched);
+        
                     // --- Glassy Download Icon Button per episode ---
                     const downloadBtn = document.createElement('button');
                     downloadBtn.className = 'glassy-download-btn episode-download-icon';
@@ -409,6 +544,19 @@
 
                     const episodeInfoDiv = document.createElement('div');
                     episodeInfoDiv.classList.add('episode-info');
+                    // Add this after creating the episodeInfoDiv
+                    if (isWatched) {
+                        // Add watched indicator
+                        const watchedIndicator = document.createElement('span');
+                        watchedIndicator.className = 'watched-indicator';
+                        watchedIndicator.title = 'Watched';
+                        episodeItem.appendChild(watchedIndicator);
+                        
+                        // Add watched class to the entire episode item
+                        episodeItem.classList.add('watched');
+                        episodeNumberSpan.classList.add('watched');
+                    }
+
 
                     const episodeTitle = document.createElement('h4');
                     episodeTitle.classList.add('episode-title');
@@ -497,10 +645,17 @@
 
             async function init() {
                 currentSeriesId = getSeriesIdFromUrl();
+                console.log("Current series ID from URL:", currentSeriesId);
+                
                 if (!currentSeriesId) {
                     displayError("No series ID specified in the URL. Example: series-info.html?id=5114");
                     return;
                 }
+
+                // Fetch user watch history first with debugging
+                console.log("Fetching user watch history...");
+                userWatchHistory = await fetchUserWatchHistory();
+                console.log("Watch history fetch result:", userWatchHistory);
 
                 const seriesDetails = await fetchSeriesDetails(currentSeriesId);
                 if (seriesDetails) {
@@ -514,7 +669,7 @@
                         }
                     }
                 } else {
-                     if(heroSection) heroSection.style.display = 'none';
+                    if(heroSection) heroSection.style.display = 'none';
                 }
             }
 

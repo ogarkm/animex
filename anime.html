@@ -15,9 +15,13 @@
             background-color: #121212;
             margin: 0;
             color: #fff;
+            transition: background-color 0.3s;
+        }
+        body.overlay-active {
+            overflow: hidden;
         }
 
-        /* --- NEW: Carousel Section Styles --- */
+        /* --- Carousel Section Styles --- */
         #featured-carousel-container {
             position: relative;
             min-height: 450px; /* Provides space for the loader */
@@ -41,13 +45,13 @@
         #carousel-bg-2 { opacity: 0; }
         .carousel { perspective: 1000px; position: relative; z-index: 2; height: 60%; margin-top: 50px; min-height: 320px; }
         .carousel-wrapper {
-            position: absolute; width: 100%; height: 320px; /* Explicit height for visibility */
+            position: absolute; width: 100%; height: 320px;
             transform-style: preserve-3d;
             transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
         }
         .carousel-slide {
             position: absolute; left: 0; right: 0; margin: auto;
-            width: 45%; max-width: 200px; height: 300px; /* Explicit height for card */
+            width: 45%; max-width: 200px; height: 300px;
             transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.6s ease;
         }
         .carousel-slide img {
@@ -71,10 +75,11 @@
             display: inline-flex; align-items: center; justify-content: center; gap: 8px;
             background: #FF7A00; color: #fff; padding: 12px 24px; border-radius: 50px;
             font-weight: 600; text-decoration: none; transition: transform 0.2s ease;
+            border: none; cursor: pointer;
         }
         .carousel-info .continue-button:hover { transform: scale(1.05); }
 
-        /* --- NEW: Loader --- */
+        /* --- Loader --- */
         .loader {
             border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #FF7A00;
             border-radius: 50%; width: 50px; height: 50px;
@@ -83,12 +88,13 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 
-        /* --- Horizontal Scrolling Section Styles (Netflix Style) --- */
+        /* --- Horizontal Scrolling Section Styles --- */
         .content-section { margin-bottom: 30px; padding: 0 20px; }
         .section-title { font-size: 1.4em; font-weight: 600; color: #fff; margin-bottom: 15px; }
         .horizontal-scroll-container {
             display: flex; overflow-x: auto; overflow-y: hidden;
             padding-bottom: 15px; gap: 15px;
+            min-height: 50px; /* Space for loader/message */
         }
         .horizontal-scroll-container::-webkit-scrollbar { display: none; }
         .horizontal-scroll-container { -ms-overflow-style: none; scrollbar-width: none; }
@@ -107,28 +113,74 @@
             font-size: 0.9em; font-weight: 500; color: #e5e5e5;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
+        /* NEW: Subtitle for continue watching cards */
+        .poster-card .poster-subtitle {
+            font-size: 0.8em;
+            color: #FF7A00;
+            font-weight: 500;
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
         .error-message { color: #e5e5e5; font-style: italic; }
+
+        /* --- Series Overlay Styles --- */
+        .series-overlay-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px); z-index: 1000; display: none;
+            align-items: center; justify-content: center; opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .close-overlay-btn {
+            position: absolute; top: 20px; right: 25px;
+            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
+            color: white; width: 45px; height: 45px; border-radius: 50%;
+            font-size: 28px; line-height: 45px; text-align: center; cursor: pointer;
+            z-index: 1002; transition: transform 0.2s, background-color 0.2s;
+        }
+        .close-overlay-btn:hover { transform: scale(1.1); background-color: #FF7A00; }
+        .overlay-content-wrapper {
+            position: relative; width: 95%; height: 90%; max-width: 1600px;
+            background-color: #181818; border-radius: 15px; overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: scale(0.95); opacity: 0;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        .series-overlay-container.visible .overlay-content-wrapper { transform: scale(1); opacity: 1; }
+        #series-iframe { width: 100%; height: 100%; border: none; }
 
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- The hero section is now the dynamic carousel -->
         <header id="featured-carousel-container" class="hero-section">
             <div class="loader"></div>
         </header>
 
-        <!-- Main content area will be dynamically populated with sections -->
         <main class="main-content" id="main-content-area"></main>
     </div>
+
+    <div id="series-overlay" class="series-overlay-container">
+        <button id="close-overlay-btn" class="close-overlay-btn" title="Close (Esc)">×</button>
+        <div class="overlay-content-wrapper">
+            <iframe id="series-iframe" src="about:blank" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- CONFIGURATION ---
+            // Use the same API URL as library.html
+            const API_BASE_URL = 'https://arkm20-authapi.hf.space';
             const JIKAN_API_BASE_URL = 'https://api.jikan.moe/v4';
 
             // --- ELEMENT SELECTORS ---
             const mainContentArea = document.getElementById('main-content-area');
+            const seriesOverlay = document.getElementById('series-overlay');
+            const seriesIframe = document.getElementById('series-iframe');
+            const closeOverlayBtn = document.getElementById('close-overlay-btn');
 
             // --- CAROUSEL STATE ---
             let carouselData = [];
@@ -136,6 +188,32 @@
             let carouselWrapper;
             let isBg1Active = true;
             let bg1, bg2;
+
+            // --- OVERLAY LOGIC ---
+            function openSeriesOverlay(malId) {
+                if (!malId) return;
+                document.body.classList.add('overlay-active');
+                seriesIframe.src = `series-info.html?id=${malId}`;
+                seriesOverlay.style.display = 'flex';
+                setTimeout(() => {
+                    seriesOverlay.style.opacity = '1';
+                    seriesOverlay.classList.add('visible');
+                }, 10);
+            }
+
+            function closeSeriesOverlay() {
+                seriesOverlay.style.opacity = '0';
+                seriesOverlay.classList.remove('visible');
+                setTimeout(() => {
+                    seriesOverlay.style.display = 'none';
+                    seriesIframe.src = 'about:blank';
+                    document.body.classList.remove('overlay-active');
+                }, 300);
+            }
+            closeOverlayBtn.addEventListener('click', closeSeriesOverlay);
+            seriesOverlay.addEventListener('click', (event) => { if (event.target === seriesOverlay) closeSeriesOverlay(); });
+            document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSeriesOverlay(); });
+
 
             // --- CAROUSEL LOGIC ---
             async function initializeCarousel() {
@@ -145,9 +223,7 @@
                     if (!response.ok) throw new Error(`Carousel fetch error: ${response.status}`);
                     const animeList = (await response.json()).data;
                     
-                    if (!animeList || !animeList.length) {
-                        throw new Error("No carousel data returned from API.");
-                    }
+                    if (!animeList || !animeList.length) throw new Error("No carousel data returned from API.");
                     carouselData = animeList;
                     
                     container.innerHTML = `
@@ -155,18 +231,14 @@
                         <div id="carousel-bg-2" class="carousel-background"></div>
                         <div class="carousel">
                             <div class="carousel-wrapper">
-                                ${carouselData.map(anime => `
-                                    <div class="carousel-slide"><img src="${anime.images.jpg.large_image_url}" alt=""></div>
-                                `).join('')}
+                                ${carouselData.map(anime => `<div class="carousel-slide"><img src="${anime.images.jpg.large_image_url}" alt=""></div>`).join('')}
                             </div>
                         </div>
                         <button id="nav-left" class="carousel-nav"><i class="fa-solid fa-chevron-left"></i></button>
                         <button id="nav-right" class="carousel-nav"><i class="fa-solid fa-chevron-right"></i></button>
                         <div class="carousel-info">
                             <h2 id="carousel-title-text" class="title-text"></h2>
-                            <a id="carousel-continue-btn" href="#" class="continue-button" style="text-decoration: none;">
-                                <i class="fas fa-play"></i> Explore Series
-                            </a>
+                            <button id="carousel-continue-btn" class="continue-button"><i class="fas fa-play"></i> Explore Series</button>
                         </div>
                     `;
 
@@ -176,7 +248,9 @@
                     
                     container.querySelector('#nav-left').addEventListener('click', () => navigateCarousel(-1));
                     container.querySelector('#nav-right').addEventListener('click', () => navigateCarousel(1));
-                    
+                    container.querySelector('#carousel-continue-btn').addEventListener('click', () => {
+                         if(carouselData[currentIndex]) openSeriesOverlay(carouselData[currentIndex].mal_id);
+                    });
                     updateCarousel();
                 } catch (error) {
                     console.error("Failed to initialize carousel:", error);
@@ -189,31 +263,16 @@
                 updateCarousel();
             }
             
-            // --- JAVASCRIPT SNIPPET (Corrected Function) ---
-
             function updateCarousel() {
-                // This part calculates the geometry of the circle
                 const angle = 360 / carouselData.length;
-                // We calculate zDistance based on the container width to make it responsive
                 const zDistance = (carouselWrapper.offsetWidth / 2) / Math.tan((angle / 2) * (Math.PI / 180));
-                
-                // This rotates the entire wrapper to bring the active card to the front
                 carouselWrapper.style.transform = `translateZ(${-zDistance}px) rotateY(${-currentIndex * angle}deg)`;
-
-                // ----- THIS IS THE FIX -----
-                // We MUST loop through each slide and apply its individual position and rotation.
-                // This was the missing piece.
                 document.querySelectorAll('.carousel-slide').forEach((slide, index) => {
                     const slideAngle = index * angle;
-                    // The transform order is crucial: Rotate first, then push it out.
                     slide.style.transform = `rotateY(${slideAngle}deg) translateZ(${zDistance}px)`;
                 });
-                // ----- END OF FIX -----
-                
-                // The rest of the function updates the UI text and background
                 const currentAnime = carouselData[currentIndex];
                 document.getElementById('carousel-title-text').textContent = currentAnime.title_english || currentAnime.title;
-                document.getElementById('carousel-continue-btn').href = `series-info.html?anime=true&id=${currentAnime.mal_id}`;
                 updateCarouselBackground(currentAnime.images.jpg.large_image_url);
             }
 
@@ -230,31 +289,135 @@
                 isBg1Active = !isBg1Active;
             }
 
+
+            // --- NEW: CONTINUE WATCHING LOGIC ---
+            async function initializeContinueWatching() {
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    console.log("No user token found, skipping 'Continue Watching'.");
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/users/me`, { 
+                        headers: { 'Authorization': `Bearer ${token}` } 
+                    });
+
+                    if (response.status === 401) {
+                        console.log("Token invalid, skipping 'Continue Watching'.");
+                        localStorage.removeItem('accessToken');
+                        return;
+                    }
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                    const userData = await response.json();
+                    const history = userData.watch_history_detailed;
+
+                    if (!history || Object.keys(history).length === 0) {
+                        console.log("User has no watch history.");
+                        return;
+                    }
+
+                    const continueWatchingList = processWatchHistory(history);
+                    if (continueWatchingList.length > 0) {
+                        await renderContinueWatchingSection(continueWatchingList);
+                    }
+
+                } catch (error) {
+                    console.error("Failed to initialize Continue Watching section:", error);
+                }
+            }
+            
+            function processWatchHistory(historyDetailed) {
+                const shows = Object.values(historyDetailed);
+                const continueWatchingList = shows.map(show => {
+                    let latestEpisode = { timestamp: null, episode_number: -1, season_number: -1 };
+
+                    for (const seasonNumber in show.seasons) {
+                        const season = show.seasons[seasonNumber];
+                        for (const episodeNumber in season.episodes) {
+                            const timestamp = season.episodes[episodeNumber];
+                            if (!latestEpisode.timestamp || new Date(timestamp) > new Date(latestEpisode.timestamp)) {
+                                latestEpisode = {
+                                    timestamp: timestamp,
+                                    episode_number: parseInt(episodeNumber),
+                                    season_number: parseInt(seasonNumber)
+                                };
+                            }
+                        }
+                    }
+                    return { show_id: show.show_id, show_title: show.title, ...latestEpisode };
+                });
+
+                // Sort the shows by the most recent watched timestamp overall and filter out any invalid entries
+                return continueWatchingList
+                    .filter(item => item.episode_number > -1)
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            }
+
+            async function renderContinueWatchingSection(list) {
+                const section = document.createElement('section');
+                section.classList.add('content-section');
+                section.innerHTML = `
+                    <h2 class="section-title">Continue Watching</h2>
+                    <div class="horizontal-scroll-container">
+                        <p style="color: #ccc;">Loading your history...</p>
+                    </div>`;
+                mainContentArea.insertBefore(section, mainContentArea.firstChild);
+                
+                const container = section.querySelector('.horizontal-scroll-container');
+                container.innerHTML = ''; // Clear loading message
+
+                // Iterate through the list with a delay to respect Jikan's rate limit
+                for (const item of list) {
+                    try {
+                        const response = await fetch(`${JIKAN_API_BASE_URL}/anime/${item.show_id}`);
+                        if (!response.ok) continue; // Skip if this specific anime fails
+                        
+                        const animeData = (await response.json()).data;
+                        if (!animeData) continue;
+
+                        const card = document.createElement('div');
+                        card.classList.add('poster-card');
+                        card.addEventListener('click', () => { openSeriesOverlay(animeData.mal_id); });
+                        
+                        const title = animeData.title_english || animeData.title;
+                        
+                        card.innerHTML = `
+                            <img src="${animeData.images?.jpg?.image_url}" alt="${title}">
+                            <p class="poster-title" title="${title}">${title}</p>
+                            <p class="poster-subtitle">Watched S${item.season_number} E${item.episode_number}</p>
+                        `;
+                        container.appendChild(card);
+
+                    } catch (err) {
+                        console.error(`Failed to fetch Jikan data for show ID ${item.show_id}:`, err);
+                    }
+                    // *** CRITICAL: Wait to avoid hitting Jikan API rate limit ***
+                    await new Promise(resolve => setTimeout(resolve, 400));
+                }
+            }
+
+
             // --- HORIZONTAL SECTION LOGIC ---
             async function createHorizontalSection(title, apiUrl) {
-                try {
-                    const section = document.createElement('section');
-                    section.classList.add('content-section');
-                    const sectionTitle = document.createElement('h2');
-                    sectionTitle.classList.add('section-title');
-                    sectionTitle.textContent = title;
-                    const scrollContainer = document.createElement('div');
-                    scrollContainer.classList.add('horizontal-scroll-container');
-                    scrollContainer.innerHTML = `<p style="color: #ccc;">Loading...</p>`;
-                    section.appendChild(sectionTitle);
-                    section.appendChild(scrollContainer);
-                    mainContentArea.appendChild(section);
+                const section = document.createElement('section');
+                section.classList.add('content-section');
+                const scrollContainer = document.createElement('div');
+                scrollContainer.classList.add('horizontal-scroll-container');
+                section.innerHTML = `<h2 class="section-title">${title}</h2>`;
+                scrollContainer.innerHTML = `<p style="color: #ccc;">Loading...</p>`;
+                section.appendChild(scrollContainer);
+                mainContentArea.appendChild(section);
 
+                try {
                     const response = await fetch(apiUrl);
                     if (!response.ok) throw new Error(`Jikan API error: ${response.status}`);
                     const data = await response.json();
                     displayAnimePosters(data.data, scrollContainer);
                 } catch (error) {
                     console.error(`Failed to load section "${title}":`, error);
-                    const sectionWithError = Array.from(mainContentArea.getElementsByTagName('h2')).find(h2 => h2.textContent === title);
-                    if (sectionWithError) {
-                        sectionWithError.nextElementSibling.innerHTML = `<p class="error-message">Could not load this section.</p>`;
-                    }
+                    scrollContainer.innerHTML = `<p class="error-message">Could not load this section.</p>`;
                 }
             }
 
@@ -268,24 +431,24 @@
                     if (!anime.images?.jpg?.image_url) return;
                     const card = document.createElement('div');
                     card.classList.add('poster-card');
-                    card.addEventListener('click', () => { window.location.href = `series-info.html?anime=true&id=${anime.mal_id}`; });
-                    const img = document.createElement('img');
-                    img.src = anime.images.jpg.image_url;
-                    img.alt = anime.title_english || anime.title;
-                    const title = document.createElement('p');
-                    title.classList.add('poster-title');
-                    title.textContent = anime.title_english || anime.title;
-                    card.appendChild(img);
-                    card.appendChild(title);
+                    card.addEventListener('click', () => { openSeriesOverlay(anime.mal_id); });
+                    const title = anime.title_english || anime.title;
+                    card.innerHTML = `
+                        <img src="${anime.images.jpg.image_url}" alt="${title}">
+                        <p class="poster-title" title="${title}">${title}</p>
+                    `;
                     container.appendChild(card);
                 });
             }
             
-            function initializePage() {
-                // Initialize the new dynamic carousel first
+            async function initializePage() {
+                // Initialize the carousel first
                 initializeCarousel();
+                
+                // Then, attempt to add the "Continue Watching" section (it will only render if user is logged in)
+                await initializeContinueWatching();
 
-                // Create all the horizontal sections
+                // Finally, create the other public sections
                 createHorizontalSection("Top Airing Anime", `${JIKAN_API_BASE_URL}/top/anime?filter=airing&limit=20`);
                 createHorizontalSection("Upcoming Series", `${JIKAN_API_BASE_URL}/seasons/upcoming?limit=15`);
             }

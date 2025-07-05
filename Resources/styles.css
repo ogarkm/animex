@@ -16,6 +16,11 @@
     --desktop-padding: 40px;
     --card-hover-lift: translateY(-4px);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* NEW: Consistent border radius variables */
+    --radius-large: 16px;
+    --radius-medium: 12px;
+    --radius-small: 8px;
 }
 
 * {
@@ -34,18 +39,38 @@ body {
     overflow: hidden;
 }
 
-/* === DESKTOP LAYOUT IMPROVEMENTS === */
+/* 
+================================================================================
+DESKTOP STYLES (REWORKED & CONSOLIDATED)
+================================================================================
+*/
 @media (min-width: 768px) {
+    /* === BASE LAYOUT === */
     .app-container {
         display: flex;
         flex-direction: row;
         flex-grow: 1;
+        height: 100vh;
         overflow: hidden;
     }
     
-    /* Desktop Sidebar Navigation */
+    .desktop-main {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto; /* Scroll is on the main container now */
+        background: var(--bg-content-area);
+    }
+    
+    /* Hide mobile bottom nav on desktop */
+    .bottom-nav {
+        display: none;
+    }
+
+    /* === DESKTOP SIDEBAR NAVIGATION === */
     .desktop-sidebar {
         width: var(--sidebar-width);
+        flex-shrink: 0;
         background: linear-gradient(180deg, rgba(28, 28, 30, 0.95) 0%, rgba(28, 28, 30, 0.98) 100%);
         backdrop-filter: blur(20px);
         border-right: 1px solid rgba(255, 255, 255, 0.08);
@@ -63,13 +88,7 @@ body {
         right: 0;
         width: 1px;
         height: 100%;
-        background: linear-gradient(180deg, 
-            transparent 0%, 
-            rgba(255, 149, 0, 0.3) 20%, 
-            rgba(255, 149, 0, 0.1) 50%, 
-            rgba(255, 149, 0, 0.3) 80%, 
-            transparent 100%
-        );
+        background: linear-gradient(180deg, transparent 0%, rgba(255, 149, 0, 0.3) 20%, rgba(255, 149, 0, 0.1) 50%, rgba(255, 149, 0, 0.3) 80%, transparent 100%);
     }
     
     .sidebar-brand {
@@ -85,7 +104,7 @@ body {
         width: 36px;
         height: 36px;
         background: linear-gradient(135deg, #FF9500 0%, #FF6B00 100%);
-        border-radius: 8px;
+        border-radius: var(--radius-small);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -115,7 +134,7 @@ body {
         align-items: center;
         gap: 16px;
         padding: 16px 20px;
-        border-radius: 12px;
+        border-radius: var(--radius-medium);
         text-decoration: none;
         color: var(--text-secondary);
         font-weight: 500;
@@ -131,16 +150,9 @@ body {
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, 
-            rgba(255, 149, 0, 0.1) 0%, 
-            rgba(255, 149, 0, 0.05) 100%
-        );
+        background: linear-gradient(135deg, rgba(255, 149, 0, 0.1) 0%, rgba(255, 149, 0, 0.05) 100%);
         opacity: 0;
         transition: var(--transition-smooth);
-    }
-    
-    .sidebar-nav-item:hover::before {
-        opacity: 1;
     }
     
     .sidebar-nav-item:hover {
@@ -148,18 +160,23 @@ body {
         transform: translateX(4px);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
+    .sidebar-nav-item:hover::before {
+        opacity: 1;
+    }
     
     .sidebar-nav-item.active {
-        background: linear-gradient(135deg, 
-            rgba(255, 149, 0, 0.15) 0%, 
-            rgba(255, 149, 0, 0.08) 100%
-        );
+        background: linear-gradient(135deg, rgba(255, 149, 0, 0.15) 0%, rgba(255, 149, 0, 0.08) 100%);
         color: var(--accent-color-active);
         border: 1px solid rgba(255, 149, 0, 0.2);
     }
     
     .sidebar-nav-item.active::before {
         opacity: 1;
+    }
+    
+    .sidebar-nav-item .nav-icon, .sidebar-nav-item .nav-text {
+        position: relative;
+        z-index: 1;
     }
     
     .sidebar-nav-item .nav-icon {
@@ -169,34 +186,12 @@ body {
         display: flex;
         align-items: center;
         justify-content: center;
-        position: relative;
-        z-index: 1;
     }
-    
-    .sidebar-nav-item .nav-text {
-        position: relative;
-        z-index: 1;
-    }
-    
-    /* Desktop Main Content Area */
-    .desktop-main {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        background: var(--bg-content-area);
-    }
-    
-    /* Hide mobile bottom nav on desktop */
-    .bottom-nav {
-        display: none;
-    }
-}
 
-/* === ENHANCED HERO SECTION FOR DESKTOP === */
-@media (min-width: 768px) {
+    /* === HERO SECTION === */
     .hero-section {
-        height: 400px;
+        /* FIX: Use min-height to prevent content squishing on smaller viewports */
+        min-height: 400px; 
         background-size: cover;
         background-position: center;
         padding: var(--desktop-padding);
@@ -210,13 +205,8 @@ body {
     .hero-section::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: 
-            linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.7) 100%),
-            linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%);
+        inset: 0;
+        background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.7) 100%), linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 100%);
         z-index: 1;
     }
     
@@ -229,13 +219,15 @@ body {
         gap: 30px;
         position: relative;
         z-index: 2;
-        padding-bottom: 40px;
+        padding-bottom: 20px; /* Reduced padding slightly for balance */
     }
     
     .hero-poster img {
-        width: 160px;
-        height: auto;
-        border-radius: 12px;
+        /* FIX: Increased size for more impact on desktop */
+        width: 180px; 
+        height: 270px;
+        object-fit: cover;
+        border-radius: var(--radius-medium);
         border: 2px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         transition: var(--transition-smooth);
@@ -247,7 +239,8 @@ body {
     }
     
     .hero-details .title-logo {
-        font-size: 3rem;
+        /* FIX: clamp() makes font size fluid and responsive */
+        font-size: clamp(2.5rem, 4vw, 3.5rem);
         font-weight: 800;
         margin-bottom: 16px;
         text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -256,14 +249,14 @@ body {
     .hero-details .episode-info {
         font-size: 1rem;
         padding: 8px 16px;
-        border-radius: 8px;
+        border-radius: var(--radius-small);
         margin-bottom: 12px;
     }
     
     .continue-button {
         padding: 14px 28px;
         font-size: 1.1rem;
-        border-radius: 8px;
+        border-radius: var(--radius-small);
         transition: var(--transition-smooth);
         border: 1px solid rgba(255, 255, 255, 0.2);
     }
@@ -274,13 +267,10 @@ body {
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(255, 149, 0, 0.3);
     }
-}
 
-/* === REFINED MAIN CONTENT FOR DESKTOP === */
-@media (min-width: 768px) {
+    /* === MAIN CONTENT BODY === */
     .main-content {
-        flex-grow: 1;
-        overflow-y: auto;
+        /* This is the inner container that centers the content */
         padding: var(--desktop-padding);
         max-width: var(--content-max-width);
         margin: 0 auto;
@@ -297,31 +287,26 @@ body {
         -webkit-text-fill-color: transparent;
     }
     
-    /* Enhanced Grid Layout for Desktop */
+    /* FIX: Reduced minmax() width to make the grid more responsive on smaller desktop screens */
     .item-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
         gap: 24px;
         margin-bottom: 40px;
     }
     
-    /* Keep list layout as fallback */
     .item-list {
         display: flex;
         flex-direction: column;
         gap: 16px;
     }
     
-    /* Enhanced List Items with Better Glassmorphism */
     .list-item {
         background: rgba(58, 58, 60, 0.4);
         backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-radius: 16px;
+        border-radius: var(--radius-large);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 
-            0 4px 24px rgba(0, 0, 0, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         padding: 24px;
         display: flex;
         align-items: center;
@@ -335,14 +320,8 @@ body {
     .list-item::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, 
-            rgba(255, 149, 0, 0.05) 0%, 
-            rgba(255, 149, 0, 0.02) 100%
-        );
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255, 149, 0, 0.05) 0%, rgba(255, 149, 0, 0.02) 100%);
         opacity: 0;
         transition: var(--transition-smooth);
     }
@@ -350,10 +329,7 @@ body {
     .list-item:hover {
         background: rgba(58, 58, 60, 0.6);
         transform: var(--card-hover-lift);
-        box-shadow: 
-            0 8px 40px rgba(0, 0, 0, 0.25),
-            inset 0 1px 0 rgba(255, 255, 255, 0.15),
-            0 0 0 1px rgba(255, 149, 0, 0.1);
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(255, 149, 0, 0.1);
         border-color: rgba(255, 149, 0, 0.2);
     }
     
@@ -362,12 +338,14 @@ body {
     }
     
     .item-thumbnail img {
-        width: 80px;
-        height: 100px;
+        /* FIX: Increased size and set aspect ratio for better visual weight */
+        width: 90px;
+        height: 135px;
         object-fit: cover;
-        border-radius: 12px;
+        border-radius: var(--radius-medium);
         border: 1px solid rgba(255, 255, 255, 0.1);
         transition: var(--transition-smooth);
+        flex-shrink: 0;
     }
     
     .list-item:hover .item-thumbnail img {
@@ -408,20 +386,19 @@ body {
         color: var(--accent-color-active);
         transform: translateX(4px);
     }
-}
 
-/* === ENHANCED SEARCH BAR FOR DESKTOP === */
-@media (min-width: 768px) {
+    /* === SEARCH BAR === */
     .search-bar-container {
+        /* FIX: Center the search bar within the main content area */
+        margin: 0 auto 32px auto;
+        width: 100%;
+        max-width: 600px;
         background: rgba(58, 58, 60, 0.4);
         backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
         padding: 16px 24px;
-        border-radius: 16px;
-        margin-bottom: 32px;
+        border-radius: var(--radius-large);
         border: 1px solid rgba(255, 255, 255, 0.08);
         transition: var(--transition-smooth);
-        max-width: 600px;
     }
     
     .search-bar-container:focus-within {
@@ -444,16 +421,13 @@ body {
     .search-bar-container:focus-within .fa-search {
         color: var(--accent-color-active);
     }
-}
 
-/* === SETTINGS REFINEMENTS FOR DESKTOP === */
-@media (min-width: 768px) {
+    /* === SETTINGS PAGE === */
     .settings-group {
         margin-bottom: 40px;
         background: rgba(58, 58, 60, 0.3);
         backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-radius: 16px;
+        border-radius: var(--radius-large);
         padding: 24px;
         border: 1px solid rgba(255, 255, 255, 0.08);
     }
@@ -476,13 +450,11 @@ body {
     }
     
     .settings-item {
-        padding: 20px 0;
+        padding: 20px 12px;
         font-size: 1.1rem;
         transition: var(--transition-smooth);
-        border-radius: 8px;
+        border-radius: var(--radius-small);
         margin: 0 -12px;
-        padding-left: 12px;
-        padding-right: 12px;
     }
     
     .settings-item:hover {
@@ -504,35 +476,33 @@ body {
     input:checked + .slider:before {
         transform: translateX(28px);
     }
-}
 
-/* === SCROLLBAR STYLING FOR DESKTOP === */
-@media (min-width: 768px) {
-    .main-content::-webkit-scrollbar,
+    /* === SCROLLBAR STYLING === */
     .desktop-main::-webkit-scrollbar {
-        width: 8px;
+        width: 10px;
     }
     
-    .main-content::-webkit-scrollbar-track,
     .desktop-main::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 4px;
+        background: transparent;
     }
     
-    .main-content::-webkit-scrollbar-thumb,
     .desktop-main::-webkit-scrollbar-thumb {
-        background: rgba(255, 149, 0, 0.3);
-        border-radius: 4px;
-        transition: var(--transition-smooth);
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        border: 2px solid var(--bg-dark);
     }
     
-    .main-content::-webkit-scrollbar-thumb:hover,
     .desktop-main::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 149, 0, 0.5);
+        background: var(--accent-color-active);
     }
 }
 
-/* === MOBILE STYLES (KEEP EXISTING) === */
+
+/* 
+================================================================================
+MOBILE STYLES (UNCHANGED)
+================================================================================
+*/
 @media (max-width: 767px) {
     .app-container {
         display: flex;

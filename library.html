@@ -25,6 +25,8 @@
             --text-secondary: #A1A1A6;
             --accent-color: #FF9500;
             --accent-color-hover: #ffae45;
+            --action-color: #FF9500; /* For 'get' actions */
+            --action-color-hover: #975e0d;
             
             --font-family: 'Inter', sans-serif;
         }
@@ -135,11 +137,13 @@
             text-align: center;
             padding: 20px;
             border-radius: var(--border-radius-lg);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
         }
 
         .import-button {
-            background-color: var(--accent-color);
-            color: #000;
             border: none;
             padding: 12px 24px;
             border-radius: var(--border-radius-sm);
@@ -152,11 +156,26 @@
             gap: 10px;
         }
         .import-button:hover {
-            background-color: var(--accent-color-hover);
             transform: translateY(-2px);
         }
         .import-button:active {
             transform: translateY(0);
+        }
+        
+        #getOfflineFolderButton {
+            background-color: var(--action-color);
+            color: #000;
+        }
+        #getOfflineFolderButton:hover {
+            background-color: var(--action-color-hover);
+        }
+
+        #importFolderButton {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+        #importFolderButton:hover {
+            background-color: var(--accent-color-hover);
         }
 
         #folderInput {
@@ -169,8 +188,9 @@
             background: rgba(0,0,0,0.2);
             border-radius: var(--border-radius-sm);
             padding: 8px 16px;
-            display: inline-block;
             font-size: 0.9em;
+            width: 100%; /* Make status take full width */
+            text-align: center;
         }
         .status-message button {
             margin-left: 10px;
@@ -212,14 +232,12 @@
         
         .item-details {
             flex: 1;
-            /* Crucial for text overflow: it tells the flex item it can shrink */
             min-width: 0;
         }
 
         .item-title {
             font-size: 1.05em;
             font-weight: 500;
-            /* FIX: Text Truncation */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -238,7 +256,6 @@
         /* Episode Specifics */
         .episode-item-details {
             flex-grow: 1;
-            /* Crucial for text overflow: it tells the flex item it can shrink */
             min-width: 0;
         }
 
@@ -254,7 +271,7 @@
             flex-direction: column;
             width: 100%;
             border-radius: var(--border-radius-lg);
-            overflow: hidden; /* Important for containing children's border-radius */
+            overflow: hidden; 
         }
 
         .player-header {
@@ -320,57 +337,19 @@
             flex-shrink: 0;
         }
         
-        .show > div { /* Info Container */
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .show > div > div:first-child { /* Title */
-            font-weight: 600;
-            font-size: 1.1em;
-            margin-bottom: 8px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .show ul {
-            list-style-type: none;
-            padding-left: 0;
-            font-size: 0.9em;
-            color: var(--text-secondary);
-        }
-
-        .show li {
-            margin-top: 4px;
-        }
-
-        .show li span {
-            font-size: 0.9em;
-            opacity: 0.7;
-            margin-left: 4px;
-        }
+        .show > div { flex: 1; min-width: 0; }
+        .show > div > div:first-child { font-weight: 600; font-size: 1.1em; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .show ul { list-style-type: none; padding-left: 0; font-size: 0.9em; color: var(--text-secondary); }
+        .show li { margin-top: 4px; }
+        .show li span { font-size: 0.9em; opacity: 0.7; margin-left: 4px; }
 
         /* --- Media Queries --- */
         @media (max-width: 600px) {
-            .main-content {
-                margin: 20px auto;
-                padding: 0 15px;
-            }
-            .section-title {
-                font-size: 1.5rem;
-            }
-            .player-header { 
-                font-size: 1em; 
-                padding: 12px 15px; 
-            }
-            :root {
-                --border-radius-lg: 16px;
-                --border-radius-md: 10px;
-            }
-            .import-controls {
-                padding: 15px;
-            }
+            .main-content { margin: 20px auto; padding: 0 15px; }
+            .section-title { font-size: 1.5rem; }
+            .player-header { font-size: 1em; padding: 12px 15px; }
+            :root { --border-radius-lg: 16px; --border-radius-md: 10px; }
+            .import-controls { padding: 15px; }
         }
     </style>
 </head>
@@ -378,42 +357,33 @@
     <div class="app-container">
         <main class="main-content">
             <section id="library-section">
-                <!-- The glass-pane class is applied to elements that need the effect -->
                 <div id="navigationHeader" class="navigation-header glass-pane" style="display: none;">
                     <button id="backButton" class="back-button"><i class="fas fa-arrow-left"></i></button>
                     <h2 id="currentViewTitle" class="section-title" style="margin-bottom: 0;">Downloads</h2>
                 </div>
 
+                <!-- === UPDATED IMPORT CONTROLS === -->
                 <div class="import-controls glass-pane">
+                    <button id="getOfflineFolderButton" class="import-button">
+                        <i class="fas fa-download"></i> Get Offline Folder
+                    </button>
                     <button id="importFolderButton" class="import-button">
                         <i class="fas fa-folder-plus"></i> Import Series Folder
                     </button>
                     <input type="file" id="folderInput" webkitdirectory directory multiple />
-                    <p id="statusMessage" class="status-message">Select a folder containing your series.</p>
+                    <p id="statusMessage" class="status-message">1. Get folder structure. 2. Add videos. 3. Import here.</p>
                 </div>
 
-                <!-- Series List will now be composed of glass-pane items -->
-                <div id="seriesListContainer" class="item-list">
-                    <!-- Series will be populated here -->
-                </div>
-
-                <!-- Episode List will also be composed of glass-pane items -->
-                <div id="episodeListContainer" class="item-list" style="display: none;">
-                    <!-- Episodes will be populated here -->
-                </div>
-
-                <!-- Video player container is styled as a whole unit -->
-                <div id="videoPlayerContainer" style="display: none;">
-                    <!-- Iframe will be injected here by playVideo() -->
-                </div>
-
-                <!-- Continue Watching section -->
+                <div id="seriesListContainer" class="item-list"></div>
+                <div id="episodeListContainer" class="item-list" style="display: none;"></div>
+                <div id="videoPlayerContainer" style="display: none;"></div>
             </section>
         </main>
     </div>
 
     <script>
-        // --- JAVASCRIPT IS UNCHANGED FROM THE ORIGINAL ---
+        // --- DOM ELEMENTS ---
+        const getOfflineFolderButton = document.getElementById('getOfflineFolderButton');
         const importFolderButton = document.getElementById('importFolderButton');
         const folderInput = document.getElementById('folderInput');
         const statusMessage = document.getElementById('statusMessage');
@@ -425,13 +395,14 @@
         const currentViewTitle = document.getElementById('currentViewTitle');
         let continueWatchingSection; // Will be defined after creation
 
+        // --- STATE VARIABLES ---
         let seriesData = {};
         let currentView = 'series';
-        let previousView = null;
         let currentSeriesForEpisodes = null;
         window._lastVideoBlobUrl = null;
-
         let directoryHandle = null;
+
+        // --- INDEXEDDB SETUP ---
         const DB_NAME = 'MediaLibraryDB';
         const DB_VERSION = 1;
         const STORE_NAME = 'settingsV1';
@@ -440,7 +411,7 @@
         function openDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
-                request.onerror = (event) => reject("Error opening IndexedDB: " + (event.target.error ? event.target.error.name : "Unknown error"));
+                request.onerror = (event) => reject("Error opening DB: " + (event.target.error?.name || "Unknown"));
                 request.onsuccess = (event) => resolve(event.target.result);
                 request.onupgradeneeded = (event) => {
                     const db = event.target.result;
@@ -453,29 +424,70 @@
 
         async function saveDirectoryHandleToDB(handle) {
             const db = await openDB();
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = handle ? store.put(handle, DIR_HANDLE_KEY) : store.delete(DIR_HANDLE_KEY);
             return new Promise((resolve, reject) => {
-                const transaction = db.transaction(STORE_NAME, 'readwrite');
-                const store = transaction.objectStore(STORE_NAME);
-                let request = handle ? store.put(handle, DIR_HANDLE_KEY) : store.delete(DIR_HANDLE_KEY);
                 request.onsuccess = () => resolve();
-                request.onerror = (event) => reject("Error saving/deleting handle: " + (event.target.error ? event.target.error.name : "Unknown error"));
+                request.onerror = (event) => reject("Error saving handle: " + (event.target.error?.name || "Unknown"));
             });
         }
 
         async function loadDirectoryHandleFromDB() {
             const db = await openDB();
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.get(DIR_HANDLE_KEY);
             return new Promise((resolve, reject) => {
-                const transaction = db.transaction(STORE_NAME, 'readonly');
-                const store = transaction.objectStore(STORE_NAME);
-                const request = store.get(DIR_HANDLE_KEY);
                 request.onsuccess = (event) => resolve(event.target.result || null);
-                request.onerror = (event) => reject("Error loading handle: " + (event.target.error ? event.target.error.name : "Unknown error"));
+                request.onerror = (event) => reject("Error loading handle: " + (event.target.error?.name || "Unknown"));
             });
         }
 
+        // === NEW EVENT LISTENER for Get Offline Folder button ===
+        getOfflineFolderButton.addEventListener('click', () => {
+            const authToken = localStorage.getItem('accessToken');
+            console.log("Auth Token:", authToken);
+            // Navigate to the UI for generating the zip file with folders
+            // This URL should correspond to the endpoint in your Python backend.
+            window.open(`https://arkm20-authapi.hf.space/download-ui?token=${authToken}`, '_blank');
+        });
+
+        importFolderButton.addEventListener('click', async () => {
+            try {
+                if (typeof window.showDirectoryPicker === 'function') {
+                    const handle = await window.showDirectoryPicker();
+                    if (handle) {
+                        directoryHandle = handle;
+                        await saveDirectoryHandleToDB(directoryHandle);
+                        await processDirectoryHandle(directoryHandle);
+                    }
+                } else {
+                    statusMessage.textContent = "Using legacy picker. Select the main 'Anime' folder.";
+                    folderInput.click();
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error("Error selecting directory:", err);
+                    statusMessage.textContent = "Could not access directory.";
+                }
+            }
+        });
+        
+        folderInput.addEventListener('change', (event) => {
+            const files = Array.from(event.target.files);
+            if (files.length === 0) return;
+            statusMessage.textContent = `Processing ${files.length} files...`;
+            processFiles(files);
+            displaySeriesList();
+            showView('series');
+            directoryHandle = null;
+            saveDirectoryHandleToDB(null).catch(e => console.warn("Could not clear DB handle", e));
+        });
+
         async function processDirectoryHandle(dirHandle) {
             const filesForProcessing = [];
-            statusMessage.textContent = `Processing files...`;
+            statusMessage.textContent = `Processing folder: ${dirHandle.name}...`;
             let fileCount = 0;
             async function getFilesInDirectory(currentDirHandle, currentPath) {
                 for await (const entry of currentDirHandle.values()) {
@@ -491,15 +503,14 @@
                 }
             }
             try {
-                await getFilesInDirectory(dirHandle, dirHandle.name);
+                await getFilesInDirectory(dirHandle, ''); // Start with an empty path
                 if (filesForProcessing.length === 0) {
                     statusMessage.textContent = "No files found in the selected directory.";
                     seriesData = {};
-                    displaySeriesList();
-                    return;
+                } else {
+                    processFiles(filesForProcessing);
+                    statusMessage.textContent = `${Object.keys(seriesData).length} series found from ${fileCount} files.`;
                 }
-                processFiles(filesForProcessing);
-                statusMessage.textContent = `${Object.keys(seriesData).length} series found from ${fileCount} files.`;
             } catch (err) {
                  console.error("Error processing directory handle:", err);
                  statusMessage.textContent = "Error reading directory contents.";
@@ -508,77 +519,60 @@
             displaySeriesList();
             showView('series');
         }
-        
-        importFolderButton.addEventListener('click', async () => {
-            try {
-                if (typeof window.showDirectoryPicker === 'function') {
-                    const handle = await window.showDirectoryPicker();
-                    if (handle) {
-                        directoryHandle = handle;
-                        await saveDirectoryHandleToDB(directoryHandle);
-                        await processDirectoryHandle(directoryHandle);
-                    }
-                } else {
-                    statusMessage.textContent = "File System Access API not supported. Using legacy picker.";
-                    folderInput.click();
-                }
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    console.error("Error selecting directory:", err);
-                    statusMessage.textContent = "Could not access directory. " + err.message;
-                } else {
-                    statusMessage.textContent = "Folder selection cancelled.";
-                }
-            }
-        });
 
-        folderInput.addEventListener('change', (event) => {
-            const files = Array.from(event.target.files);
-            if (files.length === 0) return;
-            statusMessage.textContent = `Processing ${files.length} files...`;
-            processFiles(files);
-            displaySeriesList();
-            showView('series');
-            directoryHandle = null;
-            saveDirectoryHandleToDB(null).catch(e => console.warn("Could not clear DB handle", e));
-        });
-
+        // === UPDATED AND ROBUST processFiles FUNCTION ===
         function processFiles(filesArray) {
             seriesData = {};
-            const posterRegex = /\/(poster\.(png|jpg|jpeg|webp))$/i;
             const videoRegex = /\.(mp4|mkv)$/i;
+
             filesArray.forEach(file => {
                 if (!file.webkitRelativePath) return;
+
                 const pathParts = file.webkitRelativePath.split('/');
-                if (pathParts.length < 2) return;
-                const seriesName = pathParts[pathParts.length - 2];
+                if (pathParts.length < 2) return; // Ignore files in the root of selection
+
+                // The series name is the first directory in the relative path.
+                const seriesName = pathParts[0];
                 const fileName = pathParts[pathParts.length - 1];
+
+                // Initialize series data if it's the first file found for this series.
                 if (!seriesData[seriesName]) {
                     seriesData[seriesName] = { posterFile: null, episodes: [] };
                 }
-                if (posterRegex.test(file.webkitRelativePath)) {
+
+                // Check if the file is a poster located directly in the series folder.
+                // e.g., "Series Name/poster.png"
+                if (pathParts.length === 2 && fileName.match(/^poster\.(png|jpg|jpeg|webp)$/i)) {
                     seriesData[seriesName].posterFile = file;
-                } else if (videoRegex.test(fileName)) {
-                    const episodeName = fileName.replace(videoRegex, '');
-                    seriesData[seriesName].episodes.push({ name: episodeName, file: file, duration: null });
+                } 
+                // Check if it's a video file anywhere within the series folder.
+                else if (videoRegex.test(fileName)) {
+                    // Create a descriptive episode name from the path, excluding the series name.
+                    // e.g., "Season 1/01. The Strongest Hero"
+                    const episodePath = pathParts.slice(1).join(' / ').replace(videoRegex, '');
+                    seriesData[seriesName].episodes.push({ name: episodePath, file: file, duration: null });
                 }
             });
         }
 
+
         function displaySeriesList() {
             seriesListContainer.innerHTML = '';
-            if (Object.keys(seriesData).length === 0) {
-                 seriesListContainer.innerHTML = `<p class="status-message" style="background:transparent; text-align:center;">${statusMessage.textContent.includes("Processing") ? "No valid series folders found." : "Import a folder to begin."}</p>`;
+            const sortedSeriesNames = Object.keys(seriesData).sort((a,b) => a.localeCompare(b));
+
+            if (sortedSeriesNames.length === 0) {
+                 seriesListContainer.innerHTML = `<p class="status-message" style="background:transparent; text-align:center;">No series found. Try importing a folder.</p>`;
                  return;
             }
-            for (const seriesName in seriesData) {
+
+            for (const seriesName of sortedSeriesNames) {
                 const series = seriesData[seriesName];
                 const listItem = document.createElement('div');
-                // Added glass-pane class for the new style
                 listItem.className = 'list-item glass-pane';
                 const thumbnailDiv = document.createElement('div');
                 thumbnailDiv.className = 'item-thumbnail';
                 const img = document.createElement('img');
+
                 if (series.posterFile) {
                     img.src = URL.createObjectURL(series.posterFile);
                     img.onload = () => URL.revokeObjectURL(img.src);
@@ -586,15 +580,18 @@
                     img.src = `https://placehold.co/100x140/252528/A1A1A6?text=${encodeURIComponent(seriesName.substring(0,3))}`;
                 }
                 thumbnailDiv.appendChild(img);
+
                 const detailsDiv = document.createElement('div');
                 detailsDiv.className = 'item-details';
                 const titleH3 = document.createElement('h3');
                 titleH3.className = 'item-title';
                 titleH3.textContent = seriesName;
                 detailsDiv.appendChild(titleH3);
+
                 const arrowDiv = document.createElement('div');
                 arrowDiv.className = 'item-arrow';
                 arrowDiv.innerHTML = '<i class="fas fa-chevron-right"></i>';
+
                 listItem.appendChild(thumbnailDiv);
                 listItem.appendChild(detailsDiv);
                 listItem.appendChild(arrowDiv);
@@ -610,13 +607,12 @@
         function displayEpisodeList(seriesName, episodes) {
             episodeListContainer.innerHTML = '';
             if (episodes.length === 0) {
-                episodeListContainer.innerHTML = '<p class="status-message">No episodes (MP4/MKV files) found.</p>';
+                episodeListContainer.innerHTML = '<p class="status-message glass-pane">No episodes (MP4/MKV files) found in this series folder.</p>';
                 return;
             }
             episodes.sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
             episodes.forEach(episode => {
                 const listItem = document.createElement('div');
-                 // Added glass-pane class for the new style
                 listItem.className = 'list-item glass-pane';
                 const detailsDiv = document.createElement('div');
                 detailsDiv.className = 'episode-item-details';
@@ -669,28 +665,28 @@
             if (window._lastVideoBlobUrl) URL.revokeObjectURL(window._lastVideoBlobUrl);
             const objectURL = URL.createObjectURL(videoFile);
             window._lastVideoBlobUrl = objectURL;
-            const playerHtml = `
+            videoPlayerContainer.innerHTML = `
                 <div class="player-iframe-container glass-pane">
-                    ${episodeTitle ? `<div class="player-header">${episodeTitle}</div>` : ''}
+                    <div class="player-header">${episodeTitle}</div>
                     <div class="player-iframe-box">
                         <iframe src="video_player.html?full=true&video=${encodeURIComponent(objectURL)}" allowfullscreen></iframe>
                     </div>
                 </div>`;
-            videoPlayerContainer.innerHTML = playerHtml;
         }
 
         function showView(viewName, title) {
-            previousView = currentView;
             currentView = viewName;
+            const importControls = document.querySelector('.import-controls');
+            
             seriesListContainer.style.display = 'none';
             episodeListContainer.style.display = 'none';
             videoPlayerContainer.style.display = 'none';
             navigationHeader.style.display = 'none';
-            document.querySelector('.import-controls').style.display = 'none';
+            importControls.style.display = 'none';
             if (continueWatchingSection) continueWatchingSection.style.display = 'none';
 
             if (viewName === 'series') {
-                document.querySelector('.import-controls').style.display = 'block';
+                importControls.style.display = 'flex';
                 seriesListContainer.style.display = 'flex';
                 if (continueWatchingSection) continueWatchingSection.style.display = 'block';
             } else if (viewName === 'episodes') {
@@ -721,7 +717,7 @@
         
         async function tryAutoImportOnLoad() {
             if (typeof window.showDirectoryPicker !== 'function') {
-                statusMessage.textContent = "Use a modern browser to remember folders.";
+                statusMessage.innerHTML += "<br>For a better experience, use Chrome/Edge on Desktop to remember your folder.";
                 displaySeriesList();
                 return;
             }
@@ -730,31 +726,24 @@
                 if (savedHandle) {
                     if (await savedHandle.queryPermission({ mode: 'read' }) === 'granted') {
                         directoryHandle = savedHandle;
-                        statusMessage.textContent = "Restoring previous folder...";
                         await processDirectoryHandle(directoryHandle);
                     } else {
-                        statusMessage.innerHTML = 'Folder access required. <button id="grantPermissionBtn" class="import-button" style="font-size:0.8em; padding:5px 10px;">Grant Permission</button>';
+                        statusMessage.innerHTML = 'Previous folder access needed. <button id="grantPermissionBtn" class="import-button" style="font-size:0.8em; padding:5px 10px;">Grant Access</button>';
                         document.getElementById('grantPermissionBtn').onclick = async () => {
-                            try {
-                                if (await savedHandle.requestPermission({ mode: 'read' }) === 'granted') {
-                                    directoryHandle = savedHandle;
-                                    await processDirectoryHandle(directoryHandle);
-                                } else {
-                                    statusMessage.textContent = "Permission denied. Select folder again.";
-                                    await saveDirectoryHandleToDB(null);
-                                }
-                            } catch(err) {
-                                statusMessage.textContent = "Error. Please re-select folder.";
+                            if (await savedHandle.requestPermission({ mode: 'read' }) === 'granted') {
+                                directoryHandle = savedHandle;
+                                await processDirectoryHandle(directoryHandle);
+                            } else {
+                                statusMessage.textContent = "Permission denied. Please re-import folder.";
                                 await saveDirectoryHandleToDB(null);
                             }
                         };
                     }
                 } else {
-                    statusMessage.textContent = "Select a folder to import series.";
                     displaySeriesList();
                 }
             } catch (err) {
-                statusMessage.textContent = "Error accessing previous folder. Please re-select.";
+                statusMessage.textContent = "Error restoring folder. Please re-import.";
                 await saveDirectoryHandleToDB(null);
                 displaySeriesList();
             }
@@ -841,10 +830,10 @@
                 container.innerHTML = '<p style="color: var(--text-secondary);">Could not load watch history.</p>';
             }
         }
-
+        
         document.addEventListener('DOMContentLoaded', () => {
-            continueWatchingSection = createContinueWatchingSection();
             showView('series');
+            continueWatchingSection = createContinueWatchingSection();
             tryAutoImportOnLoad();
             fetchAndRenderWatchHistory();
         });

@@ -28,15 +28,17 @@
             overflow: hidden;
             margin: 0;
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            background: #111; /* Simpler background for full-screen content */
         }
 
         .app-container {
             display: flex;
             flex-direction: column;
             height: 100%;
+            position: relative; /* Needed for z-index context */
         }
 
+        /* The iframe is now a background layer on mobile */
         #contentFrame {
             flex-grow: 1;
             width: 100%;
@@ -44,7 +46,7 @@
             display: block;
         }
 
-        /* --- BOTTOM NAVIGATION STYLES --- */
+        /* --- MOBILE BOTTOM NAVIGATION (UNCHANGED) --- */
         .bottom-nav {
             display: flex;
             justify-content: space-around;
@@ -62,83 +64,41 @@
             z-index: 100;
             padding-bottom: 20px;
         }
-
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            color: #8e8e93;
-            font-size: 10px;
-            font-weight: 500;
-            flex-grow: 1;
-            height: 100%;
-            padding: 8px 4px;
-            box-sizing: border-box;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-decoration: none; color: #8e8e93; font-size: 10px; font-weight: 500; flex-grow: 1;
+            height: 100%; padding: 8px 4px; box-sizing: border-box;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
         }
-
         .nav-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
+            content: ''; position: absolute; top: 0; left: 50%; width: 0; height: 2px;
             background: linear-gradient(90deg, #E8772E, #ff9a4d);
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
+            transition: all 0.3s ease; transform: translateX(-50%);
         }
-
         .nav-item .nav-icon {
-            font-size: 22px;
-            margin-bottom: 4px;
+            font-size: 22px; margin-bottom: 4px;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-
-        .nav-item.active {
-            color: #E8772E;
-            transform: translateY(-2px);
-        }
-
-        .nav-item.active::before {
-            width: 40px;
-        }
-
+        .nav-item.active { color: #E8772E; transform: translateY(-2px); }
+        .nav-item.active::before { width: 40px; }
         .nav-item.active .nav-icon {
-            transform: scale(1.1);
-            filter: drop-shadow(0 0 8px rgba(232, 119, 46, 0.4));
+            transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(232, 119, 46, 0.4));
         }
+        .nav-item:hover:not(.active) { color: #ffffff; transform: translateY(-1px); }
 
-        .nav-item:hover:not(.active) {
-            color: #ffffff;
-            transform: translateY(-1px);
-        }
-
-        /* --- ENHANCED SPLASH SCREEN CSS --- */
+        /* --- ALL OTHER STYLES (SPLASH SCREEN, PWA BANNER, ETC. UNCHANGED) --- */
         #splash-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #111;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-            transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1);
-            opacity: 1;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #111; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 999;
+            transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1); opacity: 1;
             overflow: hidden;
         }
         .splash-flash {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 300vw; height: 300vw;
+            position: absolute; top: 50%; left: 50%; width: 300vw; height: 300vw;
             background: radial-gradient(ellipse at center, #ffb37a 0%, #DE541E 30%, transparent 70%);
-            opacity: 0;
-            pointer-events: none;
+            opacity: 0; pointer-events: none;
             transform: translate(-50%,-50%) scale(0.7);
             animation: flashBang 0.7s cubic-bezier(0.7,0,0.3,1) 0.7s forwards;
         }
@@ -149,20 +109,12 @@
             100% { opacity: 0; transform: translate(-50%,-50%) scale(1.5); }
         }
         .logo-anim-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100vw;
-            margin-bottom: 36px;
-            z-index: 2;
+            display: flex; justify-content: center; align-items: center;
+            width: 100vw; margin-bottom: 36px; z-index: 2;
         }
         #splash-logo {
-            width: 120px;
-            height: 120px;
-            display: block;
-            opacity: 0;
-            transform: scale(0.7);
-            filter: drop-shadow(0 0 0 #DE541E);
+            width: 120px; height: 120px; display: block; opacity: 0;
+            transform: scale(0.7); filter: drop-shadow(0 0 0 #DE541E);
             animation: logoZoomIn 0.7s cubic-bezier(0.7,0,0.3,1) 0.1s forwards, logoFlashGlow 1.2s 0.7s cubic-bezier(0.4,0,0.2,1) forwards;
         }
         @keyframes logoZoomIn {
@@ -177,214 +129,142 @@
             100% { filter: drop-shadow(0 0 12px #DE541Eaa); }
         }
         .splash-spinner {
-            width: 38px;
-            height: 38px;
-            border: 4px solid #222;
-            border-top: 4px solid #DE541E;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-            box-shadow: 0 2px 12px #0008;
-            opacity: 0;
-            animation-delay: 1.5s;
-            animation-name: spinnerFadeIn, spin;
-            animation-duration: 0.4s, 1s;
+            width: 38px; height: 38px; border: 4px solid #222;
+            border-top: 4px solid #DE541E; border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto;
+            box-shadow: 0 2px 12px #0008; opacity: 0; animation-delay: 1.5s;
+            animation-name: spinnerFadeIn, spin; animation-duration: 0.4s, 1s;
             animation-timing-function: cubic-bezier(0.4,0,0.2,1), linear;
             animation-fill-mode: forwards, infinite;
         }
-        @keyframes spinnerFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .splash-hide {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1);
-        }
+        @keyframes spinnerFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .splash-hide { opacity: 0; pointer-events: none; transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1); }
+        /* PWA Banner, etc. are also unchanged */
+        #pwa-install-banner { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(25,25,25,0.95); backdrop-filter: blur(20px); padding: 12px 16px; display: flex; justify-content: center; align-items: center; box-shadow: 0 -4px 16px rgba(0,0,0,0.5); z-index: 200; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        #pwa-install-banner.show { transform: translateY(0); }
+        #pwa-install-banner .banner-content { max-width: 480px; width: 100%; display: flex; justify-content: space-between; align-items: center; color: #ccc; font-family: 'Inter', sans-serif; }
+        #pwa-install-banner .banner-text { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        #pwa-install-banner .banner-text i { font-size: 18px; color: #E8772E; }
+        #pwa-install-banner .banner-actions button { background: #E8772E; border: none; color: white; padding: 6px 12px; margin-left: 8px; font-size: 14px; border-radius: 4px; cursor: pointer; transition: opacity 0.2s; }
+        #pwa-install-banner .banner-actions button#pwa-install-close { background: transparent; color: #888; font-size: 18px; margin-left: 4px; }
+        #pwa-install-banner .banner-actions button:hover { opacity: 0.8; }
+        #pwa-install-banner.hidden { display: none; }
 
-        /* App title animation */
-        .app-title {
-            position: absolute;
-            bottom: -60px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: 700;
-            color: #E8772E;
-            letter-spacing: 2px;
-            opacity: 0;
-            animation: titleFadeIn 0.8s ease-out forwards;
-            animation-delay: 2.2s;
-            text-shadow: 0 0 10px rgba(232, 119, 46, 0.3);
-        }
 
-        /* Enhanced Keyframes */
-        @keyframes titleFadeIn {
-            0% {
-                opacity: 0;
-                transform: translateX(-50%) translateY(20px);
+        /* 
+        ==================================================================
+        DESKTOP REWORK (min-width: 700px)
+        ==================================================================
+        */
+        @media (min-width: 700px) {
+
+            /* --- 1. FULL-SCREEN IFRAME SETUP --- */
+            /* Makes the iframe fill the entire screen, acting as the background content layer */
+            #contentFrame {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                z-index: 1; /* Sits behind the nav bar */
             }
-            100% {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
 
-        @keyframes fadeOutSplashScreen {
-            0% {
-                opacity: 1;
-                transform: scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(1.1);
-            }
-        }
-
-        /* Loading spinner positioned at bottom like Windows boot */
-        .loading-spinner {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background-color: #E8772E;
-            opacity: 0;
-            animation: dotPulse 1.5s ease-in-out infinite, spinnerFadeIn 0.5s ease-out forwards;
-            animation-delay: 2.2s, 2.2s;
-        }
-
-        /* Additional dots for Windows-style loading */
-        .loading-dots {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-            opacity: 0;
-            animation: spinnerFadeIn 0.5s ease-out forwards;
-            animation-delay: 2.2s;
-        }
-
-        .loading-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background-color: #E8772E;
-            animation: dotPulse 1.5s ease-in-out infinite;
-        }
-
-        .loading-dot:nth-child(1) { animation-delay: 2.2s; }
-        .loading-dot:nth-child(2) { animation-delay: 2.4s; }
-        .loading-dot:nth-child(3) { animation-delay: 2.6s; }
-        .loading-dot:nth-child(4) { animation-delay: 2.8s; }
-        .loading-dot:nth-child(5) { animation-delay: 3.0s; }
-
-        @keyframes dotPulse {
-            0%, 100% { 
-                opacity: 0.3;
-                transform: scale(1); 
-            }
-            50% { 
-                opacity: 1;
-                transform: scale(1.2); 
-            }
-        }
-
-        @keyframes spinnerFadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 480px) {
-            .logo-container {
-                width: 150px;
-                height: 130px;
-            }
-            
-            .app-title {
-                font-size: 20px;
-                bottom: -50px;
-            }
-            
+            /* --- 2. PROFESSIONAL FLOATING NAV BAR --- */
             .bottom-nav {
-                height: 65px;
+                /* Positioning & Sizing */
+                position: fixed;
+                left: 50%;
+                bottom: 32px;
+                transform: translateX(-50%);
+                width: auto; /* Width is determined by its content */
+                height: 68px; /* Slightly smaller for a sleeker look */
+                padding: 0 12px; /* Padding around the items */
+                z-index: 1000; /* Stays on top of all content */
+                display: flex;
+                align-items: center;
+                gap: 8px; /* Space between nav items */
+                
+                /* Professional Styling */
+                background: rgba(28, 28, 30, 0.75); /* Darker, more premium glass */
+                border-radius: 34px; /* Fully rounded pill shape */
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(24px) saturate(1.8);
+                box-shadow: 
+                    0 12px 32px rgba(0, 0, 0, 0.3), /* Main shadow for depth */
+                    inset 0 1px 1px rgba(255, 255, 255, 0.05); /* Inner highlight for glass effect */
+                
+                /* Reset Mobile Styles */
+                padding-bottom: 0;
             }
-            
+
+            /* --- 3. REFINED NAV ITEMS --- */
+            .nav-item {
+                /* Reset & Base Styles */
+                flex-direction: row; /* Icon and text side-by-side */
+                flex-grow: 0;
+                flex-shrink: 0;
+                height: 52px;
+                padding: 0 16px; /* Padding inside each item */
+                margin: 0;
+                border-radius: 26px; /* Fully rounded pill */
+                color: #aeb1b8;
+                font-size: 14px;
+                overflow: hidden;
+                
+                /* Smooth Transitions */
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
             .nav-item .nav-icon {
                 font-size: 20px;
+                margin-right: 0; /* Will be set on the text span */
+                margin-bottom: 0;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .nav-item .nav-text {
+                display: block;
+                position: relative;
+                font-weight: 600;
+                white-space: nowrap;
+                opacity: 0; /* Hidden by default */
+                width: 0; /* Collapsed by default */
+                margin-left: 0;
+                color: #ffffff;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            /* -- Inactive Item Hover State -- */
+            .nav-item:not(.active):hover {
+                background: rgba(255, 255, 255, 0.05);
+                color: #ffffff;
+                transform: translateY(-2px); /* Subtle lift */
+            }
+
+            /* -- Active Item State -- */
+            .nav-item.active {
+                background: #E8772E;
+                color: #ffffff;
+                transform: translateY(0);
+                box-shadow: 0 4px 16px rgba(232, 119, 46, 0.4);
+            }
+
+            .nav-item.active .nav-icon {
+                transform: scale(1.05);
+            }
+
+            .nav-item.active .nav-text {
+                opacity: 1;
+                width: auto; /* Expand to fit text */
+                margin-left: 10px; /* Space between icon and text */
+            }
+            
+            /* Remove mobile-specific pseudo-elements */
+            .nav-item::before, .nav-item::after {
+                display: none;
             }
         }
-        
-          /* --- PWA Install Banner Styles --- */
-  #pwa-install-banner {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(25,25,25,0.95);
-    backdrop-filter: blur(20px);
-    padding: 12px 16px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 -4px 16px rgba(0,0,0,0.5);
-    z-index: 200;
-    transform: translateY(100%);
-    transition: transform 0.3s ease-out;
-  }
-  #pwa-install-banner.show {
-    transform: translateY(0);
-  }
-  #pwa-install-banner .banner-content {
-    max-width: 480px;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #ccc;
-    font-family: 'Inter', sans-serif;
-  }
-  #pwa-install-banner .banner-text {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-  }
-  #pwa-install-banner .banner-text i {
-    font-size: 18px;
-    color: #E8772E;
-  }
-  #pwa-install-banner .banner-actions button {
-    background: #E8772E;
-    border: none;
-    color: white;
-    padding: 6px 12px;
-    margin-left: 8px;
-    font-size: 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
-  #pwa-install-banner .banner-actions button#pwa-install-close {
-    background: transparent;
-    color: #888;
-    font-size: 18px;
-    margin-left: 4px;
-  }
-  #pwa-install-banner .banner-actions button:hover {
-    opacity: 0.8;
-  }
-  /* hidden utility */
-  #pwa-install-banner.hidden {
-    display: none;
-  }
     </style>
 </head>
 <body>
@@ -411,24 +291,23 @@
         <nav class="bottom-nav">
             <a href="#" class="nav-item" data-src="anime.html">
                 <span class="nav-icon"><i class="fas fa-film"></i></span>
-                ANIME
+                <span class="nav-text">ANIME</span>
             </a>
             <a href="#" class="nav-item" data-src="manga.html">
                 <span class="nav-icon"><i class="fas fa-book-open"></i></span>
-                MANGA
+                <span class="nav-text">MANGA</span>
             </a>
-            
             <a href="#" class="nav-item" data-src="search.html">
                 <span class="nav-icon"><i class="fas fa-search"></i></span>
-                SEARCH
+                <span class="nav-text">SEARCH</span>
             </a>
             <a href="#" class="nav-item" data-src="library.html">
                 <span class="nav-icon"><i class="fas fa-bookmark"></i></span>
-                LIBRARY
+                <span class="nav-text">LIBRARY</span>
             </a>
             <a href="#" class="nav-item" data-src="settings.html">
                 <span class="nav-icon"><i class="fas fa-cog"></i></span>
-                SETTINGS
+                <span class="nav-text">SETTINGS</span>
             </a>
         </nav>
     </div>
@@ -463,7 +342,9 @@ function isInStandaloneMode() {
 
 // Should we show the intro?
 function shouldShowIntro() {
-  return !isInStandaloneMode();
+  // Only show intro if NOT in standalone mode AND on mobile
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  return !isInStandaloneMode() && isMobile;
 }
 
 // Show the intro overlay
@@ -601,24 +482,32 @@ document.addEventListener('DOMContentLoaded', () => {
             const navItems = document.querySelectorAll('.bottom-nav .nav-item');
             const contentFrame = document.getElementById('contentFrame');
             const defaultSrc = 'anime.html';
+            const bottomNav = document.querySelector('.bottom-nav');
 
             function setActiveTab(selectedItem) {
                 navItems.forEach(item => {
                     item.classList.remove('active');
                 });
                 selectedItem.classList.add('active');
-                
+
+                // Morphing animation for desktop
+                if (window.innerWidth >= 700) {
+                    bottomNav.classList.add('morphing');
+                    setTimeout(() => bottomNav.classList.remove('morphing'), 400);
+                }
+
                 if (contentFrame.src !== selectedItem.dataset.src) {
                     contentFrame.style.opacity = '0.7';
                     contentFrame.src = selectedItem.dataset.src;
-                    
                     contentFrame.addEventListener('load', () => {
                         contentFrame.style.opacity = '1';
-                        // Inject bottom padding for scroll safe zone
+                        // Inject bottom padding for scroll safe zone (desktop only)
                         try {
                             const iframeDoc = contentFrame.contentDocument || contentFrame.contentWindow.document;
-                            if (iframeDoc && iframeDoc.body) {
-                                iframeDoc.body.style.paddingBottom = '90px'; // Adjust as needed
+                            if (iframeDoc && iframeDoc.body && window.innerWidth >= 700) {
+                                iframeDoc.body.style.paddingBottom = '120px';
+                            } else if (iframeDoc && iframeDoc.body) {
+                                iframeDoc.body.style.paddingBottom = '90px';
                             }
                         } catch (e) {
                             // Cross-origin or other error, ignore
