@@ -522,19 +522,30 @@
 
         // === UPDATED AND ROBUST processFiles FUNCTION ===
         function processFiles(filesArray) {
-            seriesData = {};
-            const videoRegex = /\.(mp4|mkv)$/i;
+    seriesData = {};
+    const videoRegex = /\.(mp4|mkv)$/i;
 
-            filesArray.forEach(file => {
-                if (!file.webkitRelativePath) return;
+    // 1️⃣ Detect if every file shares the same first path segment
+    const prefixes = filesArray
+      .map(f => f.webkitRelativePath.split('/')[0]);
+    const uniquePrefixes = [...new Set(prefixes)];
+    const skipRoot = uniquePrefixes.length === 1;
 
-                const pathParts = file.webkitRelativePath.split('/');
-                if (pathParts.length < 2) return; // Ignore files in the root of selection
+    filesArray.forEach(file => {
+        let pathParts = file.webkitRelativePath.split('/');
 
-                // The series name is the first directory in the relative path.
-                const seriesName = pathParts[0];
-                const fileName = pathParts[pathParts.length - 1];
+        // 2️⃣ If they all start with one common folder, drop that segment
+        if (skipRoot) {
+            pathParts.shift();
+        }
 
+        // 3️⃣ Now pathParts[0] is your true series folder
+        if (pathParts.length < 2) return;  // no series + file
+
+        const seriesName = pathParts[0];
+        const fileName = pathParts[pathParts.length - 1];
+
+        
                 // Initialize series data if it's the first file found for this series.
                 if (!seriesData[seriesName]) {
                     seriesData[seriesName] = { posterFile: null, episodes: [] };
