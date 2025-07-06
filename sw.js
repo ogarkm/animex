@@ -104,10 +104,12 @@ self.addEventListener('fetch', event => {
               return networkResponse;
             })
             .catch(() => {
-              // If it's a navigation request and we can't load it, show offline page
-              if (event.request.mode === 'navigate') {
+              // FIXED: Only show offline page for main navigation, not for video player
+              if (event.request.mode === 'navigate' && 
+                  !url.pathname.includes('video_player.html')) {
                 return caches.match('/offline.html');
               }
+              // For video player or other resources, just throw the error
               throw new Error('Network failed and no cache available');
             });
         })
