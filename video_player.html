@@ -354,8 +354,48 @@
 
     <!-- ADDED: FFMPEG library for MKV support -->
     <!-- Note: These are large files (~25MB) and will be cached by the browser after the first load. -->
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-    <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    <!-- Replace the FFmpeg script tags with this: -->
+        <script>
+        // Try to load FFmpeg, but don't block if offline
+        let ffmpegLoaded = false;
+        let FFmpeg, FFmpegUtil;
+
+        async function loadFFmpeg() {
+            try {
+                // Try to load FFmpeg dynamically
+                const ffmpegScript = document.createElement('script');
+                ffmpegScript.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js';
+                
+                const utilScript = document.createElement('script');
+                utilScript.src = 'https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js';
+                
+                await Promise.all([
+                    new Promise((resolve, reject) => {
+                        ffmpegScript.onload = resolve;
+                        ffmpegScript.onerror = reject;
+                        document.head.appendChild(ffmpegScript);
+                    }),
+                    new Promise((resolve, reject) => {
+                        utilScript.onload = resolve;
+                        utilScript.onerror = reject;
+                        document.head.appendChild(utilScript);
+                    })
+                ]);
+                
+                FFmpeg = window.FFmpeg;
+                FFmpegUtil = window.FFmpegUtil;
+                ffmpegLoaded = true;
+                console.log('FFmpeg loaded successfully');
+            } catch (error) {
+                console.warn('FFmpeg not available (offline mode):', error);
+                ffmpegLoaded = false;
+            }
+        }
+
+        // Load FFmpeg when online
+        loadFFmpeg();
+        </script>
+
 
     <script>
         const playerContainer = document.getElementById('videoPlayerContainer');
@@ -395,18 +435,24 @@
         // --- NEW: MKV Processing and Video Source Handling ---
         const handleVideoSource = async (src) => {
             const url = decodeURIComponent(src);
+            
             // Check if the source is an MKV file
             if (url.toLowerCase().endsWith('.mkv')) {
+                // Check if FFmpeg is available
+                if (!ffmpegLoaded) {
+                    playerContainer.classList.add('error');
+                    loadingText.textContent = 'MKV files require internet connection for processing';
+                    return;
+                }
+                
                 playerContainer.classList.add('processing');
                 loadingText.textContent = 'Processing video...';
 
-                // NOTE: This process downloads the entire video file before playback can begin.
-                // This is a limitation of client-side MKV conversion without complex streaming.
                 try {
                     if (!ffmpeg) {
                         ffmpeg = new FFmpeg.FFmpeg();
                         ffmpeg.on('log', ({ message }) => {
-                            console.log(message); // For debugging ffmpeg process
+                            console.log(message);
                         });
                         loadingText.textContent = 'Loading converter...';
                         await ffmpeg.load({
@@ -420,7 +466,6 @@
                     await ffmpeg.writeFile('input.mkv', inputData);
                     
                     loadingText.textContent = 'Converting...';
-                    // This command copies the video/audio streams into a new MP4 container. It's fast because it's not re-encoding.
                     await ffmpeg.exec(['-i', 'input.mkv', '-c', 'copy', 'output.mp4']);
 
                     const outputData = await ffmpeg.readFile('output.mp4');
@@ -431,7 +476,6 @@
                     console.error("Error processing MKV file:", error);
                     loadingText.textContent = `Error: Could not process video.`;
                     playerContainer.classList.remove('processing');
-                    // Add a class to keep the message visible
                     playerContainer.classList.add('error');
                     return;
                 }
@@ -443,6 +487,7 @@
                 video.src = url;
             }
         };
+
 
 
         document.addEventListener('DOMContentLoaded', () => {
