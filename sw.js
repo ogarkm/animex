@@ -34,12 +34,9 @@ const PRECACHE_URLS = [
   '/test.htm',
   '/video_player.html', // Make sure this is included
   '/view.html',
-  '/offline.html', // Add this file
-  // External resources that should be cached for offline use
+  '/offline.html',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
-  // Note: FFmpeg libraries are too large for precaching (~25MB)
-  // They'll be cached on first use
 ];
 
 // Install: cache critical assets
