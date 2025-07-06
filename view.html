@@ -8,7 +8,7 @@
   />
   <title>Episode Player</title>
 
-  <!-- Inter font + Font Awesome for icons (if needed) -->
+  <!-- Inter font -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link 
     rel="preconnect" 
@@ -22,6 +22,9 @@
   <style>
     :root {
       --accent-color-active: #FF9500;
+      /* CSS variables for the liquid morph animation */
+      --indicator-left: 4px;
+      --indicator-width: 0px;
     }
     html, body {
       margin: 0;
@@ -32,72 +35,65 @@
       font-family: 'Inter', sans-serif;
       color: #fff;
       -webkit-tap-highlight-color: transparent;
-      overscroll-behavior: none;
     }
     body {
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      align-items: stretch;
+      overflow-x: hidden;
     }
+    
+    /* Video Player Container */
     #player-container {
-      flex: 1 1 auto;
       width: 100vw;
-      max-width: 100vw;
-      min-height: 220px;
-      max-height: 60vh;
+      height: 56.25vw; /* 16:9 aspect ratio */
+      min-height: 200px;
+      max-height: none;
       background: #000;
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
-      box-shadow: 0 2px 16px 0 #000a;
-      border-bottom: 1px solid #222;
+      margin-top: 80px;
+      margin-bottom: 20px;
+      flex-shrink: 0;
     }
     #player-container iframe {
-      width: 100vw;
-      height: 56vw;
-      max-height: 60vh;
-      min-height: 220px;
+      width: 100%;
+      height: 100%;
       border: none;
-      border-radius: 10px;
       background: #111;
       display: block;
     }
+    
+    /* Info Container - Now scrollable below video */
     #info-container {
-      width: 100vw;
-      background: rgba(0,0,0,0.92);
-      padding: 1.1rem 1.2rem 1.5rem 1.2rem;
+      width: 100%;
+      background: #0a0a0a;
+      padding: 1.2rem;
       display: flex;
       flex-direction: column;
-      gap: 0.7rem;
+      gap: 0.8rem;
       font-size: 1.05rem;
       box-sizing: border-box;
-      border-top-left-radius: 18px;
-      border-top-right-radius: 18px;
-      box-shadow: 0 -2px 16px 0 #000a;
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 10;
+      flex: 1;
+      min-height: calc(100vh - 56.25vw);
     }
+    
     #series-title {
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       font-weight: 700;
-      margin-bottom: 0.1rem;
+      margin-bottom: 0.2rem;
       letter-spacing: 0.01em;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
+      line-height: 1.3;
     }
     #meta-line {
-      font-size: 0.98rem;
-      opacity: 0.85;
+      font-size: 0.95rem;
+      opacity: 0.8;
       display: flex;
       flex-wrap: wrap;
       gap: 0.7em;
+      margin-bottom: 0.8rem;
     }
     #error-message {
       color: #ff6b6b;
@@ -105,35 +101,71 @@
       padding: 2rem 1rem;
       font-size: 1.1rem;
     }
-    .search-options-list {
+    
+    /* Controls Wrapper */
+    #controls-wrapper {
       display: flex;
-      gap: 18px;
-      margin: 10px 0 0 0;
-      padding: 0 2px;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Liquid Morph Selector */
+    .search-options-list {
+      position: relative;
+      display: flex;
+      gap: 4px;
+      margin: 0;
+      padding: 4px;
       list-style: none;
-      justify-content: center;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border-radius: 22px;
+      box-shadow: 0 1px 4px 0 #0003;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .search-options-list::before {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: var(--indicator-left);
+      width: var(--indicator-width);
+      height: calc(100% - 8px);
+      background: rgba(255, 149, 0, 0.9);
+      backdrop-filter: blur(8px);
+      border-radius: 18px;
+      border: 1px solid rgba(255, 149, 0, 0.3);
+      box-shadow: 
+        0 2px 8px rgba(255, 149, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      z-index: 1;
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     }
     .search-option-btn {
       background: none;
       border: none;
-      color: #aaa;
+      color: #ccc;
       font-size: 1.05em;
       font-weight: 700;
-      padding: 10px 28px;
-      border-radius: 22px;
+      padding: 8px 26px;
+      border-radius: 18px;
       cursor: pointer;
-      transition: background 0.18s, color 0.18s;
       outline: none;
       letter-spacing: 0.04em;
-      box-shadow: 0 1px 4px 0 #0003;
+      position: relative;
+      z-index: 2;
+      transition: color 0.3s ease;
       touch-action: manipulation;
     }
     .search-option-btn.active {
-      background: var(--accent-color-active, #FF9500);
       color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
+    
+    /* Next Episode Button */
     #next-episode-btn {
-      margin: 18px auto 0 auto !important;
+      margin: 0;
       display: block;
       background: var(--accent-color-active, #FF9500);
       color: #fff;
@@ -141,45 +173,125 @@
       font-size: 1.08em;
       border: none;
       border-radius: 22px;
-      padding: 12px 38px;
+      padding: 10px 24px;
       cursor: pointer;
       box-shadow: 0 2px 8px 0 #0002;
       letter-spacing: 0.03em;
       transition: background 0.18s;
+      white-space: nowrap;
     }
+    #next-episode-btn:hover {
+      background: #e6850a;
+    }
+    
     #series-over-msg {
-      margin: 18px auto 0 auto !important;
+      margin: 0;
       text-align: center;
       font-weight: 700;
-      font-size: 1.08em;
+      font-size: 1.05em;
       color: var(--accent-color-active, #FF9500);
+      opacity: 0.8;
     }
+
+    /* Mobile Portrait Adjustments */
     @media (max-width: 600px) {
-      #player-container iframe {
+      #player-container {
+        height: 56.25vw;
         min-height: 180px;
-        height: 56vw;
       }
       #info-container {
-        font-size: 1.01rem;
-        padding: 0.9rem 0.7rem 1.2rem 0.7rem;
+        font-size: 1rem;
+        padding: 1rem;
+        min-height: calc(100vh - 56.25vw);
+      }
+      #series-title {
+        font-size: 1.1rem;
       }
       .search-option-btn {
-        padding: 9px 18px;
+        padding: 7px 16px;
         font-size: 1em;
       }
       #next-episode-btn {
-        padding: 10px 22px;
+        padding: 9px 20px;
         font-size: 1em;
+      }
+    }
+
+    /* Landscape Orientation - Full Screen Video */
+    @media (orientation: landscape) {
+      body {
+        overflow: hidden;
+      }
+      
+      #player-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 100;
+        max-height: 100vh;
+        margin: 0; /* Reset margin for landscape */
+      }
+      
+      #player-container iframe {
+        width: 100%;
+        height: 100%;
+      }
+      
+      /* Info container slides up from bottom */
+      #info-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        min-height: auto;
+        max-height: 70vh;
+        overflow-y: auto;
+        z-index: 110;
+        background: rgba(10, 10, 10, 0.95);
+        backdrop-filter: blur(12px);
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        box-shadow: 0 -4px 24px 0 #000000cc;
+        /* THIS IS THE KEY CHANGE: Hide the container completely by default */
+        transform: translateY(100%); 
+        transition: transform 0.3s ease-in-out;
+      }
+      
+      /* Show controls when tapped */
+      body.controls-visible #info-container {
+        transform: translateY(0);
+      }
+      
+      /* Add a handle indicator for the slide-up panel */
+      #info-container::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+      }
+    }
+
+    /* Tablet landscape adjustments (no changes needed here) */
+    @media (orientation: landscape) and (min-width: 768px) {
+      #info-container {
+        /* No override needed, it will inherit translateY(100%) */
       }
     }
   </style>
 </head>
 <body>
-  <!-- Video Player -->
   <div id="player-container">
     <!-- JS will inject the <iframe> here -->
   </div>
-  <!-- Info and Controls -->
+  
   <div id="info-container">
     <div id="series-title">
       <span id="series-name">—</span>
@@ -191,197 +303,185 @@
       <span>|</span>
       <span>Episode: <span id="episode-number">—</span></span>
     </div>
-    <ul class="search-options-list" id="search-options-list">
-      <li>
-        <button class="search-option-btn active" id="sub-option-btn" type="button">
-          SUB
-        </button>
-      </li>
-      <li>
-        <button class="search-option-btn" id="dub-option-btn" type="button">
-          DUB
-        </button>
-      </li>
-    </ul>
+    <div id="controls-wrapper">
+      <ul class="search-options-list" id="search-options-list">
+        <li>
+          <button class="search-option-btn active" id="sub-option-btn" type="button">
+            SUB
+          </button>
+        </li>
+        <li>
+          <button class="search-option-btn" id="dub-option-btn" type="button">
+            DUB
+          </button>
+        </li>
+      </ul>
+      <!-- Next Episode button or Series Over message will be injected here -->
+    </div>
   </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-  const params = new URLSearchParams(window.location.search);
-  const jikanId = params.get('id');
-  const episode = params.get('ep');
-  const subOptionBtn = document.getElementById('sub-option-btn');
-  const dubOptionBtn = document.getElementById('dub-option-btn');
-
-  if (!jikanId || !episode) {
-    document.getElementById('player-container').innerHTML = `
-      <div id="error-message">
-        Missing “id” or “ep” parameter in URL.<br>
-        Example: view.html?id=21&ep=104
-      </div>`;
-    return;
-  }
-
-  // Get preference from localStorage or default to 'sub'
-  let userPref = localStorage.getItem('animeDubPref');
-  if (!userPref || (userPref !== 'sub' && userPref !== 'dub')) {
-    userPref = 'sub';
-    localStorage.setItem('animeDubPref', 'sub');
-  }
-
-  // Fetch anime info
-  let title = 'Unknown';
-  let type = 'N/A';
-  let year = 'N/A';
-  try {
-    const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
-    if (resp.ok) {
-      const data = await resp.json();
-      const anime = data.data || {};
-      title = anime.title_english || anime.title || 'Unknown';
-      type = anime.type || 'N/A';
-      year = anime.year || anime.aired?.prop?.from?.year || 'N/A';
-    }
-  } catch (err) {
-    console.warn('Failed to fetch Jikan info:', err);
-  }
-
-  document.getElementById('series-name').textContent = title;
-  document.getElementById('series-type').textContent = type;
-  document.getElementById('series-year').textContent = year;
-  document.getElementById('episode-number').textContent = episode;
-
-  // Fetch total episodes
-  let totalEpisodes = null;
-  try {
-    const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
-    if (resp.ok) {
-      const data = await resp.json();
-      totalEpisodes = data.data?.episodes || null;
-    }
-  } catch (err) {}
-
-  const infoContainer = document.getElementById('info-container');
-  let nextEpBtn = document.getElementById('next-episode-btn');
-  let seriesOverMsg = document.getElementById('series-over-msg');
-  if (nextEpBtn) nextEpBtn.remove();
-  if (seriesOverMsg) seriesOverMsg.remove();
-
-  const currentEpNum = parseInt(episode, 10);
-  if (totalEpisodes && currentEpNum < totalEpisodes) {
-    nextEpBtn = document.createElement('button');
-    nextEpBtn.id = 'next-episode-btn';
-    nextEpBtn.textContent = `Next Episode →`;
-    nextEpBtn.addEventListener('click', () => {
       const params = new URLSearchParams(window.location.search);
-      params.set('ep', currentEpNum + 1);
-      window.location.search = params.toString();
-    });
-    infoContainer.appendChild(nextEpBtn);
-  } else if (totalEpisodes && currentEpNum >= totalEpisodes) {
-    seriesOverMsg = document.createElement('div');
-    seriesOverMsg.id = 'series-over-msg';
-    seriesOverMsg.textContent = 'Wow... The Series is over';
-    infoContainer.appendChild(seriesOverMsg);
-  }
+      const jikanId = params.get('id');
+      const episode = params.get('ep');
 
-  async function loadIframe(dub) {
-    const playerContainer = document.getElementById('player-container');
-    playerContainer.innerHTML = '';
-    const proxyBase = 'https://arkm20-animex-player-api.hf.space';
-    const iframeSrcURL = `${proxyBase}/iframe-src?id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
-    let embedSrc = null;
-    try {
-      const res = await fetch(iframeSrcURL);
-      if (res.ok) {
-        const json = await res.json();
-        embedSrc = json.src;
-      } else {
-        console.warn('Proxy returned HTTP', res.status);
+      const playerContainer = document.getElementById('player-container');
+      const subOptionBtn = document.getElementById('sub-option-btn');
+      const dubOptionBtn = document.getElementById('dub-option-btn');
+      const searchOptionsList = document.getElementById('search-options-list');
+      const controlsWrapper = document.getElementById('controls-wrapper');
+      
+      if (!jikanId || !episode) {
+        playerContainer.innerHTML = `<div id="error-message">Missing "id" or "ep" parameter.</div>`;
+        return;
       }
-    } catch (err) {
-      console.error('Error calling proxy:', err);
-    }
-    if (!embedSrc) {
-      playerContainer.innerHTML = `
-        <div id="error-message">
-          Could not load player. Please try again later.
-        </div>`;
-      return;
-    }
-    const iframe = document.createElement('iframe');
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-    iframe.setAttribute('src', embedSrc);
-    iframe.setAttribute('allowfullscreen', 'true');
-    iframe.setAttribute('scrolling', 'no');
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    playerContainer.appendChild(iframe);
-  }
 
-  async function updateWatchHistory(showId, showTitle, episodeNumber) {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      console.log("User not logged in. Skipping watch history update.");
-      return;
-    }
-    try {
-      const params = new URLSearchParams({
-        show_id: String(showId),
-        show_title: String(showTitle),
-        season_number: 1,
-        episode_number: Number(episodeNumber)
-      });
-      const url = `https://arkm20-authapi.hf.space/users/me/watch-history?${params.toString()}`;
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
+      let userPref = localStorage.getItem('animeDubPref') || 'sub';
+
+      function moveActiveIndicator() {
+        const activeButton = searchOptionsList.querySelector('.search-option-btn.active');
+        if (activeButton) {
+          const left = activeButton.offsetLeft;
+          const width = activeButton.offsetWidth;
+          searchOptionsList.style.setProperty('--indicator-left', `${left}px`);
+          searchOptionsList.style.setProperty('--indicator-width', `${width}px`);
         }
-      });
-      if (response.ok) {
-        console.log("Watch history updated successfully.");
-      } else {
-        const result = await response.json().catch(() => ({}));
-        console.warn("Failed to update watch history:", result.message || response.status);
       }
-    } catch (error) {
-      console.error("Network error while updating watch history:", error);
-    }
-  }
 
-  // Set active button style and load correct iframe
-  if (userPref === 'dub') {
-    dubOptionBtn.classList.add('active');
-    subOptionBtn.classList.remove('active');
-    await loadIframe(true);
-  } else {
-    subOptionBtn.classList.add('active');
-    dubOptionBtn.classList.remove('active');
-    await loadIframe(false);
-  }
+      // Fetch anime info
+      let title = 'Unknown';
+      let type = 'N/A';
+      let year = 'N/A';
+      try {
+        const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          const anime = data.data || {};
+          title = anime.title_english || anime.title || 'Unknown';
+          type = anime.type || 'N/A';
+          year = anime.year || anime.aired?.prop?.from?.year || 'N/A';
+        }
+      } catch (err) { console.warn('Failed to fetch Jikan info:', err); }
 
-  updateWatchHistory(jikanId, title, episode);
+      document.getElementById('series-name').textContent = title;
+      document.getElementById('series-type').textContent = type;
+      document.getElementById('series-year').textContent = year;
+      document.getElementById('episode-number').textContent = episode;
 
-  subOptionBtn.addEventListener('click', async () => {
-    if (!subOptionBtn.classList.contains('active')) {
-      subOptionBtn.classList.add('active');
-      dubOptionBtn.classList.remove('active');
-      localStorage.setItem('animeDubPref', 'sub');
-      await loadIframe(false);
-      updateWatchHistory(jikanId, title, episode);
-    }
-  });
+      // Add Next Episode button
+      let totalEpisodes = null;
+      try {
+        const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}/episodes`);
+        if (resp.ok) {
+          const data = await resp.json();
+          totalEpisodes = data.pagination?.last_visible_page > 1 
+            ? null
+            : data.data?.length;
+        }
+      } catch (err) {}
 
-  dubOptionBtn.addEventListener('click', async () => {
-    if (!dubOptionBtn.classList.contains('active')) {
-      dubOptionBtn.classList.add('active');
-      subOptionBtn.classList.remove('active');
-      localStorage.setItem('animeDubPref', 'dub');
-      await loadIframe(true);
-      updateWatchHistory(jikanId, title, episode);
-    }
-  });
-});
+      const currentEpNum = parseInt(episode, 10);
+      if (totalEpisodes && currentEpNum < totalEpisodes) {
+        const nextEpBtn = document.createElement('button');
+        nextEpBtn.id = 'next-episode-btn';
+        nextEpBtn.textContent = `Next →`;
+        nextEpBtn.addEventListener('click', () => {
+          params.set('ep', currentEpNum + 1);
+          window.location.search = params.toString();
+        });
+        controlsWrapper.appendChild(nextEpBtn);
+      } else if (totalEpisodes && currentEpNum >= totalEpisodes) {
+        const seriesOverMsg = document.createElement('div');
+        seriesOverMsg.id = 'series-over-msg';
+        seriesOverMsg.textContent = 'Series Complete';
+        controlsWrapper.appendChild(seriesOverMsg);
+      }
+      
+      async function loadIframe(dub) {
+        playerContainer.innerHTML = '';
+        const proxyBase = 'https://arkm20-animex-player-api.hf.space';
+        const iframeSrcURL = `${proxyBase}/iframe-src?id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
+        try {
+          const res = await fetch(iframeSrcURL);
+          if (!res.ok) throw new Error(`Proxy error ${res.status}`);
+          const json = await res.json();
+          if (!json.src) throw new Error('No embed source found');
+          
+          const iframe = document.createElement('iframe');
+          iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-fullscreen');
+          iframe.setAttribute('src', json.src);
+          iframe.setAttribute('allowfullscreen', 'true');
+          iframe.setAttribute('scrolling', 'no');
+          playerContainer.appendChild(iframe);
+        } catch (err) {
+          console.error('Error loading player:', err);
+          playerContainer.innerHTML = `<div id="error-message">Could not load player. Please try another option.</div>`;
+        }
+      }
+      
+      // Setup initial state
+      if (userPref === 'dub') {
+        dubOptionBtn.classList.add('active');
+        subOptionBtn.classList.remove('active');
+        await loadIframe(true);
+      } else {
+        subOptionBtn.classList.add('active');
+        dubOptionBtn.classList.remove('active');
+        await loadIframe(false);
+      }
+      setTimeout(moveActiveIndicator, 50);
+
+      subOptionBtn.addEventListener('click', async () => {
+        if (subOptionBtn.classList.contains('active')) return;
+        dubOptionBtn.classList.remove('active');
+        subOptionBtn.classList.add('active');
+        localStorage.setItem('animeDubPref', 'sub');
+        moveActiveIndicator();
+        await loadIframe(false);
+      });
+
+      dubOptionBtn.addEventListener('click', async () => {
+        if (dubOptionBtn.classList.contains('active')) return;
+        subOptionBtn.classList.remove('active');
+        dubOptionBtn.classList.add('active');
+        localStorage.setItem('animeDubPref', 'dub');
+        moveActiveIndicator();
+        await loadIframe(true);
+      });
+
+      // --- Landscape controls logic ---
+      let controlsTimer;
+      function showControls() {
+        if (window.matchMedia("(orientation: landscape)").matches) {
+          document.body.classList.add('controls-visible');
+          clearTimeout(controlsTimer);
+          controlsTimer = setTimeout(() => {
+            document.body.classList.remove('controls-visible');
+          }, 4000); // Hide after 4 seconds
+        }
+      }
+
+      playerContainer.addEventListener('click', showControls);
+      
+      window.addEventListener('orientationchange', () => {
+        if (!window.matchMedia("(orientation: landscape)").matches) {
+            document.body.classList.remove('controls-visible');
+            clearTimeout(controlsTimer);
+        } else {
+            // NEW: Give a hint when rotating TO landscape
+            showControls();
+        }
+        setTimeout(moveActiveIndicator, 100); 
+      });
+
+      // NEW: Show controls initially if page loads in landscape mode
+      if (window.matchMedia("(orientation: landscape)").matches) {
+        // Use a small delay to ensure everything is rendered
+        setTimeout(showControls, 500);
+      }
+
+    });
   </script>
 </body>
 </html>

@@ -92,9 +92,10 @@
       align-items: center;
       justify-content: flex-end;
       min-height: 100vh;
+      min-height: -webkit-fill-available; /* Correct height for Safari */
       width: 100vw;
       position: absolute;
-      bottom: 0; /* Fixed: was 00 */
+      bottom: 0; 
       left: 0;
       z-index: 1;
       box-sizing: border-box;
@@ -113,8 +114,16 @@
       text-align: center;
       position: relative;
       overflow: hidden;
-      margin-bottom: 0; /* Changed: was 2rem */
-      height: 550px;
+      margin-bottom: 0;
+      
+      /* === FIX START === */
+      /* Replaced fixed height with flexible properties */
+      min-height: 500px;
+      max-height: 550px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      /* === FIX END === */
     }
 
 
@@ -168,6 +177,11 @@
       gap: 16px;
       transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
       padding: 0 50px;
+      
+      /* === FIX START === */
+      /* Allows this container to grow and push the footer down */
+      flex-grow: 1;
+      /* === FIX END === */
     }
 
     #onboarding-content.is-changing {
@@ -498,12 +512,20 @@
     @media (max-width: 480px) {
       .onboarding-container {
         justify-content: flex-end;
-        padding: 16px 16px 0 16px; /* Remove bottom padding */
+        /* === FIX START === */
+        /* Replaced 'padding: 16px 16px 0 16px;' */
+        /* This ensures there is always padding at the bottom, respecting the safe area on iOS */
+        padding: 16px 16px calc(16px + env(safe-area-inset-bottom)) 16px;
+        /* === FIX END === */
       }
       .onboarding-card {
         padding: 32px 24px 24px;
         max-width: 100%;
-        margin: 0; /* Changed: was 0 0 1rem */
+        margin: 0;
+        /* === FIX START === */
+        /* Allow card to shrink on smaller screens */
+        min-height: 0; 
+        /* === FIX END === */
       }
 
       .content-title {
@@ -582,7 +604,7 @@
            backgroundUrl: 'Resources/Images/Launch_screen.png'
         },
         {
-          icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path fill="#ff9500" d="M272 416c17.7 0 32-14.3 32-32s-14.3-32-32-32l-112 0c-17.7 0-32-14.3-32-32l0-128 32 0c12.9 0 24.6-7.8 29.6-19.8s2.2-25.7-6.9-34.9l-64-64c-12.5-12.5-32.8-12.5-45.3 0l-64 64c-9.2 9.2-11.9 22.9-6.9 34.9s16.6 19.8 29.6 19.8l32 0 0 128c0 53 43 96 96 96l112 0zM304 96c-17.7 0-32 14.3-32 32s14.3 32 32 32l112 0c17.7 0 32 14.3 32 32l0 128-32 0c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l64 64c12.5 12.5 32.8 12.5 45.3 0l64-64c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8l-32 0 0-128c0-53-43-96-96-96L304 96z"/></svg>`,
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path fill="#ff9500" d="M272 416c17.7 0 32-14.3 32-32s-14.3-32-32-32l-112 0c-17.7 0-32-14.3-32-32l0-128 32 0c12.9 0 24.6-7.8 29.6-19.8s2.2-25.7-6.9-34.9l-64-64c-12.5-12.5-32.8-12.5-45.3 0l-64 64c-9.2 9.2-11.9 22.9-6.9 34.9s16.6 19.8 29.6 19.8l32 0 0 128c0 53 43 96 96 96l112 0zM304 96c-17.7 0-32 14.3-32 32s14.3 32 32 32l112 0c17.7 0 32 14.3 32 32l0 128-32 0c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l64 64c12.5 12.5 32.8 12.5 45.3 0l64-64c9.2 9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8l-32 0 0-128c0-53-43-96-96-96L304 96z"/></svg>`,
           title: 'Seamless Experience',
           desc: 'Pick up where you left off across all your devices.',
           backgroundUrl: 'Resources/Images/Launch_screen.png'
