@@ -217,8 +217,8 @@
       }
     }
 
-    /* Landscape Orientation - Full Screen Video */
-    @media (orientation: landscape) {
+    /* Mobile Landscape Orientation - Optimized for phones */
+    @media (orientation: landscape) and (max-height: 500px) {
       body {
         overflow: hidden;
       }
@@ -231,7 +231,126 @@
         height: 100vh;
         z-index: 100;
         max-height: 100vh;
-        margin: 0; /* Reset margin for landscape */
+        margin: 0;
+      }
+      
+      #player-container iframe {
+        width: 100%;
+        height: 100%;
+      }
+      
+      /* Controls overlay - always visible but compact */
+      #info-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        min-height: auto;
+        max-height: none;
+        height: auto;
+        overflow: visible;
+        z-index: 110;
+        background: rgba(10, 10, 10, 0.85);
+        backdrop-filter: blur(8px);
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        box-shadow: 0 -2px 12px 0 rgba(0, 0, 0, 0.6);
+        padding: 8px 12px;
+        transform: translateY(0);
+        transition: opacity 0.3s ease-in-out;
+        opacity: 1;
+      }
+      
+      /* Compact layout for landscape */
+      #info-container #series-title {
+        font-size: 0.9rem;
+        margin-bottom: 0;
+        line-height: 1.2;
+      }
+      
+      #info-container #meta-line {
+        font-size: 0.8rem;
+        margin-bottom: 4px;
+        gap: 0.5em;
+      }
+      
+      #info-container #controls-wrapper {
+        margin-top: 0;
+        gap: 0.5rem;
+      }
+      
+      #info-container .search-options-list {
+        padding: 2px;
+        border-radius: 16px;
+      }
+      
+      #info-container .search-option-btn {
+        padding: 4px 12px;
+        font-size: 0.85em;
+        border-radius: 14px;
+      }
+      
+      #info-container #next-episode-btn {
+        padding: 6px 14px;
+        font-size: 0.85em;
+        border-radius: 16px;
+      }
+      
+      #info-container #series-over-msg {
+        font-size: 0.85em;
+      }
+      
+      /* Hide controls after inactivity */
+      body.controls-hidden #info-container {
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      /* Add a subtle hint for mobile users */
+      @media (orientation: landscape) and (max-height: 500px) {
+        body::after {
+          content: 'Double tap to show controls';
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0, 0, 0, 0.7);
+          color: rgba(255, 255, 255, 0.8);
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          z-index: 120;
+          pointer-events: none;
+          opacity: 0;
+          animation: showHint 0.5s ease-out 1s forwards, hideHint 0.5s ease-out 5s forwards;
+        }
+        
+        @keyframes showHint {
+          to { opacity: 1; }
+        }
+        
+        @keyframes hideHint {
+          to { opacity: 0; }
+        }
+      }
+    }
+
+    /* Tablet landscape - keep the slide-up behavior */
+    @media (orientation: landscape) and (min-height: 500px) {
+      body {
+        overflow: hidden;
+      }
+      
+      #player-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 100;
+        max-height: 100vh;
+        margin: 0;
       }
       
       #player-container iframe {
@@ -255,8 +374,7 @@
         border-top-left-radius: 16px;
         border-top-right-radius: 16px;
         box-shadow: 0 -4px 24px 0 #000000cc;
-        /* THIS IS THE KEY CHANGE: Hide the container completely by default */
-        transform: translateY(100%); 
+        transform: translateY(100%);
         transition: transform 0.3s ease-in-out;
       }
       
@@ -276,13 +394,6 @@
         height: 4px;
         background: rgba(255, 255, 255, 0.3);
         border-radius: 2px;
-      }
-    }
-
-    /* Tablet landscape adjustments (no changes needed here) */
-    @media (orientation: landscape) and (min-width: 768px) {
-      #info-container {
-        /* No override needed, it will inherit translateY(100%) */
       }
     }
   </style>
@@ -450,36 +561,118 @@
         await loadIframe(true);
       });
 
-      // --- Landscape controls logic ---
+      // --- Enhanced landscape controls logic ---
       let controlsTimer;
+      
+      // Check if device is mobile (small height in landscape)
+      function isMobileLandscape() {
+        return window.matchMedia("(orientation: landscape) and (max-height: 500px)").matches;
+      }
+      
+      // Check if device is tablet/desktop landscape
+      function isTabletLandscape() {
+        return window.matchMedia("(orientation: landscape) and (min-height: 500px)").matches;
+      }
+      
       function showControls() {
-        if (window.matchMedia("(orientation: landscape)").matches) {
+        if (isMobileLandscape()) {
+          // Mobile landscape - show controls and hide after timeout
+          document.body.classList.remove('controls-hidden');
+          clearTimeout(controlsTimer);
+          controlsTimer = setTimeout(() => {
+            document.body.classList.add('controls-hidden');
+          }, 3000); // Hide after 3 seconds on mobile
+        } else if (isTabletLandscape()) {
+          // Tablet landscape - use slide-up behavior
           document.body.classList.add('controls-visible');
           clearTimeout(controlsTimer);
           controlsTimer = setTimeout(() => {
             document.body.classList.remove('controls-visible');
-          }, 4000); // Hide after 4 seconds
+          }, 4000); // Hide after 4 seconds on tablet
         }
       }
-
-      playerContainer.addEventListener('click', showControls);
       
-      window.addEventListener('orientationchange', () => {
-        if (!window.matchMedia("(orientation: landscape)").matches) {
-            document.body.classList.remove('controls-visible');
-            clearTimeout(controlsTimer);
-        } else {
-            // NEW: Give a hint when rotating TO landscape
-            showControls();
+      function hideControls() {
+        if (isMobileLandscape()) {
+          document.body.classList.add('controls-hidden');
+        } else if (isTabletLandscape()) {
+          document.body.classList.remove('controls-visible');
         }
-        setTimeout(moveActiveIndicator, 100); 
+        clearTimeout(controlsTimer);
+      }
+
+      // Double tap gesture handler for mobile
+      let lastTapTime = 0;
+      let tapTimer = null;
+      
+      function handleDoubleTap(e) {
+        const currentTime = Date.now();
+        const timeDiff = currentTime - lastTapTime;
+        
+        if (timeDiff < 300) { // Double tap detected (within 300ms)
+          clearTimeout(tapTimer);
+          if (isMobileLandscape() || isTabletLandscape()) {
+            showControls();
+          }
+        } else {
+          // Single tap - wait to see if there's a second tap
+          tapTimer = setTimeout(() => {
+            // This was just a single tap, do nothing special
+          }, 300);
+        }
+        
+        lastTapTime = currentTime;
+      }
+      
+      // Multiple ways to show controls on mobile
+      function addControlTriggers() {
+        // Double tap anywhere on the screen
+        document.addEventListener('touchend', handleDoubleTap);
+        
+        // Fallback: Single tap on video player for desktop/tablet
+        playerContainer.addEventListener('click', (e) => {
+          if (isTabletLandscape()) {
+            showControls();
+          }
+        });
+        
+        // Mouse movement for desktop debugging
+        document.addEventListener('mousemove', (e) => {
+          if (isTabletLandscape()) {
+            showControls();
+          }
+        });
+      }
+      
+      addControlTriggers();
+      
+      // Handle orientation changes
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+          hideControls(); // Reset controls state
+          
+          if (isMobileLandscape() || isTabletLandscape()) {
+            // Show controls briefly when rotating to landscape
+            setTimeout(showControls, 100);
+          }
+          
+          setTimeout(moveActiveIndicator, 200);
+        }, 100);
       });
 
-      // NEW: Show controls initially if page loads in landscape mode
-      if (window.matchMedia("(orientation: landscape)").matches) {
-        // Use a small delay to ensure everything is rendered
-        setTimeout(showControls, 500);
+      // Initial setup for landscape mode
+      if (isMobileLandscape() || isTabletLandscape()) {
+        setTimeout(() => {
+          showControls();
+        }, 500);
       }
+
+      // Keyboard support for hiding controls
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && (isMobileLandscape() || isTabletLandscape())) {
+          hideControls();
+        }
+      });
 
     });
   </script>
