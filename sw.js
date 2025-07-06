@@ -1,4 +1,4 @@
-const CACHE_NAME = 'animex-v1';
+const CACHE_NAME = 'animex-v2';
 const PRECACHE_URLS = [
   '/', // index.html
   '/Launch.html',
@@ -32,50 +32,26 @@ const PRECACHE_URLS = [
   '/series-info.html',
   '/settings.html',
   '/test.htm',
-  '/video_player.html',
+  '/video_player.html', // Make sure this is included
   '/view.html',
-  // External links (deduplicated)
-  'https://fonts.googleapis.com',
-  'https://fonts.gstatic.com',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+  '/offline.html', // Add this file
+  // External resources that should be cached for offline use
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
-  'https://arkm20-authapi.hf.space',
-  'https://cdn.myanimelist.net/images/anime/1463/145502l.jpg',
-  'https://cdn.myanimelist.net/images/anime/1448/147351.jpg',
-  'https://cdn.myanimelist.net/images/anime/1770/97704l.jpg',
-  'https://cdn.myanimelist.net/images/manga/2/253146.jpg',
-  'https://placehold.co/60x80/555/fff?text=N/A',
-  'https://placehold.co/60x80/444/fff?text=N/A',
-  'https://placehold.co/140x200/444/fff?text=N/A',
-  'https://cdn.i.haymarketmedia.asia/?n=campaign-asia%2Fcontent%2F20240719041444_Untitled+design+(12).png&h=570&w=855&q=100&v=20250320&c=1',
-  'https://placehold.co/80/cccccc/fff?text=?',
-  'https://placehold.co/80/cc0000/fff?text=${initial}',
-  'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js',
-  'https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js',
-  'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
-  'https://placehold.co/1200x700/1A2B3C/FFF?text=No+Image+Available',
-  'https://arkm20-animex-player-api.hf.space',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+  // Note: FFmpeg libraries are too large for precaching (~25MB)
+  // They'll be cached on first use
 ];
 
-// Helper: filter out external URLs (http/https)
-function isLocalURL(url) {
-  return typeof url === 'string' && !/^https?:\/\//.test(url);
-}
-
-// Install: cache critical assets (local only, skip errors)
+// Install: cache critical assets
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        // Only cache local URLs
-        const localUrls = PRECACHE_URLS.filter(isLocalURL);
-        return Promise.all(
-          localUrls.map(url =>
+        return Promise.allSettled(
+          PRECACHE_URLS.map(url =>
             cache.add(url).catch(err => {
-              // Optionally log failed URLs
               console.warn('SW cache add failed:', url, err);
+              return null; // Don't fail the entire install
             })
           )
         );
@@ -97,25 +73,59 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: network first, fallback to cache, then offline page
+// Fetch: Cache first for app resources, network first for external APIs
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
-  event.respondWith(
-    fetch(event.request)
-      .then(networkRes => {
-        // update cache in background
-        const clone = networkRes.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        return networkRes;
-      })
-      .catch(() => caches.match(event.request))
-      .then(cachedRes => {
-        if (cachedRes) return cachedRes;
-        // if page navigation and nothing cached, show offline page
-        if (event.request.mode === 'navigate') {
-          return caches.match('/offline.html');
-        }
-      })
-  );
+  const url = new URL(event.request.url);
+  
+  // Cache-first strategy for app resources and CDN assets
+  if (url.origin === location.origin || 
+      url.hostname.includes('fonts.googleapis.com') ||
+      url.hostname.includes('fonts.gstatic.com') ||
+      url.hostname.includes('cdnjs.cloudflare.com') ||
+      url.hostname.includes('unpkg.com')) {
+    
+    event.respondWith(
+      caches.match(event.request)
+        .then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          
+          return fetch(event.request)
+            .then(networkResponse => {
+              // Cache successful responses
+              if (networkResponse.status === 200) {
+                const responseClone = networkResponse.clone();
+                caches.open(CACHE_NAME)
+                  .then(cache => cache.put(event.request, responseClone));
+              }
+              return networkResponse;
+            })
+            .catch(() => {
+              // If it's a navigation request and we can't load it, show offline page
+              if (event.request.mode === 'navigate') {
+                return caches.match('/offline.html');
+              }
+              throw new Error('Network failed and no cache available');
+            });
+        })
+    );
+  } else {
+    // Network-first for external APIs and video content
+    event.respondWith(
+      fetch(event.request)
+        .then(networkResponse => {
+          // Cache successful responses for later
+          if (networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => cache.put(event.request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(event.request))
+    );
+  }
 });
