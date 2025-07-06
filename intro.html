@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Welcome to Animex</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -33,13 +33,24 @@
       font-family: var(--font-family);
       color: var(--text-primary);
       overflow: hidden;
+      /* Safari-specific fixes */
+      -webkit-text-size-adjust: 100%;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     html {
       background-color: var(--bg-main);
+      /* Handle Safari's safe areas */
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
+    
     body { 
       background-color: transparent;
+      /* Ensure full height on Safari */
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
     }
 
     /* New background container */
