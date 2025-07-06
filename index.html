@@ -150,7 +150,30 @@
         #pwa-install-banner .banner-actions button#pwa-install-close { background: transparent; color: #888; font-size: 18px; margin-left: 4px; }
         #pwa-install-banner .banner-actions button:hover { opacity: 0.8; }
         #pwa-install-banner.hidden { display: none; }
+        @media (max-width: 900px) and (orientation: landscape) {
+            .bottom-nav {
+                transform: translateY(100%);
+                opacity: 0;
+                pointer-events: none;
+                transition: transform 0.3s ease, opacity 0.3s ease;
+            }
+            
+            /* Adjust iframe to use full height when navbar is hidden */
+            #contentFrame {
+                height: 100vh;
+                padding-bottom: 0;
+            }
+        }
 
+        /* Ensure navbar shows again when returning to portrait */
+        @media (max-width: 699px) and (orientation: portrait) {
+            .bottom-nav {
+                transform: translateY(0);
+                opacity: 1;
+                pointer-events: auto;
+                transition: transform 0.3s ease, opacity 0.3s ease;
+            }
+        }
 
         /* 
         ==================================================================

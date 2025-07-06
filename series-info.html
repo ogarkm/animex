@@ -94,12 +94,16 @@
     </div>
 
     <!-- Episode Pop-up Overlay -->
+    <!-- Replace the existing close button in the popup -->
     <div id="episode-popup-overlay" class="episode-popup-overlay" style="display:none;">
         <div class="episode-popup-content">
-            <button class="episode-popup-close" title="Close">&times;</button>
+            <button class="episode-popup-back" title="Back">
+                <i class="fas fa-arrow-left"></i>
+            </button>
             <iframe id="episode-popup-iframe" src="" frameborder="0" allowfullscreen></iframe>
         </div>
     </div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -766,7 +770,8 @@
                 }, 300);
             }
 
-            popupCloseBtn.addEventListener('click', closeEpisodePopup);
+            const popupBackBtn = popupOverlay.querySelector('.episode-popup-back');
+            popupBackBtn.addEventListener('click', closeEpisodePopup);
             popupOverlay.addEventListener('click', (e) => {
                 if (e.target === popupOverlay) closeEpisodePopup();
             });
@@ -927,6 +932,28 @@
         background: #181a22;
         min-height: 400px;
     }
+        .episode-popup-back {
+        position: absolute;
+        top: 18px;
+        left: 24px;
+        z-index: 2;
+        font-size: 1.4em;
+        color: #fff;
+        background: rgba(40,40,50,0.18);
+        border: none;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s;
+        box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+    }
+    .episode-popup-back:hover {
+        background: rgba(58,122,254,0.18);
+    }
     @media (max-width: 900px) {
         .episode-popup-content {
             width: 99vw;
@@ -947,6 +974,13 @@
             top: 8px;
             right: 10px;
             font-size: 1.7em;
+            width: 36px;
+            height: 36px;
+        }
+        .episode-popup-back {
+            top: 8px;
+            left: 10px;
+            font-size: 1.2em;
             width: 36px;
             height: 36px;
         }
