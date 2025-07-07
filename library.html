@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
         /* --- REDESIGNED UI WITH GLASSMORPHISM --- */
 
@@ -28,13 +29,6 @@
             --action-color-hover: #975e0d;
             
             --font-family: 'Inter', sans-serif;
-            
-            /* Player Specific Vars */
-            --player-accent-color: #FF9500;
-            --player-controls-bg: rgba(0, 0, 0, 0.7);
-            --player-text-color: #FFFFFF;
-            --player-icon-size: 1.2em;
-            --player-mobile-icon-size: 1.5em;
         }
 
         /* --- Global & Base Styles --- */
@@ -44,17 +38,12 @@
             box-sizing: border-box;
         }
 
-        body, html {
+        body {
             background-color: var(--bg-color);
             color: var(--text-primary);
             font-family: var(--font-family);
             overflow-x: hidden;
             position: relative;
-        }
-        
-        /* Stop body from scrolling when player is active */
-        body.player-active {
-            overflow: hidden;
         }
 
         /* Decorative background blobs for depth */
@@ -140,14 +129,11 @@
 
         #currentViewTitle {
             margin-bottom: 0 !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         /* --- Import Controls --- */
         .import-controls {
-            margin-bottom: 24px;
+            margin-bottom: 24px; /* Increased margin */
             text-align: center;
             padding: 20px;
             border-radius: var(--border-radius-lg);
@@ -169,14 +155,32 @@
             align-items: center;
             gap: 10px;
         }
-        .import-button:hover { transform: translateY(-2px); }
-        .import-button:active { transform: translateY(0); }
+        .import-button:hover {
+            transform: translateY(-2px);
+        }
+        .import-button:active {
+            transform: translateY(0);
+        }
         
-        #getOfflineFolderButton { background-color: var(--action-color); color: #000; }
-        #getOfflineFolderButton:hover { background-color: var(--action-color-hover); }
-        #importFolderButton { background-color: var(--accent-color); color: #000; }
-        #importFolderButton:hover { background-color: var(--accent-color-hover); }
-        #folderInput { display: none; }
+        #getOfflineFolderButton {
+            background-color: var(--action-color);
+            color: #000;
+        }
+        #getOfflineFolderButton:hover {
+            background-color: var(--action-color-hover);
+        }
+
+        #importFolderButton {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+        #importFolderButton:hover {
+            background-color: var(--accent-color-hover);
+        }
+
+        #folderInput {
+            display: none;
+        }
 
         .status-message {
             color: var(--text-secondary);
@@ -185,10 +189,12 @@
             border-radius: var(--border-radius-sm);
             padding: 8px 16px;
             font-size: 0.9em;
-            width: 100%;
+            width: 100%; /* Make status take full width */
             text-align: center;
         }
-        .status-message button { margin-left: 10px; }
+        .status-message button {
+            margin-left: 10px;
+        }
 
         /* --- List Styles (Series & Episodes) --- */
         .item-list {
@@ -197,7 +203,9 @@
             gap: 16px;
         }
 
-        #seriesListContainer { padding-top: 0; }
+        #seriesListContainer {
+            padding-top: 0; /* Removed top padding */
+        }
 
         .list-item {
             display: flex;
@@ -207,6 +215,7 @@
             transition: background 0.2s, border-color 0.2s;
             cursor: pointer;
         }
+
         .list-item:hover {
             background: rgba(50, 50, 55, 0.7);
             border-color: rgba(255, 255, 255, 0.2);
@@ -218,10 +227,14 @@
             object-fit: cover;
             border-radius: var(--border-radius-sm);
             margin-right: 16px;
-            background-color: #333;
+            background-color: #333; /* Placeholder bg */
         }
         
-        .item-details, .episode-item-details { flex: 1; min-width: 0; }
+        .item-details {
+            flex: 1;
+            min-width: 0;
+        }
+
         .item-title {
             font-size: 1.05em;
             font-weight: 500;
@@ -229,39 +242,99 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .item-arrow { font-size: 1em; color: var(--text-secondary); margin-left: 16px; transition: color 0.2s; }
-        .list-item:hover .item-arrow { color: var(--accent-color); }
-        .episode-duration { font-size: 0.85em; color: var(--text-secondary); margin-top: 4px; }
-        
-        
-        /* --- Video Player Styles --- */
-        
+
+        .item-arrow {
+            font-size: 1em;
+            color: var(--text-secondary);
+            margin-left: 16px;
+            transition: color 0.2s;
+        }
+        .list-item:hover .item-arrow {
+            color: var(--accent-color);
+        }
+
+        /* Episode Specifics */
+        .episode-item-details {
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .episode-duration {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* --- INTEGRATED VIDEO PLAYER STYLES --- */
+        /* --- Styles from video_player.html, adapted for integration --- */
+
+        :root {
+            --player-accent-color: #FF9500; /* Orange theme */
+            --player-controls-bg: rgba(0, 0, 0, 0.7);
+            --player-text-color: #FFFFFF;
+            --player-icon-size: 1.2em;
+            --player-mobile-icon-size: 1.5em;
+        }
+
+        /* --- Container styles for the player component --- */
+        /* This container is inside player-iframe-box */
         .video-player-container {
             width: 100%;
             height: 100%;
-            position: relative;
-            background-color: #000;
-            overflow: hidden;
-            border-radius: 8px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            z-index: 1000; /* Ensure player is on top of other content */
-        }
-        
-        /* This class makes the player truly fullscreen */
-        .video-player-container.fullscreen-mode,
-        .video-player-container.fullscreen {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+        
+        /* This container holds the entire player view (header + box) */
+        .player-iframe-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden; 
+        }
+
+        .player-header {
+            width: 100%;
+            padding: 16px 20px;
+            text-align: center;
+            background-color: rgba(25, 25, 30, 0.8);
+            color: var(--text-primary);
+            font-size: 1.2em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+        }
+
+        .player-iframe-box {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            position: relative; /* Important for positioning the player inside */
+        }
+        
+        .video-player-container.fullscreen {
             width: 100vw !important;
             height: 100vh !important;
             max-width: none !important;
             max-height: none !important;
+            top: 0 !important;
+            left: 0 !important;
             border-radius: 0 !important;
-            z-index: 2147483647; /* Max z-index */
+            z-index: 2147483647;
+            position: fixed;
         }
 
-        video#customPlayer { width: 100%; height: 100%; display: block; }
+        video#customPlayer {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
 
         .video-controls {
             position: absolute;
@@ -277,66 +350,219 @@
             z-index: 21;
         }
 
-        .video-player-container:not(.controls-active) .video-controls { opacity: 0; pointer-events: none; }
-        .video-player-container.paused .video-controls { opacity: 1; pointer-events: auto; }
-
-        .progress-bar-container { width: 100%; margin-bottom: 10px; cursor: pointer; padding: 5px 0; }
-        .progress-bar { width: 100%; height: 5px; background-color: rgba(255, 255, 255, 0.3); border-radius: 3px; position: relative; }
-        .progress-bar-hover { position: absolute; height: 100%; background-color: rgba(255, 255, 255, 0.5); border-radius: 3px; pointer-events: none; }
-        .progress-filled { height: 100%; background-color: var(--player-accent-color); border-radius: 3px; width: 0%; position: relative; }
-        .progress-filled::after {
-            content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%);
-            width: 12px; height: 12px; background-color: var(--player-accent-color); border-radius: 50%;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.2s;
+        .video-player-container:not(.controls-active) .video-controls {
+            opacity: 0;
+            pointer-events: none;
         }
-        .video-player-container.controls-active .progress-filled::after { opacity: 1; }
+        .video-player-container.paused .video-controls {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
-        .controls-main { display: flex; justify-content: space-between; align-items: center; }
-        .controls-left, .controls-center, .controls-right { display: flex; align-items: center; gap: 15px; }
-        .controls-center { flex-grow: 1; justify-content: center; }
+        .progress-bar-container {
+            width: 100%;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 5px 0;
+        }
 
-        .control-button { background: none; border: none; color: var(--player-text-color); font-size: var(--player-icon-size); cursor: pointer; padding: 8px; line-height: 1; }
-        .control-button:hover { color: var(--player-accent-color); }
-        .time-display { color: var(--player-text-color); font-size: 0.85em; margin-left: 10px; }
-        .volume-container { display: flex; align-items: center; }
-        .volume-slider { width: 70px; height: 4px; background: rgba(255, 255, 255, 0.3); border-radius: 2px; cursor: pointer; margin-left: 8px; display: none; }
-        .volume-level { height: 100%; background-color: var(--player-accent-color); border-radius: 2px; width: 100%; }
-        .video-player-container.desktop .volume-slider { display: block; }
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            position: relative;
+        }
+        .progress-bar-hover {
+            position: absolute;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 3px;
+            pointer-events: none;
+        }
+        .progress-filled {
+            height: 100%;
+            background-color: var(--player-accent-color);
+            border-radius: 3px;
+            width: 0%;
+            position: relative;
+        }
+        .progress-filled::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background-color: var(--player-accent-color);
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .video-player-container.controls-active .progress-filled::after {
+            opacity: 1;
+        }
+
+        .controls-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controls-left, .controls-center, .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .controls-center {
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        .control-button {
+            background: none;
+            border: none;
+            color: var(--player-text-color);
+            font-size: var(--player-icon-size);
+            cursor: pointer;
+            padding: 8px;
+            line-height: 1;
+        }
+        .control-button:hover {
+            color: var(--player-accent-color);
+        }
+
+        .time-display {
+            color: var(--player-text-color);
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+        }
+        .volume-slider {
+            width: 70px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            cursor: pointer;
+            margin-left: 8px;
+            display: none;
+        }
+        .volume-level {
+            height: 100%;
+            background-color: var(--player-accent-color);
+            border-radius: 2px;
+            width: 100%;
+        }
+        .video-player-container.desktop .volume-slider {
+            display: block;
+        }
 
         .big-play-button {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4em; color: var(--player-text-color);
-            background-color: rgba(0,0,0,0.5); border-radius: 50%; width: 1.5em; height: 1.5em; display: flex; align-items: center;
-            justify-content: center; cursor: pointer; z-index: 20; transition: opacity 0.3s, transform 0.2s;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            color: var(--player-text-color);
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 1.5em;
+            height: 1.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 20;
+            transition: opacity 0.3s, transform 0.2s;
         }
-        .big-play-button:hover { transform: translate(-50%, -50%) scale(1.1); }
-        .video-player-container.playing .big-play-button, .video-player-container.has-interacted .big-play-button { opacity: 0; pointer-events: none; }
+        .big-play-button:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .video-player-container.playing .big-play-button,
+        .video-player-container.has-interacted .big-play-button {
+            opacity: 0;
+            pointer-events: none;
+        }
         
         .loading-container {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 19; display: none;
-            flex-direction: column; align-items: center; gap: 15px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 19;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
         }
         .spinner {
-            width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.2); border-top-color: var(--player-accent-color);
-            border-radius: 50%; animation: spin 1s linear infinite;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.2);
+            border-top-color: var(--player-accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-        .loading-text { color: var(--player-text-color); font-size: 1em; }
+        .loading-text {
+            color: var(--player-text-color);
+            font-size: 1em;
+        }
         
-        .video-player-container.loading .loading-container, .video-player-container.processing .loading-container { display: flex; }
-        .video-player-container.loading .big-play-button, .video-player-container.processing .big-play-button { display: none; }
+        .video-player-container.loading .loading-container,
+        .video-player-container.processing .loading-container {
+            display: flex;
+        }
+        .video-player-container.loading .big-play-button,
+        .video-player-container.processing .big-play-button {
+            display: none;
+        }
 
-        .seek-overlay { position: absolute; top: 0; width: 35%; height: calc(100% - 60px); z-index: 10; }
-        .seek-overlay.left { left: 0; } .seek-overlay.right { right: 0; }
+        .seek-overlay {
+            position: absolute;
+            top: 0;
+            width: 35%; /* Area for tap */
+            height: calc(100% - 60px); /* Avoid controls area */
+            z-index: 10; /* Above video, below controls */
+        }
+        .seek-overlay.left { left: 0; }
+        .seek-overlay.right { right: 0; }
 
         .seek-feedback {
-            position: absolute; top: 50%; transform: translateY(-50%); font-size: 2em; color: var(--player-text-color);
-            background-color: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 20px;
-            z-index: 22; opacity: 0; transition: opacity 0.3s ease-out; pointer-events: none;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            color: var(--player-text-color);
+            background-color: rgba(0,0,0,0.6);
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 22; /* Above controls */
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+            pointer-events: none; /* Don't interfere with other clicks */
         }
-        .seek-feedback.left { left: 20%; } .seek-feedback.right { right: 20%; }
+        .seek-feedback.left { left: 20%; }
+        .seek-feedback.right { right: 20%; }
         .seek-feedback.show { opacity: 1; }
 
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- END INTEGRATED VIDEO PLAYER STYLES --- */
+        
+        /* --- Media Queries --- */
         @media (max-width: 768px) {
-            .control-button { font-size: var(--player-mobile-icon-size); padding: 10px; }
+            .control-button {
+                font-size: var(--player-mobile-icon-size);
+                padding: 10px;
+            }
             .controls-left .time-display { display: none; }
             .controls-right .time-display { font-size: 0.9em; }
             .volume-container { margin-right: 5px; }
@@ -347,11 +573,10 @@
             .seek-feedback.left { left: 10%; }
             .seek-feedback.right { right: 10%; }
         }
-        
-        /* --- Media Queries --- */
         @media (max-width: 600px) {
             .main-content { margin: 20px auto; padding: 0 15px; }
             .section-title { font-size: 1.5rem; }
+            .player-header { font-size: 1em; padding: 12px 15px; }
             :root { --border-radius-lg: 16px; --border-radius-md: 10px; }
             .import-controls { padding: 15px; }
         }
@@ -363,87 +588,149 @@
             <section id="library-section">
                 <div id="navigationHeader" class="navigation-header glass-pane" style="display: none;">
                     <button id="backButton" class="back-button"><i class="fas fa-arrow-left"></i></button>
-                    <h2 id="currentViewTitle" class="section-title">Downloads</h2>
+                    <h2 id="currentViewTitle" class="section-title" style="margin-bottom: 0;">Downloads</h2>
                 </div>
 
+                <!-- === IMPORT CONTROLS (Main Page) === -->
                 <div class="import-controls glass-pane">
-                    <button id="getOfflineFolderButton" class="import-button"><i class="fas fa-download"></i> Get Offline Folder</button>
-                    <button id="importFolderButton" class="import-button"><i class="fas fa-folder-plus"></i> Import Series Folder</button>
+                    <button id="getOfflineFolderButton" class="import-button">
+                        <i class="fas fa-download"></i> Get Offline Folder
+                    </button>
+                    <button id="importFolderButton" class="import-button">
+                        <i class="fas fa-folder-plus"></i> Import Series Folder
+                    </button>
                     <input type="file" id="folderInput" webkitdirectory directory multiple />
                     <p id="statusMessage" class="status-message">1. Get folder. 2. Add videos. 3. Import here.</p>
                 </div>
 
+                <!-- === SERIES LIST (Main Page) === -->
                 <div id="seriesListContainer" class="item-list"></div>
                 
+                <!-- === PAGINATION TO CONTINUE WATCHING (Main Page) === -->
                 <div id="paginationControls" style="display: none; margin-top: 20px;">
                     <div id="goToContinueWatchingBtn" class="list-item glass-pane" style="background: rgba(35, 35, 40, 0.8);">
-                        <div class="item-details" style="text-align: center;"><h3 class="item-title">View Watch History</h3></div>
-                        <div class="item-arrow"><i class="fas fa-chevron-right"></i></div>
+                        <div class="item-details" style="text-align: center;">
+                            <h3 class="item-title">View Watch History</h3>
+                        </div>
+                        <div class="item-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
                     </div>
                 </div>
 
+                <!-- === EPISODE LIST (Sub-Page) === -->
                 <div id="episodeListContainer" class="item-list" style="display: none;"></div>
                 
-                <!-- === EMBEDDED VIDEO PLAYER === -->
-                <div class="video-player-container" id="videoPlayerContainer" style="display: none; aspect-ratio: 16/9;">
-                    <div class="loading-container" id="loadingContainer">
-                        <div class="spinner"></div>
-                        <p class="loading-text" id="loadingText"></p>
-                    </div>
-                    <video id="customPlayer" playsinline preload="metadata"></video>
-                    <div class="seek-overlay left" id="seekOverlayLeft"></div>
-                    <div class="seek-overlay right" id="seekOverlayRight"></div>
-                    <div class="seek-feedback left" id="seekFeedbackRewind"><i class="fas fa-undo-alt"></i> -10s</div>
-                    <div class="seek-feedback right" id="seekFeedbackForward"><i class="fas fa-redo-alt"></i> +10s</div>
-                    <div class="big-play-button" id="bigPlayBtn"><i class="fas fa-play"></i></div>
-                    <div class="video-controls" id="videoControls">
-                        <div class="progress-bar-container" id="progressBarContainer">
-                            <div class="progress-bar-hover" id="progressBarHover"></div>
-                            <div class="progress-bar"><div class="progress-filled" id="progressFilled"></div></div>
-                        </div>
-                        <div class="controls-main">
-                            <div class="controls-left">
-                                <button class="control-button" id="playPauseBtn" aria-label="Play/Pause"><i class="fas fa-play"></i></button>
-                                <button class="control-button" id="volumeBtn" aria-label="Mute/Unmute"><i class="fas fa-volume-up"></i></button>
-                                <div class="volume-container"><input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="1"></div>
-                                <span class="time-display" id="currentTime">0:00</span>
-                            </div>
-                            <div class="controls-center">
-                                <button class="control-button" id="rewindBtn" aria-label="Rewind 10 seconds"><i class="fas fa-undo-alt"></i></button>
-                                <button class="control-button" id="forwardBtn" aria-label="Forward 10 seconds"><i class="fas fa-redo-alt"></i></button>
-                            </div>
-                            <div class="controls-right">
-                                <span class="time-display" id="totalTime">0:00</span>
-                                <button class="control-button" id="fullscreenBtn" aria-label="Fullscreen"><i class="fas fa-expand"></i></button>
+                <!-- === INTEGRATED VIDEO PLAYER (Sub-Page) === -->
+                <div id="videoPlayerContainer" style="display: none;">
+                    <div class="player-iframe-container glass-pane">
+                        <div class="player-header" id="playerHeaderTitle">Now Playing</div>
+                        <div class="player-iframe-box">
+                            <!-- This is the player component, adapted from video_player.html -->
+                            <div class="video-player-container" id="videoPlayerComponent">
+                                <div class="loading-container" id="loadingContainer">
+                                    <div class="spinner"></div>
+                                    <p class="loading-text" id="loadingText"></p>
+                                </div>
+                                <video id="customPlayer" playsinline preload="metadata"></video>
+                                <div class="seek-overlay left" id="seekOverlayLeft"></div>
+                                <div class="seek-overlay right" id="seekOverlayRight"></div>
+                                <div class="seek-feedback left" id="seekFeedbackRewind"><i class="fas fa-undo-alt"></i> -10s</div>
+                                <div class="seek-feedback right" id="seekFeedbackForward"><i class="fas fa-redo-alt"></i> +10s</div>
+                                <div class="big-play-button" id="bigPlayBtn"><i class="fas fa-play"></i></div>
+                                <div class="video-controls" id="videoControls">
+                                    <div class="progress-bar-container" id="progressBarContainer">
+                                        <div class="progress-bar-hover" id="progressBarHover"></div>
+                                        <div class="progress-bar">
+                                            <div class="progress-filled" id="progressFilled"></div>
+                                        </div>
+                                    </div>
+                                    <div class="controls-main">
+                                        <div class="controls-left">
+                                            <button class="control-button" id="playPauseBtn" aria-label="Play/Pause"><i class="fas fa-play"></i></button>
+                                            <button class="control-button" id="volumeBtn" aria-label="Mute/Unmute"><i class="fas fa-volume-up"></i></button>
+                                            <div class="volume-container">
+                                                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+                                            </div>
+                                            <span class="time-display" id="currentTime">0:00</span>
+                                        </div>
+                                        <div class="controls-center">
+                                            <button class="control-button" id="rewindBtn" aria-label="Rewind 10 seconds"><i class="fas fa-undo-alt"></i></button>
+                                            <button class="control-button" id="forwardBtn" aria-label="Forward 10 seconds"><i class="fas fa-redo-alt"></i></button>
+                                            <!-- NEW: Next Episode Button -->
+                                            <button class="control-button" id="nextEpisodeBtn" aria-label="Next Episode" style="display: none;"><i class="fas fa-step-forward"></i></button>
+                                        </div>
+                                        <div class="controls-right">
+                                            <span class="time-display" id="totalTime">0:00</span>
+                                            <button class="control-button" id="fullscreenBtn" aria-label="Fullscreen"><i class="fas fa-expand"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- === CONTINUE WATCHING (Sub-Page) === -->
                 <div id="continueWatchingPageContainer" class="item-list" style="display: none;"></div>
+
             </section>
         </main>
     </div>
 
-    <!-- FFmpeg Scripts will be loaded dynamically here -->
-
+    <!-- FFmpeg Loader Script -->
     <script>
-        // --- DOM ELEMENTS (Library) ---
+        let ffmpegLoaded = false;
+        let FFmpeg, FFmpegUtil;
+        async function loadFFmpeg() {
+            try {
+                const ffmpegScript = document.createElement('script');
+                ffmpegScript.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js';
+                const utilScript = document.createElement('script');
+                utilScript.src = 'https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js';
+                await Promise.all([
+                    new Promise((resolve, reject) => {
+                        ffmpegScript.onload = resolve;
+                        ffmpegScript.onerror = reject;
+                        document.head.appendChild(ffmpegScript);
+                    }),
+                    new Promise((resolve, reject) => {
+                        utilScript.onload = resolve;
+                        utilScript.onerror = reject;
+                        document.head.appendChild(utilScript);
+                    })
+                ]);
+                FFmpeg = window.FFmpeg;
+                FFmpegUtil = window.FFmpegUtil;
+                ffmpegLoaded = true;
+                console.log('FFmpeg loaded successfully');
+            } catch (error) {
+                console.warn('FFmpeg not available (offline mode):', error);
+                ffmpegLoaded = false;
+            }
+        }
+        loadFFmpeg();
+    </script>
+    
+    <!-- MAIN APPLICATION SCRIPT -->
+    <script>
+        // --- LIBRARY DOM ELEMENTS ---
         const getOfflineFolderButton = document.getElementById('getOfflineFolderButton');
         const importFolderButton = document.getElementById('importFolderButton');
         const folderInput = document.getElementById('folderInput');
         const statusMessage = document.getElementById('statusMessage');
         const seriesListContainer = document.getElementById('seriesListContainer');
         const episodeListContainer = document.getElementById('episodeListContainer');
+        const videoPlayerContainer = document.getElementById('videoPlayerContainer'); // The main view container
         const navigationHeader = document.getElementById('navigationHeader');
         const backButton = document.getElementById('backButton');
         const currentViewTitle = document.getElementById('currentViewTitle');
         const continueWatchingPageContainer = document.getElementById('continueWatchingPageContainer');
         const paginationControls = document.getElementById('paginationControls');
         const goToContinueWatchingBtn = document.getElementById('goToContinueWatchingBtn');
-        
-        // --- DOM ELEMENTS (Player) ---
-        const playerContainer = document.getElementById('videoPlayerContainer');
+
+        // --- INTEGRATED PLAYER DOM ELEMENTS ---
+        const videoPlayerComponent = document.getElementById('videoPlayerComponent');
         const video = document.getElementById('customPlayer');
         const videoControls = document.getElementById('videoControls');
         const playPauseBtn = document.getElementById('playPauseBtn');
@@ -464,25 +751,28 @@
         const seekOverlayRight = document.getElementById('seekOverlayRight');
         const seekFeedbackRewind = document.getElementById('seekFeedbackRewind');
         const seekFeedbackForward = document.getElementById('seekFeedbackForward');
+        const playerHeaderTitle = document.getElementById('playerHeaderTitle');
+        const nextEpisodeBtn = document.getElementById('nextEpisodeBtn'); // NEW: Next Episode Button
 
-
-        // --- STATE & CORE VARIABLES ---
+        // --- STATE VARIABLES ---
         let seriesData = {};
         let currentView = 'series';
         let currentSeriesForEpisodes = null;
+        let currentPlayingEpisode = null; // NEW: To track the current episode object
+        let seenVideos = JSON.parse(localStorage.getItem('seenVideos')) || {}; // NEW: Load seen videos from localStorage
+        let currentVideoMarkedSeen = false; // NEW: Flag to prevent multiple "seen" marks
         window._lastVideoBlobUrl = null;
         let directoryHandle = null;
-        const API_BASE_URL = 'https://arkm20-authapi.hf.space';
-
-        // --- PLAYER STATE ---
         let controlsTimeout, lastTapTimeLeft = 0, lastTapTimeRight = 0, feedbackTimeout, ffmpeg;
-        const doubleTapDelay = 300;
-        let ffmpegLoaded = false;
-        let FFmpeg, FFmpegUtil;
-
+        const doubleTapDelay = 300; 
+        
         // --- INDEXEDDB SETUP ---
-        const DB_NAME = 'MediaLibraryDB', DB_VERSION = 1, STORE_NAME = 'settingsV1', DIR_HANDLE_KEY = 'directoryHandleV1';
-        function openDB() { /* ... function body omitted for brevity, it's unchanged ... */
+        const DB_NAME = 'MediaLibraryDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'settingsV1';
+        const DIR_HANDLE_KEY = 'directoryHandleV1';
+
+        function openDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
                 request.onerror = (event) => reject("Error opening DB: " + (event.target.error?.name || "Unknown"));
@@ -495,7 +785,8 @@
                 };
             });
         }
-        async function saveDirectoryHandleToDB(handle) { /* ... function body omitted for brevity, it's unchanged ... */
+
+        async function saveDirectoryHandleToDB(handle) {
             const db = await openDB();
             const transaction = db.transaction(STORE_NAME, 'readwrite');
             const store = transaction.objectStore(STORE_NAME);
@@ -505,7 +796,8 @@
                 request.onerror = (event) => reject("Error saving handle: " + (event.target.error?.name || "Unknown"));
             });
         }
-        async function loadDirectoryHandleFromDB() { /* ... function body omitted for brevity, it's unchanged ... */
+
+        async function loadDirectoryHandleFromDB() {
             const db = await openDB();
             const transaction = db.transaction(STORE_NAME, 'readonly');
             const store = transaction.objectStore(STORE_NAME);
@@ -516,28 +808,46 @@
             });
         }
 
-        // --- FFMPEG LOADER ---
-        async function loadFFmpeg() {
-            if (ffmpegLoaded) return;
+        // === LIBRARY EVENT LISTENERS ===
+        getOfflineFolderButton.addEventListener('click', () => {
+            const authToken = localStorage.getItem('accessToken');
+            window.open(`https://arkm20-authapi.hf.space/download-ui?token=${authToken}`, '_blank');
+        });
+
+        importFolderButton.addEventListener('click', async () => {
             try {
-                const ffmpegScript = document.createElement('script');
-                ffmpegScript.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js';
-                const utilScript = document.createElement('script');
-                utilScript.src = 'https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js';
-                await Promise.all([
-                    new Promise((res, rej) => { ffmpegScript.onload = res; ffmpegScript.onerror = rej; document.head.appendChild(ffmpegScript); }),
-                    new Promise((res, rej) => { utilScript.onload = res; utilScript.onerror = rej; document.head.appendChild(utilScript); })
-                ]);
-                FFmpeg = window.FFmpeg; FFmpegUtil = window.FFmpegUtil;
-                ffmpegLoaded = true; console.log('FFmpeg loaded successfully');
-            } catch (error) {
-                console.warn('FFmpeg not available (offline or error):', error);
-                ffmpegLoaded = false;
+                if (typeof window.showDirectoryPicker === 'function') {
+                    const handle = await window.showDirectoryPicker();
+                    if (handle) {
+                        directoryHandle = handle;
+                        await saveDirectoryHandleToDB(directoryHandle);
+                        await processDirectoryHandle(directoryHandle);
+                    }
+                } else {
+                    statusMessage.textContent = "Using legacy picker. Select the main 'Anime' folder.";
+                    folderInput.click();
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error("Error selecting directory:", err);
+                    statusMessage.textContent = "Could not access directory.";
+                }
             }
-        }
+        });
         
-        // --- FILE & LIBRARY LOGIC ---
-        async function processDirectoryHandle(dirHandle) { /* ... function body omitted for brevity, it's unchanged ... */
+        folderInput.addEventListener('change', (event) => {
+            const files = Array.from(event.target.files);
+            if (files.length === 0) return;
+            statusMessage.textContent = `Processing ${files.length} files...`;
+            processFiles(files);
+            displaySeriesList();
+            showView('series');
+            directoryHandle = null;
+            saveDirectoryHandleToDB(null).catch(e => console.warn("Could not clear DB handle", e));
+        });
+
+        // --- FILE PROCESSING ---
+        async function processDirectoryHandle(dirHandle) {
             const filesForProcessing = [];
             statusMessage.textContent = `Processing folder: ${dirHandle.name}...`;
             let fileCount = 0;
@@ -571,7 +881,8 @@
             displaySeriesList();
             showView('series');
         }
-        function processFiles(filesArray) { /* ... function body omitted for brevity, it's unchanged ... */
+
+        function processFiles(filesArray) {
             seriesData = {};
             const videoRegex = /\.(mp4|mkv)$/i;
             const prefixes = filesArray.map(f => f.webkitRelativePath.split('/')[0]);
@@ -596,13 +907,50 @@
                 }
             });
         }
-        function displaySeriesList() { /* ... function body omitted for brevity, it's unchanged ... */
+        
+        // --- NEW: SEEN VIDEO HELPERS ---
+        function saveSeenVideos() {
+            try {
+                localStorage.setItem('seenVideos', JSON.stringify(seenVideos));
+            } catch (e) {
+                console.error("Failed to save seen videos to localStorage:", e);
+            }
+        }
+
+        function markVideoAsSeen(episode) {
+            if (!episode || !episode.file) return;
+            const videoId = episode.file.webkitRelativePath;
+            if (!seenVideos[videoId]) {
+                seenVideos[videoId] = true;
+                saveSeenVideos();
+                updateEpisodeListUI(); // Update UI in the background
+            }
+        }
+
+        function isVideoSeen(episode) {
+            if (!episode || !episode.file) return false;
+            const videoId = episode.file.webkitRelativePath;
+            return !!seenVideos[videoId];
+        }
+
+        function updateEpisodeListUI() {
+            if (!currentPlayingEpisode) return;
+            const videoId = currentPlayingEpisode.file.webkitRelativePath;
+            const listItem = episodeListContainer.querySelector(`[data-video-id="${CSS.escape(videoId)}"]`);
+            if (listItem) {
+                listItem.style.background = 'rgba(255, 149, 0, 0.15)';
+                listItem.style.borderColor = 'rgba(255, 149, 0, 0.4)';
+            }
+        }
+        
+        // --- UI DISPLAY FUNCTIONS ---
+        function displaySeriesList() {
             seriesListContainer.innerHTML = '';
             const sortedSeriesNames = Object.keys(seriesData).sort((a,b) => a.localeCompare(b));
 
             if (sortedSeriesNames.length === 0) {
                  seriesListContainer.innerHTML = `<p class="status-message" style="background:transparent; text-align:center;">No series found. Try importing a folder.</p>`;
-                 paginationControls.style.display = 'none'; // Hide chevron button
+                 paginationControls.style.display = 'none'; 
                  return;
             }
 
@@ -643,9 +991,10 @@
                 });
                 seriesListContainer.appendChild(listItem);
             }
-            paginationControls.style.display = 'block'; // Show chevron button
+            paginationControls.style.display = 'block';
         }
-        function displayEpisodeList(seriesName, episodes) { /* ... function body omitted for brevity, it's unchanged ... */
+
+        function displayEpisodeList(seriesName, episodes) {
             episodeListContainer.innerHTML = '';
             if (episodes.length === 0) {
                 episodeListContainer.innerHTML = '<p class="status-message glass-pane">No episodes (MP4/MKV files) found in this series folder.</p>';
@@ -655,6 +1004,15 @@
             episodes.forEach(episode => {
                 const listItem = document.createElement('div');
                 listItem.className = 'list-item glass-pane';
+                
+                // NEW: Add a unique ID for dynamic styling and check if seen
+                const videoId = episode.file.webkitRelativePath;
+                listItem.dataset.videoId = videoId; 
+                if (isVideoSeen(episode)) {
+                    listItem.style.background = 'rgba(255, 149, 0, 0.15)';
+                    listItem.style.borderColor = 'rgba(255, 149, 0, 0.4)';
+                }
+
                 const detailsDiv = document.createElement('div');
                 detailsDiv.className = 'episode-item-details';
                 const titleH3 = document.createElement('h3');
@@ -679,13 +1037,14 @@
                 listItem.appendChild(detailsDiv);
                 listItem.appendChild(arrowDiv);
                 listItem.addEventListener('click', () => {
-                    playVideo(episode.file, `${seriesName} - ${episode.name}`);
-                    showView('player', `${seriesName} - ${episode.name}`);
+                    // MODIFIED: Pass the whole episode object to playVideo
+                    playVideo(seriesName, episode);
                 });
                 episodeListContainer.appendChild(listItem);
             });
         }
-        function getVideoDuration(file, callback) { /* ... function body omitted for brevity, it's unchanged ... */
+
+        function getVideoDuration(file, callback) {
             const tempVideo = document.createElement('video');
             tempVideo.preload = 'metadata';
             tempVideo.onloadedmetadata = () => { URL.revokeObjectURL(tempVideo.src); callback(tempVideo.duration); };
@@ -693,8 +1052,6 @@
             tempVideo.src = URL.createObjectURL(file);
         }
 
-        // --- PLAYER & VIEW MANAGEMENT ---
-        
         function formatDuration(seconds) {
             if (isNaN(seconds) || seconds === 'N/A') return 'Duration: N/A';
             const h = Math.floor(seconds / 3600);
@@ -702,129 +1059,160 @@
             const s = Math.floor(seconds % 60);
             return (h > 0 ? `${h}:` : '') + `${m < 10 && h > 0 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
         }
-
-        function playVideo(videoFile, episodeTitle) {
-            startPlayerWithSource(videoFile, episodeTitle);
-        }
         
-        const startPlayerWithSource = async (videoFile, episodeTitle) => {
-            if (window._lastVideoBlobUrl) URL.revokeObjectURL(window._lastVideoBlobUrl);
-            const objectURL = URL.createObjectURL(videoFile);
-            window._lastVideoBlobUrl = objectURL;
-            
-            const isMkv = videoFile.name.toLowerCase().endsWith('.mkv');
-            
-            if (isMkv) {
-                if (!ffmpegLoaded) {
-                    playerContainer.classList.add('error');
-                    loadingText.textContent = 'MKV playback requires an internet connection.';
-                    console.error("FFmpeg not loaded, cannot play MKV.");
-                    return;
-                }
-                
-                playerContainer.classList.add('processing');
-                loadingText.textContent = 'Processing video...';
-
-                try {
-                    if (!ffmpeg) {
-                        ffmpeg = new FFmpeg.FFmpeg();
-                        ffmpeg.on('log', ({ message }) => console.log(message));
-                        loadingText.textContent = 'Loading converter...';
-                        await ffmpeg.load({ coreURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js" });
-                    }
-                    loadingText.textContent = 'Fetching video...';
-                    const inputData = await FFmpegUtil.fetchFile(objectURL);
-                    await ffmpeg.writeFile('input.mkv', inputData);
-                    
-                    loadingText.textContent = 'Converting...';
-                    await ffmpeg.exec(['-i', 'input.mkv', '-c', 'copy', 'output.mp4']);
-                    const outputData = await ffmpeg.readFile('output.mp4');
-                    const dataBlob = new Blob([outputData.buffer], { type: 'video/mp4' });
-
-                    // Revoke the intermediate MKV blob URL
-                    URL.revokeObjectURL(objectURL);
-                    // Create and store the new MP4 blob URL
-                    const finalUrl = URL.createObjectURL(dataBlob);
-                    window._lastVideoBlobUrl = finalUrl;
-                    video.src = finalUrl;
-
-                } catch (error) {
-                    console.error("Error processing MKV file:", error);
-                    loadingText.textContent = `Error: Could not process video.`;
-                    playerContainer.classList.remove('processing');
-                    playerContainer.classList.add('error');
-                    return;
-                }
-                playerContainer.classList.remove('processing');
-                loadingText.textContent = '';
-            } else {
-                video.src = objectURL;
-            }
-        };
-
-        function resetPlayer() {
-            if (video && !video.paused) video.pause();
-            if (video) {
-                video.removeAttribute('src');
-                video.load();
-            }
-            if (window._lastVideoBlobUrl) {
-                URL.revokeObjectURL(window._lastVideoBlobUrl);
-                window._lastVideoBlobUrl = null;
-            }
-            playerContainer.classList.remove('playing', 'paused', 'loading', 'processing', 'has-interacted', 'fullscreen-mode', 'fullscreen');
-            progressFilled.style.width = '0%';
-            currentTimeEl.textContent = '0:00';
-            totalTimeEl.textContent = '0:00';
-            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-            bigPlayBtn.style.opacity = '1';
-            bigPlayBtn.style.pointerEvents = 'auto';
-        }
-
+        // --- VIEW MANAGEMENT ---
         function showView(viewName, title) {
             currentView = viewName;
             const importControls = document.querySelector('.import-controls');
             
-            document.body.classList.remove('player-active');
             seriesListContainer.style.display = 'none';
             episodeListContainer.style.display = 'none';
-            playerContainer.style.display = 'none';
+            videoPlayerContainer.style.display = 'none';
             navigationHeader.style.display = 'none';
             importControls.style.display = 'none';
             continueWatchingPageContainer.style.display = 'none';
-            paginationControls.style.display = 'none';
-
+            
             if (viewName === 'series') {
                 importControls.style.display = 'flex';
                 seriesListContainer.style.display = 'flex';
-                if (Object.keys(seriesData).length > 0) {
-                   paginationControls.style.display = 'block';
-                }
             } else if (viewName === 'episodes') {
                 navigationHeader.style.display = 'flex';
                 currentViewTitle.textContent = title || 'Episodes';
                 episodeListContainer.style.display = 'flex';
+                paginationControls.style.display = 'none';
             } else if (viewName === 'player') {
-                document.body.classList.add('player-active');
                 navigationHeader.style.display = 'flex';
-                currentViewTitle.textContent = title || "Now Playing";
-                playerContainer.style.display = 'block';
-                playerContainer.classList.add('fullscreen-mode');
+                // MODIFIED: Show series name in header for better context
+                currentViewTitle.textContent = currentSeriesForEpisodes || "Now Playing";
+                videoPlayerContainer.style.display = 'block';
+                paginationControls.style.display = 'none';
             } else if (viewName === 'continueWatching') {
                 navigationHeader.style.display = 'flex';
                 currentViewTitle.textContent = "Continue Watching";
                 continueWatchingPageContainer.style.display = 'flex';
+                paginationControls.style.display = 'none';
             }
         }
         
-        // --- WATCH HISTORY LOGIC ---
-        async function fetchJikanInfo(id) { /* ... function body omitted for brevity ... */ return null; }
-        async function renderWatchHistory(historyData) { /* ... function body omitted for brevity ... */ }
-        async function fetchAndRenderWatchHistory() { /* ... function body omitted for brevity ... */ }
+        backButton.addEventListener('click', () => {
+            if (currentView === 'player') {
+                if (video) {
+                    video.pause();
+                    video.removeAttribute('src');
+                    video.load();
+                }
+                if (window._lastVideoBlobUrl) {
+                    URL.revokeObjectURL(window._lastVideoBlobUrl);
+                    window._lastVideoBlobUrl = null;
+                }
+                // When going back, re-render the episode list which will pick up any 'seen' status changes
+                displayEpisodeList(currentSeriesForEpisodes, seriesData[currentSeriesForEpisodes].episodes);
+                showView('episodes', currentSeriesForEpisodes);
+            } else if (currentView === 'episodes' || currentView === 'continueWatching') {
+                showView('series');
+                displaySeriesList(); 
+                currentSeriesForEpisodes = null;
+            }
+        });
+
+        goToContinueWatchingBtn.addEventListener('click', () => {
+            showView('continueWatching');
+        });
         
-        // --- INITIALIZATION & EVENT LISTENERS ---
-        async function tryAutoImportOnLoad() { /* ... function body omitted for brevity, it's unchanged ... */
-             if (typeof window.showDirectoryPicker !== 'function') {
+        // --- CONTINUE WATCHING LOGIC ---
+        const API_BASE_URL = 'https://arkm20-authapi.hf.space';
+
+        async function fetchJikanInfo(id) {
+            try {
+                const res = await fetch(`https://api.jikan.moe/v4/anime/${id}`);
+                if (!res.ok) return null;
+                const json = await res.json();
+                return { title: json.data.title_english || json.data.title, image: json.data.images.jpg.image_url };
+            } catch (err) {
+                return null;
+            }
+        }
+
+        async function renderWatchHistory(historyData) {
+            const container = continueWatchingPageContainer;
+            if (!historyData || Object.keys(historyData).length === 0) {
+                container.innerHTML = '<p class="status-message glass-pane">No watch history found.</p>';
+                return;
+            }
+            container.innerHTML = '';
+            const showIds = Object.keys(historyData).sort((a, b) => historyData[b].last_watched - historyData[a].last_watched);
+            
+            for (const showId of showIds) {
+                const showMeta = historyData[showId];
+                const jikan = await fetchJikanInfo(showId);
+                if (!jikan) continue;
+
+                const listItem = document.createElement('div');
+                listItem.className = 'list-item glass-pane';
+                listItem.onclick = () => window.location.href = `series-info.html?library=true&id=${encodeURIComponent(showId)}`;
+
+                const thumbnailDiv = document.createElement('div');
+                thumbnailDiv.className = 'item-thumbnail';
+                const img = document.createElement('img');
+                img.src = jikan.image;
+                img.alt = jikan.title;
+                thumbnailDiv.appendChild(img);
+
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'item-details';
+                const titleH3 = document.createElement('h3');
+                titleH3.className = 'item-title';
+                titleH3.textContent = jikan.title;
+                detailsDiv.appendChild(titleH3);
+
+                const lastWatchedP = document.createElement('p');
+                lastWatchedP.className = 'episode-duration';
+                let lastWatchedTimestamp = 0;
+                let lastWatchedEp = '';
+                 Object.keys(showMeta.seasons).forEach(seasonNum => {
+                    Object.keys(showMeta.seasons[seasonNum].episodes).forEach(epNum => {
+                        const timestamp = showMeta.seasons[seasonNum].episodes[epNum];
+                        if (timestamp > lastWatchedTimestamp) {
+                            lastWatchedTimestamp = timestamp;
+                            lastWatchedEp = `S${seasonNum} E${epNum}`;
+                        }
+                    });
+                });
+                lastWatchedP.textContent = `Last: ${lastWatchedEp} on ${new Date(lastWatchedTimestamp).toLocaleDateString()}`;
+                detailsDiv.appendChild(lastWatchedP);
+
+                const arrowDiv = document.createElement('div');
+                arrowDiv.className = 'item-arrow';
+                arrowDiv.innerHTML = '<i class="fas fa-chevron-right"></i>';
+
+                listItem.appendChild(thumbnailDiv);
+                listItem.appendChild(detailsDiv);
+                listItem.appendChild(arrowDiv);
+                container.appendChild(listItem);
+            }
+        }
+
+        async function fetchAndRenderWatchHistory() {
+            const container = continueWatchingPageContainer;
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                container.innerHTML = '<p class="status-message glass-pane">Log in to see watch history.</p>';
+                return;
+            }
+            container.innerHTML = '<p class="status-message glass-pane">Loading watch history...</p>';
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!response.ok) throw new Error('API Error');
+                const data = await response.json();
+                renderWatchHistory(data.watch_history_detailed);
+            } catch (e) {
+                container.innerHTML = '<p class="status-message glass-pane">Could not load watch history.</p>';
+            }
+        }
+
+        // --- INITIALIZATION ---
+        async function tryAutoImportOnLoad() {
+            if (typeof window.showDirectoryPicker !== 'function') {
                 statusMessage.innerHTML += "<br>For a better experience, use Chrome/Edge on Desktop to remember your folder.";
                 displaySeriesList();
                 return;
@@ -857,67 +1245,106 @@
             }
         }
         
-        document.addEventListener('DOMContentLoaded', () => {
-            showView('series');
-            tryAutoImportOnLoad();
-            fetchAndRenderWatchHistory();
-            loadFFmpeg(); // Start loading FFmpeg in the background
-            if (!('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
-                playerContainer.classList.add('desktop');
-            }
-        });
+        // ==========================================================
+        // --- INTEGRATED VIDEO PLAYER LOGIC ---
+        // ==========================================================
+        
+        // NEW: Helper functions for Next Episode button
+        function getNextEpisode() {
+            if (!currentSeriesForEpisodes || !currentPlayingEpisode) return null;
+            const series = seriesData[currentSeriesForEpisodes];
+            if (!series || !series.episodes || series.episodes.length === 0) return null;
 
-        getOfflineFolderButton.addEventListener('click', () => { window.open(`https://arkm20-authapi.hf.space/download-ui?token=${localStorage.getItem('accessToken')}`, '_blank'); });
-        importFolderButton.addEventListener('click', async () => { /* ... listener body unchanged ... */
-            try {
-                if (typeof window.showDirectoryPicker === 'function') {
-                    const handle = await window.showDirectoryPicker();
-                    if (handle) {
-                        directoryHandle = handle;
-                        await saveDirectoryHandleToDB(directoryHandle);
-                        await processDirectoryHandle(directoryHandle);
+            const sortedEpisodes = [...series.episodes].sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
+            const currentIndex = sortedEpisodes.findIndex(ep => ep.file.webkitRelativePath === currentPlayingEpisode.file.webkitRelativePath);
+
+            if (currentIndex > -1 && currentIndex < sortedEpisodes.length - 1) {
+                return sortedEpisodes[currentIndex + 1];
+            }
+            return null;
+        }
+
+        function updateNextEpisodeButton() {
+            const nextEpisode = getNextEpisode();
+            nextEpisodeBtn.style.display = nextEpisode ? '' : 'none';
+        }
+
+        // MODIFIED: playVideo now takes seriesName and episode object
+        function playVideo(seriesName, episode) {
+            currentPlayingEpisode = episode;
+            currentSeriesForEpisodes = seriesName;
+            currentVideoMarkedSeen = isVideoSeen(episode); // Reset flag for new video
+
+            if (window._lastVideoBlobUrl) URL.revokeObjectURL(window._lastVideoBlobUrl);
+            const objectURL = URL.createObjectURL(episode.file);
+            window._lastVideoBlobUrl = objectURL;
+            
+            if(playerHeaderTitle) playerHeaderTitle.textContent = `${seriesName} - ${episode.name}`;
+
+            handleVideoSource(objectURL, episode.file.name);
+            showView('player'); // Title is now set from state in showView
+            updateNextEpisodeButton();
+        }
+
+        const handleVideoSource = async (src, fileName) => {
+            const url = decodeURIComponent(src);
+
+            if (fileName && fileName.toLowerCase().endsWith('.mkv')) {
+                if (!ffmpegLoaded) {
+                    videoPlayerComponent.classList.add('error');
+                    loadingText.textContent = 'MKV files require internet for first-time processing';
+                    return;
+                }
+                
+                videoPlayerComponent.classList.add('processing');
+                loadingText.textContent = 'Processing video...';
+
+                try {
+                    if (!ffmpeg) {
+                        ffmpeg = new FFmpeg.FFmpeg();
+                        ffmpeg.on('log', ({ message }) => { console.log(message); });
+                        loadingText.textContent = 'Loading converter...';
+                        await ffmpeg.load({ coreURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js" });
                     }
-                } else {
-                    statusMessage.textContent = "Using legacy picker. Select the main 'Anime' folder.";
-                    folderInput.click();
-                }
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    console.error("Error selecting directory:", err);
-                    statusMessage.textContent = "Could not access directory.";
-                }
-            }
-        });
-        folderInput.addEventListener('change', (event) => { /* ... listener body unchanged ... */
-            const files = Array.from(event.target.files);
-            if (files.length === 0) return;
-            statusMessage.textContent = `Processing ${files.length} files...`;
-            processFiles(files);
-            displaySeriesList();
-            showView('series');
-            directoryHandle = null;
-            saveDirectoryHandleToDB(null).catch(e => console.warn("Could not clear DB handle", e));
-        });
 
-        backButton.addEventListener('click', () => {
-            if (currentView === 'player') {
-                resetPlayer();
-                displayEpisodeList(currentSeriesForEpisodes, seriesData[currentSeriesForEpisodes].episodes);
-                showView('episodes', currentSeriesForEpisodes);
-            } else if (currentView === 'episodes' || currentView === 'continueWatching') {
-                showView('series');
-                currentSeriesForEpisodes = null;
-            }
-        });
-        goToContinueWatchingBtn.addEventListener('click', () => { showView('continueWatching'); });
+                    loadingText.textContent = 'Fetching video...';
+                    const { fetchFile } = FFmpegUtil;
+                    const inputData = await fetchFile(url);
+                    await ffmpeg.writeFile('input.mkv', inputData);
+                    
+                    loadingText.textContent = 'Converting...';
+                    await ffmpeg.exec(['-i', 'input.mkv', '-c', 'copy', 'output.mp4']);
 
-        // --- ALL PLAYER EVENT LISTENERS ---
-        video.addEventListener('waiting', () => { playerContainer.classList.add('loading'); loadingText.textContent = "Loading..."; });
-        video.addEventListener('canplay', () => { playerContainer.classList.remove('loading'); loadingText.textContent = ""; });
-        video.addEventListener('playing', () => { playerContainer.classList.remove('loading'); loadingText.textContent = ""; });
+                    const outputData = await ffmpeg.readFile('output.mp4');
+                    const dataBlob = new Blob([outputData.buffer], { type: 'video/mp4' });
+                    video.src = URL.createObjectURL(dataBlob);
+
+                } catch (error) {
+                    console.error("Error processing MKV file:", error);
+                    loadingText.textContent = `Error: Could not process video.`;
+                    videoPlayerComponent.classList.remove('processing');
+                    videoPlayerComponent.classList.add('error');
+                    return;
+                }
+
+                videoPlayerComponent.classList.remove('processing');
+                loadingText.textContent = '';
+            } else {
+                video.src = url;
+            }
+        };
+
+        // Player Event Listeners
+        if (!('ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0)) {
+            videoPlayerComponent.classList.add('desktop');
+        }
+
+        video.addEventListener('waiting', () => { videoPlayerComponent.classList.add('loading'); loadingText.textContent = "Loading..."; });
+        video.addEventListener('canplay', () => { videoPlayerComponent.classList.remove('loading'); loadingText.textContent = ""; });
+        video.addEventListener('playing', () => { videoPlayerComponent.classList.remove('loading'); loadingText.textContent = ""; });
 
         function togglePlay() {
-            playerContainer.classList.add('has-interacted');
+            videoPlayerComponent.classList.add('has-interacted');
             if (video.paused || video.ended) { video.play().catch(err => console.error("Play error:", err)); } 
             else { video.pause(); }
         }
@@ -925,30 +1352,65 @@
         bigPlayBtn.addEventListener('click', togglePlay);
         
         let videoTapTimeout;
-        video.addEventListener('click', (e) => {
-            if (e.target === seekOverlayLeft || e.target === seekOverlayRight) return;
-            if (e.detail === 1) {
+        video.addEventListener('click', (event) => {
+            if (event.target === seekOverlayLeft || event.target === seekOverlayRight) return;
+            if (event.detail === 1) {
                 videoTapTimeout = setTimeout(() => {
-                     if (playerContainer.classList.contains('controls-active') && !video.paused) { hideControls(); } 
+                     if (videoPlayerComponent.classList.contains('controls-active') && !video.paused) { hideControls(); } 
                      else { togglePlay(); }
                 }, 200);
             }
         });
+
         video.addEventListener('play', () => {
             playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            playerContainer.classList.add('playing');
-            playerContainer.classList.remove('paused');
+            videoPlayerComponent.classList.add('playing');
+            videoPlayerComponent.classList.remove('paused');
             hideControlsWithDelay();
         });
         video.addEventListener('pause', () => {
             playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-            playerContainer.classList.remove('playing');
-            playerContainer.classList.add('paused');
+            videoPlayerComponent.classList.remove('playing');
+            videoPlayerComponent.classList.add('paused');
             showControls();
+        });
+
+        // NEW: Add listener for Next Episode button
+        nextEpisodeBtn.addEventListener('click', () => {
+            const nextEp = getNextEpisode();
+            if (nextEp) {
+                playVideo(currentSeriesForEpisodes, nextEp);
+            }
         });
 
         rewindBtn.addEventListener('click', () => { video.currentTime -= 10; });
         forwardBtn.addEventListener('click', () => { video.currentTime += 10; });
+
+        video.addEventListener('loadedmetadata', () => {
+            totalTimeEl.textContent = formatTime(video.duration);
+            progressFilled.style.width = '0%';
+        });
+
+        // MODIFIED: timeupdate now also checks for "seen" progress
+        video.addEventListener('timeupdate', () => {
+            currentTimeEl.textContent = formatTime(video.currentTime);
+            const progressPercent = (video.currentTime / video.duration) * 100;
+            progressFilled.style.width = `${progressPercent}%`;
+
+            if (!currentVideoMarkedSeen && currentPlayingEpisode && video.duration > 0) {
+                if ((video.currentTime / video.duration) > 0.9) {
+                    markVideoAsSeen(currentPlayingEpisode);
+                    currentVideoMarkedSeen = true;
+                }
+            }
+        });
+        
+        // NEW: Mark video as seen when it ends
+        video.addEventListener('ended', () => {
+            if(currentPlayingEpisode) {
+                markVideoAsSeen(currentPlayingEpisode);
+            }
+        });
 
         function formatTime(timeInSeconds) {
             if (isNaN(timeInSeconds) || timeInSeconds < 0) return "0:00";
@@ -956,15 +1418,11 @@
             const seconds = Math.floor(timeInSeconds % 60).toString().padStart(2, '0');
             return `${minutes}:${seconds}`;
         }
-        video.addEventListener('loadedmetadata', () => { totalTimeEl.textContent = formatTime(video.duration); });
-        video.addEventListener('timeupdate', () => {
-            currentTimeEl.textContent = formatTime(video.currentTime);
-            const progressPercent = (video.currentTime / video.duration) * 100;
-            progressFilled.style.width = `${progressPercent}%`;
-        });
+
         progressBarContainer.addEventListener('click', (e) => {
             const rect = progressBarContainer.getBoundingClientRect();
-            video.currentTime = ((e.clientX - rect.left) / rect.width) * video.duration;
+            const clickX = e.clientX - rect.left;
+            video.currentTime = (clickX / rect.width) * video.duration;
         });
         progressBarContainer.addEventListener('mousemove', (e) => {
             if (!video.duration) return;
@@ -977,85 +1435,130 @@
         volumeBtn.addEventListener('click', toggleMute);
         video.addEventListener('volumechange', () => {
             volumeSlider.value = video.volume;
-            if (video.muted || video.volume === 0) { volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>'; volumeSlider.value = 0; }
-            else if (video.volume < 0.5) { volumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>'; } 
-            else { volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>'; }
+            if (video.muted || video.volume === 0) {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                volumeSlider.value = 0;
+            } else if (video.volume < 0.5) {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+            } else {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
         });
-        volumeSlider.addEventListener('input', (e) => { video.volume = e.target.value; video.muted = e.target.value === '0'; });
+        volumeSlider.addEventListener('input', (e) => {
+            video.volume = e.target.value;
+            video.muted = e.target.value === '0';
+        });
 
         function isFullscreen() { return !!(document.fullscreenElement || document.webkitFullscreenElement || video.webkitDisplayingFullscreen); }
         function toggleFullscreen() {
-            if (video.webkitEnterFullscreen) { // iOS/Safari
-                if (video.webkitDisplayingFullscreen) video.webkitExitFullscreen();
-                else video.webkitEnterFullscreen();
-            } else { // Standard
+            if (video.webkitEnterFullscreen) {
+                if (video.webkitDisplayingFullscreen) { video.webkitExitFullscreen(); } 
+                else { video.webkitEnterFullscreen(); }
+            } else {
                 if (isFullscreen()) {
                     if (document.exitFullscreen) document.exitFullscreen();
                     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
                 } else {
-                    if (playerContainer.requestFullscreen) playerContainer.requestFullscreen();
-                    else if (playerContainer.webkitRequestFullscreen) playerContainer.webkitRequestFullscreen();
+                    if (videoPlayerComponent.requestFullscreen) videoPlayerComponent.requestFullscreen();
+                    else if (videoPlayerComponent.webkitRequestFullscreen) videoPlayerComponent.webkitRequestFullscreen();
                 }
             }
         }
         function updateFullscreenVisuals() {
             if (isFullscreen()) {
                 fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-                playerContainer.classList.add('fullscreen');
-                playerContainer.classList.remove('fullscreen-mode'); // Use the native fullscreen styles
+                videoPlayerComponent.classList.add('fullscreen');
             } else {
                 fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                playerContainer.classList.remove('fullscreen');
-                playerContainer.classList.add('fullscreen-mode'); // Revert to fixed-position fullscreen
+                videoPlayerComponent.classList.remove('fullscreen');
             }
         }
         fullscreenBtn.addEventListener('click', toggleFullscreen);
-        video.addEventListener('dblclick', (e) => {
+        video.addEventListener('dblclick', (event) => {
             clearTimeout(videoTapTimeout);
-            if (e.target === seekOverlayLeft || e.target === seekOverlayRight) return;
+            if (event.target === seekOverlayLeft || event.target === seekOverlayRight) return;
             toggleFullscreen();
         });
-        ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange'].forEach(e => document.addEventListener(e, updateFullscreenVisuals));
+        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(
+            event => document.addEventListener(event, updateFullscreenVisuals)
+        );
         video.addEventListener('webkitbeginfullscreen', updateFullscreenVisuals);
         video.addEventListener('webkitendfullscreen', updateFullscreenVisuals);
 
-        function showControls() { clearTimeout(controlsTimeout); playerContainer.classList.add('controls-active'); }
-        function hideControls() { if (video.paused) return; playerContainer.classList.remove('controls-active'); }
-        function hideControlsWithDelay() { if (video.paused) return; clearTimeout(controlsTimeout); controlsTimeout = setTimeout(hideControls, 3000); }
-        playerContainer.addEventListener('mousemove', () => { showControls(); hideControlsWithDelay(); });
-        playerContainer.addEventListener('mouseleave', () => { if (!video.paused) hideControls(); });
+        function showControls() { clearTimeout(controlsTimeout); videoPlayerComponent.classList.add('controls-active'); }
+        function hideControls() { if (video.paused) return; videoPlayerComponent.classList.remove('controls-active'); }
+        function hideControlsWithDelay() {
+            if (video.paused) return;
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(hideControls, 3000);
+        }
+
+        videoPlayerComponent.addEventListener('mousemove', () => { showControls(); hideControlsWithDelay(); });
+        videoPlayerComponent.addEventListener('mouseleave', () => { if (!video.paused) hideControls(); });
         videoControls.addEventListener('mouseenter', showControls);
         videoControls.addEventListener('mouseleave', hideControlsWithDelay);
-        playerContainer.addEventListener('touchstart', (e) => {
-            if (e.target.closest('.control-button')) return;
-            playerContainer.classList.contains('controls-active') ? hideControls() : showControls();
+        videoPlayerComponent.addEventListener('touchstart', (event) => {
+            if (event.target.closest('.control-button')) return;
+            if (videoPlayerComponent.classList.contains('controls-active')) {} 
+            else { showControls(); }
             hideControlsWithDelay();
         }, { passive: true });
 
-        function showSeekFeedback(element) { clearTimeout(feedbackTimeout); element.classList.add('show'); feedbackTimeout = setTimeout(() => { element.classList.remove('show'); }, 600); }
+        function showSeekFeedback(element) {
+            clearTimeout(feedbackTimeout);
+            element.classList.add('show');
+            feedbackTimeout = setTimeout(() => { element.classList.remove('show'); }, 600);
+        }
+
         seekOverlayLeft.addEventListener('click', (e) => {
-            e.stopPropagation(); const now = Date.now();
-            if (now - lastTapTimeLeft < doubleTapDelay) { clearTimeout(videoTapTimeout); video.currentTime -= 10; showSeekFeedback(seekFeedbackRewind); lastTapTimeLeft = 0; }
-            else { lastTapTimeLeft = now; if (playerContainer.classList.contains('controls-active') && !video.paused) hideControls(); else { showControls(); hideControlsWithDelay(); } }
-        });
-        seekOverlayRight.addEventListener('click', (e) => {
-            e.stopPropagation(); const now = Date.now();
-            if (now - lastTapTimeRight < doubleTapDelay) { clearTimeout(videoTapTimeout); video.currentTime += 10; showSeekFeedback(seekFeedbackForward); lastTapTimeRight = 0; }
-            else { lastTapTimeRight = now; if (playerContainer.classList.contains('controls-active') && !video.paused) hideControls(); else { showControls(); hideControlsWithDelay(); } }
-        });
-        document.addEventListener('keydown', (e) => {
-            if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-            if (currentView !== 'player') return; // Only apply shortcuts when player is active
-            e.preventDefault();
-            switch(e.key.toLowerCase()) {
-                case ' ': case 'k': togglePlay(); break;
-                case 'arrowleft': case 'j': video.currentTime -= 10; break;
-                case 'arrowright': case 'l': video.currentTime += 10; break;
-                case 'arrowup': if(video.volume < 1) video.volume = Math.min(1, video.volume + 0.1); break;
-                case 'arrowdown': if(video.volume > 0) video.volume = Math.max(0, video.volume - 0.1); break;
-                case 'm': toggleMute(); break;
-                case 'f': toggleFullscreen(); break;
+            e.stopPropagation();
+            const currentTime = Date.now();
+            if (currentTime - lastTapTimeLeft < doubleTapDelay) {
+                clearTimeout(videoTapTimeout);
+                video.currentTime -= 10;
+                showSeekFeedback(seekFeedbackRewind);
+                lastTapTimeLeft = 0;
+            } else {
+                lastTapTimeLeft = currentTime;
+                if (videoPlayerComponent.classList.contains('controls-active') && !video.paused) { hideControls(); } 
+                else { showControls(); hideControlsWithDelay(); }
             }
+        });
+
+        seekOverlayRight.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const currentTime = Date.now();
+            if (currentTime - lastTapTimeRight < doubleTapDelay) {
+                clearTimeout(videoTapTimeout);
+                video.currentTime += 10;
+                showSeekFeedback(seekFeedbackForward);
+                lastTapTimeRight = 0;
+            } else {
+                lastTapTimeRight = currentTime;
+                if (videoPlayerComponent.classList.contains('controls-active') && !video.paused) { hideControls(); } 
+                else { showControls(); hideControlsWithDelay(); }
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            const activeEl = document.activeElement;
+            if (activeEl && ['INPUT', 'TEXTAREA'].includes(activeEl.tagName) || currentView !== 'player') return; 
+            switch(e.key.toLowerCase()) {
+                case ' ': case 'k': e.preventDefault(); togglePlay(); break;
+                case 'arrowleft': case 'j': e.preventDefault(); video.currentTime -= 10; break;
+                case 'arrowright': case 'l': e.preventDefault(); video.currentTime += 10; break;
+                case 'arrowup': e.preventDefault(); if(video.volume < 1) video.volume = Math.min(1, video.volume + 0.1); break;
+                case 'arrowdown': e.preventDefault(); if(video.volume > 0) video.volume = Math.max(0, video.volume - 0.1); break;
+                case 'm': e.preventDefault(); toggleMute(); break;
+                case 'f': e.preventDefault(); toggleFullscreen(); break;
+            }
+        });
+
+        // --- FINAL APP INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            showView('series');
+            tryAutoImportOnLoad();
+            fetchAndRenderWatchHistory();
         });
 
     </script>
