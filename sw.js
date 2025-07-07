@@ -35,8 +35,18 @@ const PRECACHE_URLS = [
   '/video_player.html', // Make sure this is included
   '/view.html',
   '/offline.html',
+
+  // External resources
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+
+  // FontAwesome 6.7.2 stylesheets
+  'https://site-assets.fontawesome.com/releases/v6.7.2/css/all.css',
+  'https://site-assets.fontawesome.com/releases/v6.7.2/css/sharp-solid.css',
+  'https://site-assets.fontawesome.com/releases/v6.7.2/css/sharp-regular.css',
+  'https://site-assets.fontawesome.com/releases/v6.7.2/css/sharp-light.css',
+  'https://site-assets.fontawesome.com/releases/v6.7.2/css/duotone.css',
+  'https://site-assets.fontawesome.com/releases/v6.7.2/css/brands.css',
 ];
 
 // Install: cache critical assets
