@@ -8,43 +8,460 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="Resources/styles.css">
-    <link rel="stylesheet" href="Resources/series.css">
+    
     <style>
+        /* --- CSS RESET & BASE STYLES --- */
+        :root {
+            --brand-accent: #ff9500;
+            --background-primary: #000000;
+            --background-secondary: #141414;
+            --background-tertiary: #1f1f1f;
+            --text-primary: #ffffff;
+            --text-secondary: #e5e5e5;
+            --text-muted: #a0a0a0;
+            --border-color: #2a2a2a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background-color: var(--background-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* Custom Dark Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--background-secondary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* --- APP STRUCTURE --- */
+        .app-container {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* --- HEADER & HERO SECTION --- */
+        .series-hero-section {
+            position: relative;
+            height: 65vh;
+            min-height: 400px;
+            background-size: cover;
+            background-position: center 20%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 2rem 4%;
+            box-shadow: 0 10px 30px -15px rgba(0,0,0,0.5);
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0) 80%);
+            z-index: 1;
+        }
+        
+        .series-hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 50%;
+        }
+
+        .series-title-text {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 700;
+            color: var(--text-primary);
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            line-height: 1.1;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        /* --- MAIN CONTENT & SERIES DETAILS --- */
+        .main-content {
+            padding: 2rem 4%;
+            background-color: var(--background-primary);
+        }
+
+        .series-details-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .series-meta-info {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 16px;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        #series-score {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        #series-synopsis {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        #series-info-additional {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+        #series-info-additional strong {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .series-genres, .series-studios, .series-producers {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        .series-genres strong, .series-studios strong, .series-producers strong {
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-right: 8px;
+        }
+        .series-genres span, .series-studios span, .series-producers span {
+            display: inline-block;
+            margin: 4px 4px 0 0;
+            padding: 4px 10px;
+            background-color: var(--background-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+        .series-genres span:hover, .series-studios span:hover, .series-producers span:hover {
+            background-color: #333;
+        }
+
+        /* --- EPISODE LIST --- */
+        .episode-list-section {
+            margin-top: 3rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--background-tertiary);
+        }
+
+        .episode-list {
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: var(--background-secondary);
+        }
+        .episode-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+        .episode-item:last-child {
+            border-bottom: none;
+        }
+        .episode-item:hover {
+            background-color: var(--background-tertiary);
+        }
+
+        .episode-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .episode-info {
+            flex-grow: 1;
+        }
+        .episode-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .episode-title-romanji {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* --- WATCHED EPISODE STYLES --- */
         .episode-item.watched {
-            background: rgba(255, 149, 0, 0.1);
-            border-bottom: 3px solid #FF9500;
+            background: rgba(255, 149, 0, 0.05);
+            border-left: 4px solid var(--brand-accent);
+            padding-left: calc(1.5rem - 4px); /* Adjust padding to account for border */
         }
-
+        .episode-item.watched .episode-number {
+            color: var(--brand-accent);
+        }
         .episode-item.watched:hover {
-            background: rgba(255, 149, 0, 0.15);
+            background: rgba(255, 149, 0, 0.1);
         }
-
-        /* Watched indicator icon */
+        
+        /* Watched indicator icon - This is a fallback if JS fails */
         .watched-indicator {
-            color: #FF9500;
+            color: var(--brand-accent);
             font-size: 0.9em;
         }
 
-        /* Enhanced episode number styling for watched episodes */
-        .episode-number.watched {
-            border-radius: 4px;
+        /* --- PAGINATION --- */
+        .episodes-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .episodes-pagination button {
+            background-color: var(--background-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .episodes-pagination button:hover:not(:disabled) {
+            background-color: var(--brand-accent);
+            color: var(--background-primary);
+            border-color: var(--brand-accent);
+        }
+        .episodes-pagination button:disabled {
+            background-color: #1a1a1a;
+            color: #555;
+            cursor: not-allowed;
+            border-color: #222;
+        }
+        .episodes-pagination span {
+            color: var(--text-muted);
+        }
+        
+        /* --- RESPONSIVE ADJUSTMENTS --- */
+        @media (max-width: 768px) {
+            .series-details-section {
+                grid-template-columns: 1fr;
+            }
+            .series-hero-content {
+                max-width: 100%;
+            }
+            .main-content, .series-hero-section {
+                padding: 1.5rem 5%;
+            }
+            .episode-item {
+                padding: 0.75rem 1rem;
+                gap: 1rem;
+            }
+            .episode-title {
+                font-size: 1rem;
+            }
+            .episode-number {
+                font-size: 1.25rem;
+            }
+        }
+        
+        /* --- USER-PROVIDED STYLES (INTEGRATED & THEMED) --- */
+        .glassy-download-btn {
+            margin-top: 5px;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 18px;
+            backdrop-filter: blur(8px);
+            transition: background 0.2s;
+            cursor: pointer;
+            outline: none;
+            margin-left: -20px;
+        }
+        .glassy-download-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .episode-download-icon {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .episode-download-icon i {
+            color: var(--text-muted);
+            font-size: 0.8em;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+        .episode-item:hover .episode-download-icon i {
+            color: var(--text-secondary);
+        }
+        .episode-download-icon:hover i {
+            color: var(--brand-accent) !important;
+        }
+
+        /* --- EPISODE POPUP OVERLAY --- */
+        .episode-popup-overlay {
+            position: fixed;
+            z-index: 9999;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .episode-popup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .episode-popup-content {
+            position: relative;
+            width: clamp(300px, 95vw, 1400px);
+            height: auto;
+            aspect-ratio: 16 / 9;
+            background: var(--background-primary);
+            border-radius: 12px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .episode-popup-overlay.active .episode-popup-content {
+            transform: scale(1);
+        }
+
+        .episode-popup-back {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            z-index: 2;
+            font-size: 1.2em;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .episode-popup-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .episode-popup-content iframe {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: var(--background-primary);
+        }
+        
+        @media (max-width: 900px) {
+            .episode-popup-content {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+                aspect-ratio: unset;
+            }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
         <!-- ****** START: ADD BACK BUTTON ****** -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const showBackBtn = urlParams.get('anime') === 'true';
-            const backBtn = document.getElementById('back-button');
-            if (backBtn) {
-                backBtn.style.display = showBackBtn ? '' : 'none';
-            }
-        });
-    </script>
+        <script>
+            // This script block remains as is, as it's needed for initial setup.
+            document.addEventListener('DOMContentLoaded', () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const showBackBtn = urlParams.get('anime') === 'true';
+                const backBtn = document.getElementById('back-button');
+                if (backBtn) {
+                    backBtn.style.display = showBackBtn ? '' : 'none';
+                }
+            });
+        </script>
         <!-- ****** END: ADD BACK BUTTON ****** -->
 
         <header class="series-hero-section">
@@ -55,46 +472,46 @@
                 <h1 class="series-title-text"></h1>
             </div>
             <div class="hero-overlay"></div>
-            
         </header>
 
         <main class="main-content series-main-content">
             <section class="series-details-section">
-                <h2 id="series-main-title-backup" style="display:none; font-size: 1.8em; margin-bottom: 15px;"></h2>
-                <div class="series-meta-info">
-                    <span id="series-score"></span>
-                    <span id="series-year"></span>
-                    <span id="series-type"></span>
-                    <span id="series-episodes-count"></span>
-                    <span id="series-status"></span>
-                    <span id="series-rating"></span>
+                <div> <!-- Left Column -->
+                    <h2 id="series-main-title-backup" style="display:none; font-size: 1.8em; margin-bottom: 15px;"></h2>
+                    <div class="series-meta-info">
+                        <span id="series-score"></span>
+                        <span id="series-year"></span>
+                        <span id="series-type"></span>
+                        <span id="series-episodes-count"></span>
+                        <span id="series-status"></span>
+                        <span id="series-rating"></span>
+                    </div>
+                    <p id="series-synopsis"></p>
                 </div>
-                <p id="series-synopsis"></p>
-                <div id="series-info-additional">
-                    <p><strong>English Title:</strong> <span id="series-title-english"></span></p>
-                    <p><strong>Japanese Title:</strong> <span id="series-title-japanese"></span></p>
-                    <p><strong>Source:</strong> <span id="series-source"></span></p>
-                    <p><strong>Duration:</strong> <span id="series-duration"></span></p>
+                <div> <!-- Right Column -->
+                    <div id="series-info-additional">
+                        <p><strong>English Title:</strong> <span id="series-title-english"></span></p>
+                        <p><strong>Japanese Title:</strong> <span id="series-title-japanese"></span></p>
+                        <p><strong>Source:</strong> <span id="series-source"></span></p>
+                        <p><strong>Duration:</strong> <span id="series-duration"></span></p>
+                    </div>
+                    <div class="series-genres"></div>
+                    <div class="series-studios"></div>
+                    <div class="series-producers"></div>
                 </div>
-                <div class="series-genres"></div>
-                <div class="series-studios"></div>
-                <div class="series-producers"></div>
             </section>
 
             <section class="episode-list-section" id="episode-list-section">
                 <h2 class="section-title">Episodes</h2>
                 <div class="episode-list" id="episode-list-container"></div>
                 <div id="episodes-pagination" class="episodes-pagination">
-                    <button id="prev-episodes-btn" style="display:none;">Previous</button>
-                    <span id="episodes-page-info"></span>
-                    <button id="next-episodes-btn" style="display:none;">Next</button>
+                    <!-- Pagination buttons will be generated by JS -->
                 </div>
             </section>
         </main>
     </div>
 
     <!-- Episode Pop-up Overlay -->
-    <!-- Replace the existing close button in the popup -->
     <div id="episode-popup-overlay" class="episode-popup-overlay" style="display:none;">
         <div class="episode-popup-content">
             <button class="episode-popup-back" title="Back">
@@ -152,6 +569,7 @@
             const episodesPaginationContainer = document.getElementById('episodes-pagination');
 
             let currentSeriesId = null;
+            let currentSeriesTitle = '';
             let episodesData = [];
             let currentPage = 1;
             const episodesPerPage = 25;
@@ -218,114 +636,11 @@
                     return [];
                 }
             }
-        
-
-            /*async function updateWatchHistory(showId, showTitle, seasonNumber, episodeNumber) {
-                // Check for the access token in localStorage
-                const token = localStorage.getItem('accessToken');
-
-                // If no token exists, the user is not logged in. Do nothing.
-                if (!token) {
-                    console.log("User is not logged in. Skipping watch history update.");
-                    return;
-                }
-
-                console.log(`Updating watch history for: ${showId} | ${showTitle} - S${seasonNumber}E${episodeNumber}`);
-
-                try {
-                    // The API endpoint expects a specific JSON structure in the body
-                    const body = {
-                        show_id: String(showId),
-                        show_title: String(showTitle),
-                        season_number: Number(seasonNumber),
-                        episode_number: Number(episodeNumber)
-                    };
-
-                    console.log("Watch history body:", body);
-
-                    const response = await fetch(`${API_BASE_URL}/users/me/watch-history`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}` // Include the user's token
-                        },
-                        body: JSON.stringify(body)
-                    });
-
-                    console.log("Watch history update response status:", response.status);
-
-                    // We don't need to wait for the response, but it's good practice to log the result for debugging.
-                    if (response.ok) {
-                        console.log("Watch history updated successfully.");
-                    } else {
-                        const errorData = await response.json();
-                        console.error("Failed to update watch history:", errorData.detail || response.statusText);
-                    }
-                } catch (error) {
-                    console.error("Network error while updating watch history:", error);
-                }
-            }
-
-            // SNIPPET 2: Place this function inside the DOMContentLoaded listener.
-
-            async function updateWatchHistory(showId, showTitle, seasonNumber, episodeNumber) {
-                const token = localStorage.getItem('accessToken');
-                console.log("Access token:", token);
-                if (!token) {
-                    console.log("User not logged in. Skipping watch history update.");
-                    // You might want to prompt the user to log in here.
-                    // For example: alert("Please log in to save your watch history.");
-                    return;
-                }
-
-                console.log(`Updating watch history for: ${showId} - ${showTitle} - S${seasonNumber}E${episodeNumber}`);
-
-                try {
-                    const params = new URLSearchParams({
-                        show_id: String(showId),
-                        show_title: String(showTitle),
-                        season_number: Number(seasonNumber),
-                        episode_number: Number(episodeNumber)
-                    });
-
-                    const url = `https://arkm20-authapi.hf.space/users/me/watch-history?${params.toString()}`;
-
-                    const response = await fetch(url, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log("Watch history update successful:", result.message);
-                    } else {
-                        // Specifically check for the authentication error code
-                        if (response.status === 401) {
-                            console.error("Authentication failed. The token is likely expired or invalid.");
-                            // This is a great place to redirect the user to a login page
-                            // or show a "Your session has expired, please log in again" message.
-                            // For example:
-                            // localStorage.removeItem('accessToken'); // Clear the bad token
-                            // window.location.href = '/login/login.html'; // Redirect to login
-                        }
-
-                        // Handle other potential errors (like 404 Not Found, 500 Server Error)
-                        const errorData = await response.json();
-                        console.error(`Failed to update watch history (${response.status}):`, errorData.detail || response.statusText);
-                    }
-                } catch (error) {
-                    console.error("Network error while updating watch history:", error);
-                }
-            }*/
-
-            // ===== Glassy Download Button Logic =====
 
             function displayAnimeDetails(anime) {
                 if (!anime) return;
 
-                const heroImageUrl = anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || 'https://placehold.co/1200x700/1A2B3C/FFF?text=No+Image+Available';
+                const heroImageUrl = anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || 'https://placehold.co/1200x700/141414/FFF?text=No+Image';
                 heroSection.style.backgroundImage = `url('${heroImageUrl}')`;
 
                 const displayTitle = anime.title_english || anime.title;
@@ -334,12 +649,12 @@
                 seriesMainTitleBackup.textContent = displayTitle;
                 document.title = `${displayTitle} - Series Info`;
 
-                seriesScoreElement.textContent = anime.score ? `Score: ${anime.score}/10 (${anime.scored_by?.toLocaleString() || 0} users)` : 'N/A';
-                seriesYearElement.textContent = `Year: ${anime.year || (anime.aired?.prop?.from?.year || 'N/A')}`;
-                seriesTypeElement.textContent = `Type: ${anime.type || 'N/A'}`;
-                seriesEpisodesCountElement.textContent = `Episodes: ${anime.episodes || 'N/A'}`;
-                seriesStatusElement.textContent = `Status: ${anime.status || 'N/A'}`;
-                seriesRatingElement.textContent = `Rating: ${anime.rating || 'N/A'}`;
+                seriesScoreElement.textContent = anime.score ? `Score: ${anime.score}` : 'N/A';
+                seriesYearElement.textContent = `${anime.year || (anime.aired?.prop?.from?.year || 'N/A')}`;
+                seriesTypeElement.textContent = `${anime.type || 'N/A'}`;
+                seriesEpisodesCountElement.textContent = `${anime.episodes || 'N/A'} Episodes`;
+                seriesStatusElement.textContent = `${anime.status || 'N/A'}`;
+                seriesRatingElement.textContent = `${anime.rating || 'N/A'}`;
                 
                 seriesSynopsisElement.innerHTML = anime.synopsis ? anime.synopsis.replace(/\n/g, '<br>') : 'No synopsis available.';
 
@@ -371,9 +686,8 @@
             }
 
             function displayEpisodes(episodes) {
-                episodeListContainer.innerHTML = '';
                 if (!episodes || episodes.length === 0) {
-                    episodeListContainer.innerHTML = '<p>No episodes found for this series or they are still loading.</p>';
+                    episodeListContainer.innerHTML = '<p style="padding: 2rem;">No episodes found for this series.</p>';
                     episodesPaginationContainer.innerHTML = '';
                     return;
                 }
@@ -386,90 +700,36 @@
 
             async function fetchUserWatchHistory() {
                 const token = localStorage.getItem('accessToken');
-                console.log("Access token found:", token ? "Yes" : "No");
-                console.log("Token value:", token);
-                
                 if (!token) {
                     console.log("No user token found, skipping watch history fetch.");
                     return null;
                 }
 
                 try {
-                    console.log("Making API request to:", `${API_BASE_URL}/users/me`);
-                    
                     const response = await fetch(`${API_BASE_URL}/users/me`, { 
                         headers: { 'Authorization': `Bearer ${token}` } 
                     });
 
-                    console.log("API response status:", response.status);
-                    console.log("API response ok:", response.ok);
-
                     if (response.status === 401) {
-                        console.log("Token invalid, clearing token.");
                         localStorage.removeItem('accessToken');
                         return null;
                     }
-                    
-                    if (!response.ok) {
-                        console.error(`API error: ${response.status} ${response.statusText}`);
-                        throw new Error(`API error: ${response.status}`);
-                    }
-
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
                     const userData = await response.json();
-                    console.log("Full user data received:", userData);
-                    console.log("Watch history detailed:", userData.watch_history_detailed);
-                    
-                    if (!userData.watch_history_detailed) {
-                        console.log("No watch_history_detailed field in user data");
-                        return null;
-                    }
-                    
-                    if (Object.keys(userData.watch_history_detailed).length === 0) {
-                        console.log("Watch history is empty");
-                        return null;
-                    }
-                    
-                    console.log("Watch history successfully loaded with", Object.keys(userData.watch_history_detailed).length, "series");
-                    return userData.watch_history_detailed;
+                    return userData.watch_history_detailed || null;
 
                 } catch (error) {
                     console.error("Failed to fetch user watch history:", error);
-                    console.error("Error details:", error.message);
                     return null;
                 }
             }
 
             function isEpisodeWatched(seriesId, seasonNumber, episodeNumber) {
-                console.log(`Checking if watched: Series ${seriesId}, Season ${seasonNumber}, Episode ${episodeNumber}`);
-                
-                if (!userWatchHistory) {
-                    console.log("No watch history available");
-                    return false;
-                }
-
-                console.log("Available series in watch history:", Object.keys(userWatchHistory));
-                
-                if (!userWatchHistory[seriesId]) {
-                    console.log(`Series ${seriesId} not found in watch history`);
-                    return false;
-                }
-
+                if (!userWatchHistory || !userWatchHistory[seriesId]) return false;
                 const series = userWatchHistory[seriesId];
-                console.log(`Series ${seriesId} data:`, series);
-                
-                if (!series.seasons || !series.seasons[seasonNumber]) {
-                    console.log(`Season ${seasonNumber} not found for series ${seriesId}`);
-                    console.log("Available seasons:", series.seasons ? Object.keys(series.seasons) : "No seasons");
-                    return false;
-                }
-
+                if (!series.seasons || !series.seasons[seasonNumber]) return false;
                 const season = series.seasons[seasonNumber];
-                console.log(`Season ${seasonNumber} data:`, season);
-                
-                const isWatched = season.episodes && season.episodes[episodeNumber];
-                console.log(`Episode ${episodeNumber} watched:`, isWatched);
-                
-                return isWatched;
+                return season.episodes && season.episodes[episodeNumber];
             }
 
             function renderEpisodePage() {
@@ -478,89 +738,27 @@
                 const end = start + episodesPerPage;
                 const paginatedEpisodes = episodesData.slice(start, end);
 
-                console.log("Current series ID:", currentSeriesId);
-                console.log("Rendering episodes:", paginatedEpisodes.length);
-
                 paginatedEpisodes.forEach((episode) => {
                     const episodeItem = document.createElement('div');
                     episodeItem.classList.add('episode-item');
-                    episodeItem.style.display = 'flex';
-                    episodeItem.style.alignItems = 'center';
-                    episodeItem.style.gap = '12px';
-
-                    // Try multiple season numbers since we don't know which one is correct
+                    
                     let isWatched = false;
                     for (let season = 1; season <= 3; season++) {
-                        if (isEpisodeWatched(currentSeriesId, season, episode.mal_id)) {
+                        if (isEpisodeWatched(currentSeriesId, season, episode.mal_id) || isEpisodeWatched(currentSeriesId, season, String(episode.mal_id))) {
                             isWatched = true;
-                            console.log(`Found watched episode ${episode.mal_id} in season ${season}`);
                             break;
                         }
                     }
-
-                    // Also try episode.mal_id as string
-                    if (!isWatched) {
-                        for (let season = 1; season <= 3; season++) {
-                            if (isEpisodeWatched(currentSeriesId, season, String(episode.mal_id))) {
-                                isWatched = true;
-                                console.log(`Found watched episode ${episode.mal_id} (as string) in season ${season}`);
-                                break;
-                            }
-                        }
+                    if (isWatched) {
+                        episodeItem.classList.add('watched');
                     }
-
-                    console.log(`Episode ${episode.mal_id} final watched status:`, isWatched);
-        
-                    // --- Glassy Download Icon Button per episode ---
-                    const downloadBtn = document.createElement('button');
-                    downloadBtn.className = 'glassy-download-btn episode-download-icon';
-                    downloadBtn.title = 'Download Episode';
-                    downloadBtn.style.marginTop = '0';
-                    downloadBtn.style.padding = '8px 5px';
-                    downloadBtn.style.borderRadius = '50%';
-                    downloadBtn.style.display = 'flex';
-                    downloadBtn.style.paddingRight = '4px';
-                    downloadBtn.style.alignItems = 'center';
-                    downloadBtn.style.justifyContent = 'center';
-                    downloadBtn.style.minWidth = 'unset';
-                    downloadBtn.style.width = '25px';
-                    downloadBtn.style.height = '25px';
-                    downloadBtn.innerHTML = '<i class="fas fa-cloud-download"></i>';
-                    // Get quality from localStorage or default to '720p'
-                    let quality = localStorage.getItem('quality');
-                    if (!quality || typeof quality !== 'string') quality = '720p';
-                    downloadBtn.addEventListener('click', async (event) => {
-                        event.stopPropagation(); // Prevent episode item click
-                        const animeId = currentSeriesId || '52991';
-                        let quality = localStorage.getItem('quality');
-                        if (!quality || typeof quality !== 'string') quality = '720p';
-                        let episodeNum = episode.mal_id; // Use the correct episode number
-                        const isDub = true;
-                        // Directly open the download link, no JSON parsing needed
-                        window.open(`https://arkm20-animex-player-api.hf.space/download?id=${animeId}&episode=${episodeNum}&dub=${isDub}&quality=${quality}`, '_blank');
-                    });
-                    episodeItem.appendChild(downloadBtn);
-                    // --- End Glassy Download Icon Button ---
 
                     const episodeNumberSpan = document.createElement('span');
                     episodeNumberSpan.classList.add('episode-number');
-                    episodeNumberSpan.textContent = episode.mal_id; // Jikan's episode.mal_id is the episode number
+                    episodeNumberSpan.textContent = episode.mal_id;
 
                     const episodeInfoDiv = document.createElement('div');
                     episodeInfoDiv.classList.add('episode-info');
-                    // Add this after creating the episodeInfoDiv
-                    if (isWatched) {
-                        // Add watched indicator
-                        const watchedIndicator = document.createElement('span');
-                        watchedIndicator.className = 'watched-indicator';
-                        watchedIndicator.title = 'Watched';
-                        episodeItem.appendChild(watchedIndicator);
-                        
-                        // Add watched class to the entire episode item
-                        episodeItem.classList.add('watched');
-                        episodeNumberSpan.classList.add('watched');
-                    }
-
 
                     const episodeTitle = document.createElement('h4');
                     episodeTitle.classList.add('episode-title');
@@ -575,12 +773,25 @@
                         episodeInfoDiv.appendChild(episodeTitleRomanji);
                     }
                     
+                    // --- Glassy Download Icon Button ---
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'glassy-download-btn episode-download-icon';
+                    downloadBtn.title = 'Download Episode';
+                    downloadBtn.innerHTML = '<i class="fas fa-cloud-download"></i>';
+                    downloadBtn.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        const animeId = currentSeriesId;
+                        let quality = localStorage.getItem('quality') || '720p';
+                        let episodeNum = episode.mal_id;
+                        const isDub = true; // Assuming dub
+                        window.open(`https://arkm20-animex-player-api.hf.space/download?id=${animeId}&episode=${episodeNum}&dub=${isDub}&quality=${quality}`, '_blank');
+                    });
+                    
                     episodeItem.appendChild(episodeNumberSpan);
                     episodeItem.appendChild(episodeInfoDiv);
+                    episodeItem.appendChild(downloadBtn);
 
-                    // Remove any window.location.href navigation!
                     episodeItem.addEventListener('click', (event) => {
-                        // Only open popup if not clicking the download button
                         if (event.target.closest('.episode-download-icon')) return;
                         const url = `view.html?id=${encodeURIComponent(currentSeriesId)}&ep=${encodeURIComponent(episode.mal_id)}`;
                         openEpisodePopup(url);
@@ -591,7 +802,7 @@
             }
 
             function setupPagination(totalEpisodes) {
-                episodesPaginationContainer.innerHTML = ''; // Clear previous pagination
+                episodesPaginationContainer.innerHTML = '';
                 const pageCount = Math.ceil(totalEpisodes / episodesPerPage);
 
                 if (pageCount <= 1) return;
@@ -604,13 +815,13 @@
                         currentPage--;
                         renderEpisodePage();
                         updatePaginationButtons(pageCount);
+                        window.scrollTo(0, document.getElementById('episode-list-section').offsetTop);
                     }
                 });
                 episodesPaginationContainer.appendChild(prevButton);
 
                 const pageInfo = document.createElement('span');
                 pageInfo.textContent = ` Page ${currentPage} of ${pageCount} `;
-                pageInfo.style.margin = "0 10px";
                 episodesPaginationContainer.appendChild(pageInfo);
 
                 const nextButton = document.createElement('button');
@@ -621,6 +832,7 @@
                         currentPage++;
                         renderEpisodePage();
                         updatePaginationButtons(pageCount);
+                        window.scrollTo(0, document.getElementById('episode-list-section').offsetTop);
                     }
                 });
                 episodesPaginationContainer.appendChild(nextButton);
@@ -649,120 +861,34 @@
 
             async function init() {
                 currentSeriesId = getSeriesIdFromUrl();
-                console.log("Current series ID from URL:", currentSeriesId);
-                
                 if (!currentSeriesId) {
                     displayError("No series ID specified in the URL. Example: series-info.html?id=5114");
                     return;
                 }
-
-                // Fetch user watch history first with debugging
-                console.log("Fetching user watch history...");
                 userWatchHistory = await fetchUserWatchHistory();
-                console.log("Watch history fetch result:", userWatchHistory);
-
                 const seriesDetails = await fetchSeriesDetails(currentSeriesId);
                 if (seriesDetails) {
                     displayAnimeDetails(seriesDetails);
                     if (type === 'anime') {
                         const episodes = await fetchSeriesEpisodes(currentSeriesId);
                         displayEpisodes(episodes);
-                    } else {
-                        if (document.querySelector('.episode-list-section')) {
-                            document.querySelector('.episode-list-section').style.display = 'none';
-                        }
                     }
-                } else {
-                    if(heroSection) heroSection.style.display = 'none';
                 }
-            }
-
-            // ****** EPISODE PAGINATION LOGIC (secondary, potentially conflicting - review if issues arise) ******
-            // Declare at top-level only if not already declared
-            if (typeof window.episodesDataGlobal === 'undefined') window.episodesDataGlobal = []; // Renamed to avoid conflict
-            if (typeof window.currentEpisodesPageGlobal === 'undefined') window.currentEpisodesPageGlobal = 1; // Renamed
-            const EPISODES_PER_PAGE_GLOBAL = 10; // Renamed
-
-            function renderEpisodesPageGlobal(page) { // Renamed
-                const episodeListContainerGlobal = document.getElementById('episode-list-container'); // This targets the same container
-                const pageInfoGlobal = document.getElementById('episodes-page-info');
-                const prevBtnGlobal = document.getElementById('prev-episodes-btn');
-                const nextBtnGlobal = document.getElementById('next-episodes-btn');
-                
-                // This logic might conflict with the primary pagination.
-                // For now, it's left as is but commented out the direct manipulation if it's not the primary one.
-                // If this section is intended to be the main pagination, it should be integrated properly.
-                /*
-                if (!window.episodesDataGlobal || window.episodesDataGlobal.length === 0) {
-                    episodeListContainerGlobal.innerHTML = '<p>No episodes found.</p>'; // Might overwrite primary render
-                    if(pageInfoGlobal) pageInfoGlobal.textContent = '';
-                    if(prevBtnGlobal) prevBtnGlobal.style.display = 'none';
-                    if(nextBtnGlobal) nextBtnGlobal.style.display = 'none';
-                    return;
-                }
-                const totalPages = Math.ceil(window.episodesDataGlobal.length / EPISODES_PER_PAGE_GLOBAL);
-                page = Math.max(1, Math.min(page, totalPages));
-                window.currentEpisodesPageGlobal = page;
-                const start = (page - 1) * EPISODES_PER_PAGE_GLOBAL;
-                const end = start + EPISODES_PER_PAGE_GLOBAL;
-                const episodesToShow = window.episodesDataGlobal.slice(start, end);
-                episodeListContainerGlobal.innerHTML = ''; // Definitely overwrites primary render
-                episodesToShow.forEach(ep => {
-                    const epDiv = document.createElement('div');
-                    epDiv.className = 'episode-item';
-                    epDiv.textContent = ep.title || `Episode ${ep.mal_id || ''}`;
-                    // Note: This rendering does not include the amvstrm click listener if it takes over.
-                    episodeListContainerGlobal.appendChild(epDiv);
-                });
-                if(pageInfoGlobal) pageInfoGlobal.textContent = `Page ${page} of ${totalPages}`;
-                if(prevBtnGlobal) prevBtnGlobal.style.display = page > 1 ? '' : 'none';
-                if(nextBtnGlobal) nextBtnGlobal.style.display = page < totalPages ? '' : 'none';
-                */
-            }
-            
-            // These listeners are on buttons by ID. If setupPagination clears and recreates buttons
-            // without these IDs, these listeners won't work on the new buttons.
-            // The `setupPagination` function creates its own buttons and attaches listeners directly.
-            // So, these listeners below might be for the initially hidden buttons if they are not replaced.
-            const prevEpisodesBtnById = document.getElementById('prev-episodes-btn');
-            if (prevEpisodesBtnById) {
-                prevEpisodesBtnById.addEventListener('click', () => {
-                    // renderEpisodesPageGlobal(window.currentEpisodesPageGlobal - 1);
-                    // This might be redundant if setupPagination handles its own buttons.
-                });
-            }
-
-            const nextEpisodesBtnById = document.getElementById('next-episodes-btn');
-            if (nextEpisodesBtnById) {
-                nextEpisodesBtnById.addEventListener('click', () => {
-                    // renderEpisodesPageGlobal(window.currentEpisodesPageGlobal + 1);
-                });
-            }
-
-            function setEpisodesGlobal(episodes) { // Renamed
-                window.episodesDataGlobal = episodes || [];
-                // renderEpisodesPageGlobal(1); // Initial call for the secondary system
             }
 
             // --- POPUP OVERLAY LOGIC ---
             const popupOverlay = document.getElementById('episode-popup-overlay');
-            const popupContent = popupOverlay.querySelector('.episode-popup-content');
             const popupIframe = document.getElementById('episode-popup-iframe');
-            const popupCloseBtn = popupOverlay.querySelector('.episode-popup-close');
-
+            
             function openEpisodePopup(url) {
                 popupIframe.src = url;
                 popupOverlay.style.display = 'flex';
-                // Trigger animation
-                setTimeout(() => {
-                    popupOverlay.classList.add('active');
-                }, 10);
-                document.body.style.overflow = 'hidden'; // Prevent background scroll
+                setTimeout(() => popupOverlay.classList.add('active'), 10);
+                document.body.style.overflow = 'hidden';
             }
 
             function closeEpisodePopup() {
                 popupOverlay.classList.remove('active');
-                // Wait for animation to finish before hiding
                 setTimeout(() => {
                     popupOverlay.style.display = 'none';
                     popupIframe.src = '';
@@ -780,217 +906,5 @@
             init();
         });
     </script>
-    <style>
-    /* Glassy Download Button Styles */
-    .glassy-download-btn {
-        margin-top: 18px;
-        font-size: 1.1em;
-        font-weight: 600;
-        color: #fff;
-        background: rgba(255,255,255,0.12);
-        border: 1.5px solid rgba(255,255,255,0.25);
-        border-radius: 18px;
-        box-shadow: 0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(255,255,255,0.10) inset;
-        backdrop-filter: blur(8px);
-        transition: background 0.2s, box-shadow 0.2s, border 0.2s;
-        cursor: pointer;
-        outline: none;
-    }
-    .glassy-download-btn:hover {
-        background: rgba(255,255,255,0.22);
-        border: 1.5px solid rgba(255,255,255,0.35);
-        box-shadow: 0 6px 32px 0 rgba(0,0,0,0.16), 0 2px 8px 0 rgba(255,255,255,0.14) inset;
-    }
-
-    /* --- Episode Download Icon Button (UI Fix) --- */
-    .episode-download-icon {
-        margin-right: 4px; /* Reduced gap */
-        font-size: 1.3em;
-        background: none !important; /* Remove glassy background */
-        border: none !important; /* Remove border */
-        box-shadow: none !important; /* Remove shadow */
-        padding: 0 !important;
-        width: 32px !important;
-        height: 32px !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-        margin-left: 15px;
-        margin-right: -25px;
-    }
-    .episode-download-icon i {
-        color: rgb(143, 143, 143);
-        font-size: 0.7em;
-        pointer-events: none;
-    }
-    .episode-download-icon:hover {
-        background: rgba(58,122,254,0.08) !important;
-    }
-
-    /* --- Episode Item Responsive Layout --- */
-    .episode-item {
-        display: flex;
-        align-items: center;
-        gap: 8px; /* Reduced gap for tighter layout */
-        padding: 8px 0;
-    }
-    @media (max-width: 600px) {
-        .episode-item {
-            gap: 4px;
-            padding: 6px 0;
-        }
-        .episode-download-icon {
-            width: 28px !important;
-            height: 28px !important;
-            font-size: 1.1em;
-        }
-        .episode-number {
-            font-size: 1em;
-        }
-        .episode-title {
-            font-size: 1em;
-        }
-    }
-
-    /* --- Episode Pop-up Overlay Styles --- */
-    .episode-popup-overlay {
-        position: fixed;
-        z-index: 9999;
-        top: 0; left: 0; right: 0; bottom: 0;
-        width: 100vw; height: 100vh;
-        background: rgba(18, 22, 34, 0.92);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.3s cubic-bezier(.4,0,.2,1);
-        animation: none;
-    }
-    .episode-popup-overlay.active {
-        animation: popupFadeIn 0.3s cubic-bezier(.4,0,.2,1) forwards;
-        display: flex;
-    }
-    @keyframes popupFadeIn {
-        from { background: rgba(18,22,34,0); }
-        to { background: rgba(18,22,34,0.92); }
-    }
-    .episode-popup-content {
-        position: relative;
-        width: 92vw;
-        max-width: 1100px;
-        height: 88vh;
-        background: rgba(30,34,44,0.98);
-        border-radius: 18px;
-        box-shadow: 0 8px 48px 0 rgba(0,0,0,0.25);
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        justify-content: center;
-        opacity: 0;
-        transform: scale(0.97) translateY(30px);
-        transition: opacity 0.3s cubic-bezier(.4,0,.2,1), transform 0.3s cubic-bezier(.4,0,.2,1);
-        overflow: hidden;
-        animation: none;
-    }
-    .episode-popup-overlay.active .episode-popup-content {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-        animation: popupContentIn 0.3s cubic-bezier(.4,0,.2,1) forwards;
-    }
-    @keyframes popupContentIn {
-        from { opacity: 0; transform: scale(0.97) translateY(30px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    .episode-popup-close {
-        position: absolute;
-        top: 18px;
-        right: 24px;
-        z-index: 2;
-        font-size: 2.2em;
-        color: #fff;
-        background: rgba(40,40,50,0.18);
-        border: none;
-        border-radius: 50%;
-        width: 44px;
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: background 0.2s;
-        box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
-    }
-    .episode-popup-close:hover {
-        background: rgba(58,122,254,0.18);
-    }
-    .episode-popup-content iframe {
-        flex: 1 1 auto;
-        width: 100%;
-        height: 100%;
-        border: none;
-        border-radius: 0 0 18px 18px;
-        background: #181a22;
-        min-height: 400px;
-    }
-        .episode-popup-back {
-        position: absolute;
-        top: 18px;
-        left: 24px;
-        z-index: 2;
-        font-size: 1.4em;
-        color: #fff;
-        background: rgba(40,40,50,0.18);
-        border: none;
-        border-radius: 50%;
-        width: 44px;
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: background 0.2s;
-        box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
-    }
-    .episode-popup-back:hover {
-        background: rgba(58,122,254,0.18);
-    }
-    @media (max-width: 900px) {
-        .episode-popup-content {
-            width: 99vw;
-            height: 97vh;
-            border-radius: 0;
-        }
-        .episode-popup-content iframe {
-            border-radius: 0;
-        }
-    }
-    @media (max-width: 600px) {
-        .episode-popup-content {
-            width: 100vw;
-            height: 100vh;
-            border-radius: 0;
-        }
-        .episode-popup-close {
-            top: 8px;
-            right: 10px;
-            font-size: 1.7em;
-            width: 36px;
-            height: 36px;
-        }
-        .episode-popup-back {
-            top: 8px;
-            left: 10px;
-            font-size: 1.2em;
-            width: 36px;
-            height: 36px;
-        }
-    }
-    /* Subtle closing animation */
-    .episode-popup-overlay:not(.active)[style*="display: flex"] .episode-popup-content {
-        opacity: 0;
-        transform: scale(0.97) translateY(30px);
-        transition: opacity 0.3s cubic-bezier(.4,0,.2,1), transform 0.3s cubic-bezier(.4,0,.2,1);
-    }
-    </style>
 </body>
 </html>

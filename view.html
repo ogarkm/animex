@@ -508,6 +508,40 @@
         seriesOverMsg.textContent = 'Series Complete';
         controlsWrapper.appendChild(seriesOverMsg);
       }
+      // Move this function definition to before the anime info fetching (around line 200)
+      async function updateWatchHistory(showId, showTitle, episodeNumber) {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          console.log("User not logged in. Skipping watch history update.");
+          return;
+        }
+        try {
+          const params = new URLSearchParams({
+              show_id: String(showId),
+              show_title: String(showTitle),
+              season_number: 1,
+              episode_number: Number(episodeNumber)
+          });
+
+          const url = `https://arkm20-authapi.hf.space/users/me/watch-history?${params.toString()}`;
+
+          const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                  'Authorization': `Bearer ${token}`
+              }
+          });
+          if (response.ok) {
+            console.log("Watch history updated successfully.");
+          } else {
+            const result = await response.json().catch(() => ({}));
+            console.warn("Failed to update watch history:", result.message || response.status);
+          }
+        } catch (error) {
+          console.error("Network error while updating watch history:", error);
+        }
+      }
+
       
       async function loadIframe(dub) {
         playerContainer.innerHTML = '';
@@ -643,6 +677,8 @@
           }
         });
       }
+
+      
       
       addControlTriggers();
       
@@ -673,6 +709,13 @@
           hideControls();
         }
       });
+
+      // Add this call after the anime info is fetched and before the iframe loading
+      // Around line 280, after setting the episode number display
+      document.getElementById('episode-number').textContent = episode;
+
+      // Add this line to update watch history when page loads
+      await updateWatchHistory(jikanId, title, episode);
 
     });
   </script>
