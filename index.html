@@ -478,6 +478,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 splashScreen.classList.add('splash-hide');
                 setTimeout(() => {
                     splashScreen.style.display = 'none';
+                    if (!navigator.onLine) {
+                        window.location.href = 'offline.html';
+                        return;
+                    }
                     document.querySelector('.app-container').style.animation = 'fadeIn 0.5s ease-out forwards';
 
                     // --- Show intro overlay if needed ---
