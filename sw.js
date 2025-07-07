@@ -76,6 +76,14 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(event.request.url);
   
+  // FIXED: Don't intercept blob URLs, data URLs, or chrome-extension URLs
+  if (url.protocol === 'blob:' || 
+      url.protocol === 'data:' || 
+      url.protocol === 'chrome-extension:' ||
+      url.protocol === 'moz-extension:') {
+    return; // Let the browser handle these directly
+  }
+  
   // Cache-first strategy for app resources and CDN assets
   if (url.origin === location.origin || 
       url.hostname.includes('fonts.googleapis.com') ||
@@ -92,16 +100,19 @@ self.addEventListener('fetch', event => {
           
           return fetch(event.request)
             .then(networkResponse => {
-              // Cache successful responses
-              if (networkResponse.status === 200) {
+              // Cache successful responses (but not blob URLs or other non-cacheable content)
+              if (networkResponse.status === 200 && 
+                  !url.protocol.startsWith('blob:') && 
+                  !url.protocol.startsWith('data:')) {
                 const responseClone = networkResponse.clone();
                 caches.open(CACHE_NAME)
-                  .then(cache => cache.put(event.request, responseClone));
+                  .then(cache => cache.put(event.request, responseClone))
+                  .catch(err => console.warn('Cache put failed:', err));
               }
               return networkResponse;
             })
             .catch(() => {
-              // FIXED: Only show offline page for main navigation, not for video player
+              // Only show offline page for main navigation, not for video player or other resources
               if (event.request.mode === 'navigate' && 
                   !url.pathname.includes('video_player.html')) {
                 return caches.match('/offline.html');
@@ -116,11 +127,14 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request)
         .then(networkResponse => {
-          // Cache successful responses for later
-          if (networkResponse.status === 200) {
+          // Cache successful responses for later (but not blob URLs)
+          if (networkResponse.status === 200 && 
+              !url.protocol.startsWith('blob:') && 
+              !url.protocol.startsWith('data:')) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME)
-              .then(cache => cache.put(event.request, responseClone));
+              .then(cache => cache.put(event.request, responseClone))
+              .catch(err => console.warn('Cache put failed:', err));
           }
           return networkResponse;
         })
