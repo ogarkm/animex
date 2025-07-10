@@ -773,7 +773,11 @@
         
         showLoginBtn.addEventListener('click', () => { loginFrame.src = LOGIN_PAGE_URL; loginModal.style.display = 'flex'; });
         closeModalBtn.addEventListener('click', () => { loginModal.style.display = 'none'; loginFrame.src = 'about:blank'; fetchUserProfile(); });
-        logoutButton.addEventListener('click', () => { localStorage.removeItem('accessToken'); alert('You have been logged out.'); fetchUserProfile(); });
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('accessToken');
+            alert('You have been logged out.');
+            window.location.href = LOGIN_PAGE_URL; // Redirect to login page after logout
+        });
 
         window.addEventListener('message', (event) => {
             if (event.origin !== API_BASE_URL) return;

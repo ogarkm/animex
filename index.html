@@ -1,577 +1,862 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
     <title>Animex</title>
 
     <!-- External Fonts and Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
 
     <!-- Meta Tags for Mobile Web App -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <link rel="manifest" href="Resources/manifest.json/">
+    <link rel="manifest" href="Resources/manifest.json/" />
     <meta name="theme-color" content="#0b0b0b" />
 
-    <link rel="icon" href="/Resources/Images/icon-196.png" type="image/png">
+    <link rel="icon" href="/Resources/Images/icon-196.png" type="image/png" />
     <!-- iOS support -->
-    <link rel="apple-touch-icon" href="/Resources/Images/icon-196.png">
+    <link rel="apple-touch-icon" href="/Resources/Images/icon-196.png" />
     <style>
-        /* --- GENERAL LAYOUT STYLES --- */
-        body, html {
-            height: 100%;
-            overflow: hidden;
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background: #111; /* Simpler background for full-screen content */
-        }
+      /* --- GENERAL LAYOUT STYLES --- */
+      body,
+      html {
+        height: 100%;
+        overflow: hidden;
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background: #111; /* Simpler background for full-screen content */
+      }
 
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            position: relative; /* Needed for z-index context */
-        }
+      .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative; /* Needed for z-index context */
+      }
 
-        /* The iframe is now a background layer on mobile */
-        #contentFrame {
-            flex-grow: 1;
-            width: 100%;
-            border: none;
-            display: block;
-        }
+      /* The iframe is now a background layer on mobile */
+      #contentFrame {
+        flex-grow: 1;
+        width: 100%;
+        border: none;
+        display: block;
+      }
 
-        /* --- MOBILE BOTTOM NAVIGATION (UNCHANGED) --- */
+      /* --- MOBILE BOTTOM NAVIGATION (UNCHANGED) --- */
+      .bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background: rgba(25, 25, 25, 0.95);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: #ccc;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+        z-index: 100;
+        padding-bottom: 20px;
+      }
+      .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #8e8e93;
+        font-size: 10px;
+        font-weight: 500;
+        flex-grow: 1;
+        height: 100%;
+        padding: 8px 4px;
+        box-sizing: border-box;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+      }
+      .nav-item::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #e8772e, #ff9a4d);
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+      }
+      .nav-item .nav-icon {
+        font-size: 22px;
+        margin-bottom: 4px;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+      .nav-item.active {
+        color: #e8772e;
+        transform: translateY(-2px);
+      }
+      .nav-item.active::before {
+        width: 40px;
+      }
+      .nav-item.active .nav-icon {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 8px rgba(232, 119, 46, 0.4));
+      }
+      .nav-item:hover:not(.active) {
+        color: #ffffff;
+        transform: translateY(-1px);
+      }
+
+      /* --- ALL OTHER STYLES (SPLASH SCREEN, PWA BANNER, ETC. UNCHANGED) --- */
+      #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #111;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+        transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 1;
+        overflow: hidden;
+      }
+      .splash-flash {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 300vw;
+        height: 300vw;
+        background: radial-gradient(
+          ellipse at center,
+          #ffb37a 0%,
+          #de541e 30%,
+          transparent 70%
+        );
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -50%) scale(0.7);
+        animation: flashBang 0.7s cubic-bezier(0.7, 0, 0.3, 1) 0.7s forwards;
+      }
+      @keyframes flashBang {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.7);
+        }
+        40% {
+          opacity: 0.7;
+          transform: translate(-50%, -50%) scale(1.1);
+        }
+        60% {
+          opacity: 0.5;
+          transform: translate(-50%, -50%) scale(1.2);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(1.5);
+        }
+      }
+      .logo-anim-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        margin-bottom: 36px;
+        z-index: 2;
+      }
+      #splash-logo {
+        width: 120px;
+        height: 120px;
+        display: block;
+        opacity: 0;
+        transform: scale(0.7);
+        filter: drop-shadow(0 0 0 #de541e);
+        animation: logoZoomIn 0.7s cubic-bezier(0.7, 0, 0.3, 1) 0.1s forwards,
+          logoFlashGlow 1.2s 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+      @keyframes logoZoomIn {
+        0% {
+          opacity: 0;
+          transform: scale(0.7);
+        }
+        60% {
+          opacity: 1;
+          transform: scale(1.18);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes logoFlashGlow {
+        0% {
+          filter: drop-shadow(0 0 0 #de541e);
+        }
+        40% {
+          filter: drop-shadow(0 0 48px #ffb37a);
+        }
+        60% {
+          filter: drop-shadow(0 0 32px #de541ecc);
+        }
+        100% {
+          filter: drop-shadow(0 0 12px #de541eaa);
+        }
+      }
+      .splash-spinner {
+        width: 38px;
+        height: 38px;
+        border: 4px solid #222;
+        border-top: 4px solid #de541e;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+        box-shadow: 0 2px 12px #0008;
+        opacity: 0;
+        animation-delay: 1.5s;
+        animation-name: spinnerFadeIn, spin;
+        animation-duration: 0.4s, 1s;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1), linear;
+        animation-fill-mode: forwards, infinite;
+      }
+      @keyframes spinnerFadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .splash-hide {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      /* PWA Banner, etc. are also unchanged */
+      #pwa-install-banner {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(25, 25, 25, 0.95);
+        backdrop-filter: blur(20px);
+        padding: 12px 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
+        z-index: 200;
+        transform: translateY(100%);
+        transition: transform 0.3s ease-out;
+      }
+      #pwa-install-banner.show {
+        transform: translateY(0);
+      }
+      #pwa-install-banner .banner-content {
+        max-width: 480px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #ccc;
+        font-family: "Inter", sans-serif;
+      }
+      #pwa-install-banner .banner-text {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+      #pwa-install-banner .banner-text i {
+        font-size: 18px;
+        color: #e8772e;
+      }
+      #pwa-install-banner .banner-actions button {
+        background: #e8772e;
+        border: none;
+        color: white;
+        padding: 6px 12px;
+        margin-left: 8px;
+        font-size: 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      #pwa-install-banner .banner-actions button#pwa-install-close {
+        background: transparent;
+        color: #888;
+        font-size: 18px;
+        margin-left: 4px;
+      }
+      #pwa-install-banner .banner-actions button:hover {
+        opacity: 0.8;
+      }
+      #pwa-install-banner.hidden {
+        display: none;
+      }
+      @media (max-width: 900px) and (orientation: landscape) {
         .bottom-nav {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            background: rgba(25, 25, 25, 0.95);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ccc;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 70px;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
-            z-index: 100;
-            padding-bottom: 20px;
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-decoration: none; color: #8e8e93; font-size: 10px; font-weight: 500; flex-grow: 1;
-            height: 100%; padding: 8px 4px; box-sizing: border-box;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            position: relative; overflow: hidden;
-        }
-        .nav-item::before {
-            content: ''; position: absolute; top: 0; left: 50%; width: 0; height: 2px;
-            background: linear-gradient(90deg, #E8772E, #ff9a4d);
-            transition: all 0.3s ease; transform: translateX(-50%);
-        }
-        .nav-item .nav-icon {
-            font-size: 22px; margin-bottom: 4px;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        .nav-item.active { color: #E8772E; transform: translateY(-2px); }
-        .nav-item.active::before { width: 40px; }
-        .nav-item.active .nav-icon {
-            transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(232, 119, 46, 0.4));
-        }
-        .nav-item:hover:not(.active) { color: #ffffff; transform: translateY(-1px); }
-
-        /* --- ALL OTHER STYLES (SPLASH SCREEN, PWA BANNER, ETC. UNCHANGED) --- */
-        #splash-screen {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #111; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 999;
-            transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1); opacity: 1;
-            overflow: hidden;
-        }
-        .splash-flash {
-            position: absolute; top: 50%; left: 50%; width: 300vw; height: 300vw;
-            background: radial-gradient(ellipse at center, #ffb37a 0%, #DE541E 30%, transparent 70%);
-            opacity: 0; pointer-events: none;
-            transform: translate(-50%,-50%) scale(0.7);
-            animation: flashBang 0.7s cubic-bezier(0.7,0,0.3,1) 0.7s forwards;
-        }
-        @keyframes flashBang {
-            0% { opacity: 0; transform: translate(-50%,-50%) scale(0.7); }
-            40% { opacity: 0.7; transform: translate(-50%,-50%) scale(1.1); }
-            60% { opacity: 0.5; transform: translate(-50%,-50%) scale(1.2); }
-            100% { opacity: 0; transform: translate(-50%,-50%) scale(1.5); }
-        }
-        .logo-anim-container {
-            display: flex; justify-content: center; align-items: center;
-            width: 100vw; margin-bottom: 36px; z-index: 2;
-        }
-        #splash-logo {
-            width: 120px; height: 120px; display: block; opacity: 0;
-            transform: scale(0.7); filter: drop-shadow(0 0 0 #DE541E);
-            animation: logoZoomIn 0.7s cubic-bezier(0.7,0,0.3,1) 0.1s forwards, logoFlashGlow 1.2s 0.7s cubic-bezier(0.4,0,0.2,1) forwards;
-        }
-        @keyframes logoZoomIn {
-            0% { opacity: 0; transform: scale(0.7); }
-            60% { opacity: 1; transform: scale(1.18); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        @keyframes logoFlashGlow {
-            0% { filter: drop-shadow(0 0 0 #DE541E); }
-            40% { filter: drop-shadow(0 0 48px #ffb37a); }
-            60% { filter: drop-shadow(0 0 32px #DE541Ecc); }
-            100% { filter: drop-shadow(0 0 12px #DE541Eaa); }
-        }
-        .splash-spinner {
-            width: 38px; height: 38px; border: 4px solid #222;
-            border-top: 4px solid #DE541E; border-radius: 50%;
-            animation: spin 1s linear infinite; margin: 0 auto;
-            box-shadow: 0 2px 12px #0008; opacity: 0; animation-delay: 1.5s;
-            animation-name: spinnerFadeIn, spin; animation-duration: 0.4s, 1s;
-            animation-timing-function: cubic-bezier(0.4,0,0.2,1), linear;
-            animation-fill-mode: forwards, infinite;
-        }
-        @keyframes spinnerFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .splash-hide { opacity: 0; pointer-events: none; transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1); }
-        /* PWA Banner, etc. are also unchanged */
-        #pwa-install-banner { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(25,25,25,0.95); backdrop-filter: blur(20px); padding: 12px 16px; display: flex; justify-content: center; align-items: center; box-shadow: 0 -4px 16px rgba(0,0,0,0.5); z-index: 200; transform: translateY(100%); transition: transform 0.3s ease-out; }
-        #pwa-install-banner.show { transform: translateY(0); }
-        #pwa-install-banner .banner-content { max-width: 480px; width: 100%; display: flex; justify-content: space-between; align-items: center; color: #ccc; font-family: 'Inter', sans-serif; }
-        #pwa-install-banner .banner-text { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-        #pwa-install-banner .banner-text i { font-size: 18px; color: #E8772E; }
-        #pwa-install-banner .banner-actions button { background: #E8772E; border: none; color: white; padding: 6px 12px; margin-left: 8px; font-size: 14px; border-radius: 4px; cursor: pointer; transition: opacity 0.2s; }
-        #pwa-install-banner .banner-actions button#pwa-install-close { background: transparent; color: #888; font-size: 18px; margin-left: 4px; }
-        #pwa-install-banner .banner-actions button:hover { opacity: 0.8; }
-        #pwa-install-banner.hidden { display: none; }
-        @media (max-width: 900px) and (orientation: landscape) {
-            .bottom-nav {
-                transform: translateY(100%);
-                opacity: 0;
-                pointer-events: none;
-                transition: transform 0.3s ease, opacity 0.3s ease;
-            }
-            
-            /* Adjust iframe to use full height when navbar is hidden */
-            #contentFrame {
-                height: 100vh;
-                padding-bottom: 0;
-            }
+          transform: translateY(100%);
+          opacity: 0;
+          pointer-events: none;
+          transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
-        /* Ensure navbar shows again when returning to portrait */
-        @media (max-width: 699px) and (orientation: portrait) {
-            .bottom-nav {
-                transform: translateY(0);
-                opacity: 1;
-                pointer-events: auto;
-                transition: transform 0.3s ease, opacity 0.3s ease;
-            }
+        /* Adjust iframe to use full height when navbar is hidden */
+        #contentFrame {
+          height: 100vh;
+          padding-bottom: 0;
         }
+      }
 
-        /* 
+      /* Ensure navbar shows again when returning to portrait */
+      @media (max-width: 699px) and (orientation: portrait) {
+        .bottom-nav {
+          transform: translateY(0);
+          opacity: 1;
+          pointer-events: auto;
+          transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+      }
+
+      /* 
         ==================================================================
         DESKTOP REWORK (min-width: 700px)
         ==================================================================
         */
-        @media (min-width: 700px) {
-
-            /* --- 1. FULL-SCREEN IFRAME SETUP --- */
-            /* Makes the iframe fill the entire screen, acting as the background content layer */
-            #contentFrame {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                z-index: 1; /* Sits behind the nav bar */
-            }
-
-            /* --- 2. PROFESSIONAL FLOATING NAV BAR --- */
-            .bottom-nav {
-                /* Positioning & Sizing */
-                position: fixed;
-                left: 50%;
-                bottom: 32px;
-                transform: translateX(-50%);
-                width: auto; /* Width is determined by its content */
-                height: 68px; /* Slightly smaller for a sleeker look */
-                padding: 0 12px; /* Padding around the items */
-                z-index: 1000; /* Stays on top of all content */
-                display: flex;
-                align-items: center;
-                gap: 8px; /* Space between nav items */
-                
-                /* Professional Styling */
-                background: rgba(28, 28, 30, 0.75); /* Darker, more premium glass */
-                border-radius: 34px; /* Fully rounded pill shape */
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                backdrop-filter: blur(24px) saturate(1.8);
-                box-shadow: 
-                    0 12px 32px rgba(0, 0, 0, 0.3), /* Main shadow for depth */
-                    inset 0 1px 1px rgba(255, 255, 255, 0.05); /* Inner highlight for glass effect */
-                
-                /* Reset Mobile Styles */
-                padding-bottom: 0;
-            }
-
-            /* --- 3. REFINED NAV ITEMS --- */
-            .nav-item {
-                /* Reset & Base Styles */
-                flex-direction: row; /* Icon and text side-by-side */
-                flex-grow: 0;
-                flex-shrink: 0;
-                height: 52px;
-                padding: 0 16px; /* Padding inside each item */
-                margin: 0;
-                border-radius: 26px; /* Fully rounded pill */
-                color: #aeb1b8;
-                font-size: 14px;
-                overflow: hidden;
-                
-                /* Smooth Transitions */
-                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
-            .nav-item .nav-icon {
-                font-size: 20px;
-                margin-right: 0; /* Will be set on the text span */
-                margin-bottom: 0;
-                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
-            .nav-item .nav-text {
-                display: block;
-                position: relative;
-                font-weight: 600;
-                white-space: nowrap;
-                opacity: 0; /* Hidden by default */
-                width: 0; /* Collapsed by default */
-                margin-left: 0;
-                color: #ffffff;
-                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            
-            /* -- Inactive Item Hover State -- */
-            .nav-item:not(.active):hover {
-                background: rgba(255, 255, 255, 0.05);
-                color: #ffffff;
-                transform: translateY(-2px); /* Subtle lift */
-            }
-
-            /* -- Active Item State -- */
-            .nav-item.active {
-                background: #E8772E;
-                color: #ffffff;
-                transform: translateY(0);
-                box-shadow: 0 4px 16px rgba(232, 119, 46, 0.4);
-            }
-
-            .nav-item.active .nav-icon {
-                transform: scale(1.05);
-            }
-
-            .nav-item.active .nav-text {
-                opacity: 1;
-                width: auto; /* Expand to fit text */
-                margin-left: 10px; /* Space between icon and text */
-            }
-            
-            /* Remove mobile-specific pseudo-elements */
-            .nav-item::before, .nav-item::after {
-                display: none;
-            }
+      @media (min-width: 700px) {
+        /* --- 1. FULL-SCREEN IFRAME SETUP --- */
+        /* Makes the iframe fill the entire screen, acting as the background content layer */
+        #contentFrame {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          z-index: 1; /* Sits behind the nav bar */
         }
+
+        /* --- 2. PROFESSIONAL FLOATING NAV BAR --- */
+        .bottom-nav {
+          /* Positioning & Sizing */
+          position: fixed;
+          left: 50%;
+          bottom: 32px;
+          transform: translateX(-50%);
+          width: auto; /* Width is determined by its content */
+          height: 68px; /* Slightly smaller for a sleeker look */
+          padding: 0 12px; /* Padding around the items */
+          z-index: 1000; /* Stays on top of all content */
+          display: flex;
+          align-items: center;
+          gap: 8px; /* Space between nav items */
+
+          /* Professional Styling */
+          background: rgba(28, 28, 30, 0.75); /* Darker, more premium glass */
+          border-radius: 34px; /* Fully rounded pill shape */
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(24px) saturate(1.8);
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3),
+            /* Main shadow for depth */ inset 0 1px 1px
+              rgba(255, 255, 255, 0.05); /* Inner highlight for glass effect */
+
+          /* Reset Mobile Styles */
+          padding-bottom: 0;
+        }
+
+        /* --- 3. REFINED NAV ITEMS --- */
+        .nav-item {
+          /* Reset & Base Styles */
+          flex-direction: row; /* Icon and text side-by-side */
+          flex-grow: 0;
+          flex-shrink: 0;
+          height: 52px;
+          padding: 0 16px; /* Padding inside each item */
+          margin: 0;
+          border-radius: 26px; /* Fully rounded pill */
+          color: #aeb1b8;
+          font-size: 14px;
+          overflow: hidden;
+
+          /* Smooth Transitions */
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-item .nav-icon {
+          font-size: 20px;
+          margin-right: 0; /* Will be set on the text span */
+          margin-bottom: 0;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-item .nav-text {
+          display: block;
+          position: relative;
+          font-weight: 600;
+          white-space: nowrap;
+          opacity: 0; /* Hidden by default */
+          width: 0; /* Collapsed by default */
+          margin-left: 0;
+          color: #ffffff;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* -- Inactive Item Hover State -- */
+        .nav-item:not(.active):hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: #ffffff;
+          transform: translateY(-2px); /* Subtle lift */
+        }
+
+        /* -- Active Item State -- */
+        .nav-item.active {
+          background: #e8772e;
+          color: #ffffff;
+          transform: translateY(0);
+          box-shadow: 0 4px 16px rgba(232, 119, 46, 0.4);
+        }
+
+        .nav-item.active .nav-icon {
+          transform: scale(1.05);
+        }
+
+        .nav-item.active .nav-text {
+          opacity: 1;
+          width: auto; /* Expand to fit text */
+          margin-left: 10px; /* Space between icon and text */
+        }
+
+        /* Remove mobile-specific pseudo-elements */
+        .nav-item::before,
+        .nav-item::after {
+          display: none;
+        }
+      }
+      @media (max-width: 699px) {
+        #contentFrame {
+          height: calc(100vh - 90px) !important;
+          padding-bottom: 0;
+        }
+
+        .app-container {
+          height: 100vh;
+          overflow: hidden;
+        }
+      }
+
+      /* Desktop iframe adjustments */
+      @media (min-width: 700px) {
+        #contentFrame {
+          height: 100vh;
+          padding-bottom: 0;
+        }
+      }
+
+      /* Landscape mode adjustments for mobile */
+      @media (max-width: 900px) and (orientation: landscape) {
+        #contentFrame {
+          height: 100vh !important;
+          padding-bottom: 0;
+        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- SPLASH SCREEN WITH LOGO AND CINEMATIC ANIMATION -->
     <div id="splash-screen">
-        <div class="splash-flash"></div>
-        <div class="logo-anim-container">
-            <!-- SVG LOGO: Provided image, color preserved -->
-            <svg id="splash-logo" width="120" height="120" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="59" y="53" width="282" height="37" fill="#DE541E"/>
-                <rect x="59" y="115" width="282" height="37" fill="#DE541E"/>
-                <path d="M327 348H280.904L234 79H280.904L327 348Z" fill="#DE541E"/>
-                <path d="M78 348H124.096L171 79H124.096L78 348Z" fill="#DE541E"/>
-                <rect x="171" y="288.857" width="59" height="59.1429" fill="#DE541E"/>
-                <ellipse cx="200.5" cy="288.31" rx="29.5" ry="32.3095" fill="#DE541E"/>
-            </svg>
-        </div>
-        <div class="splash-spinner"></div>
+      <div class="splash-flash"></div>
+      <div class="logo-anim-container">
+        <!-- SVG LOGO: Provided image, color preserved -->
+        <svg
+          id="splash-logo"
+          width="120"
+          height="120"
+          viewBox="0 0 400 400"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect x="59" y="53" width="282" height="37" fill="#DE541E" />
+          <rect x="59" y="115" width="282" height="37" fill="#DE541E" />
+          <path d="M327 348H280.904L234 79H280.904L327 348Z" fill="#DE541E" />
+          <path d="M78 348H124.096L171 79H124.096L78 348Z" fill="#DE541E" />
+          <rect
+            x="171"
+            y="288.857"
+            width="59"
+            height="59.1429"
+            fill="#DE541E"
+          />
+          <ellipse
+            cx="200.5"
+            cy="288.31"
+            rx="29.5"
+            ry="32.3095"
+            fill="#DE541E"
+          />
+        </svg>
+      </div>
+      <div class="splash-spinner"></div>
     </div>
 
     <div class="app-container">
-        <iframe id="contentFrame" src="" title="Content Area"></iframe>
+      <iframe id="contentFrame" src="" title="Content Area"></iframe>
 
-        <nav class="bottom-nav">
-            <a href="#" class="nav-item" data-src="anime.html">
-                <span class="nav-icon"><i class="fas fa-film"></i></span>
-                <span class="nav-text">ANIME</span>
-            </a>
-            <a href="#" class="nav-item" data-src="manga.html">
-                <span class="nav-icon"><i class="fas fa-book-open"></i></span>
-                <span class="nav-text">MANGA</span>
-            </a>
-            <a href="#" class="nav-item" data-src="search.html">
-                <span class="nav-icon"><i class="fas fa-search"></i></span>
-                <span class="nav-text">SEARCH</span>
-            </a>
-            <a href="#" class="nav-item" data-src="library.html">
-                <span class="nav-icon"><i class="fas fa-bookmark"></i></span>
-                <span class="nav-text">LIBRARY</span>
-            </a>
-            <a href="#" class="nav-item" data-src="settings.html">
-                <span class="nav-icon"><i class="fas fa-cog"></i></span>
-                <span class="nav-text">SETTINGS</span>
-            </a>
-        </nav>
+      <nav class="bottom-nav">
+        <a href="#" class="nav-item" data-src="anime.html">
+          <span class="nav-icon"><i class="fas fa-film"></i></span>
+          <span class="nav-text">ANIME</span>
+        </a>
+        <a href="#" class="nav-item" data-src="manga.html">
+          <span class="nav-icon"><i class="fas fa-book-open"></i></span>
+          <span class="nav-text">MANGA</span>
+        </a>
+        <a href="#" class="nav-item" data-src="search.html">
+          <span class="nav-icon"><i class="fas fa-search"></i></span>
+          <span class="nav-text">SEARCH</span>
+        </a>
+        <a href="#" class="nav-item" data-src="library.html">
+          <span class="nav-icon"><i class="fas fa-bookmark"></i></span>
+          <span class="nav-text">LIBRARY</span>
+        </a>
+        <a href="#" class="nav-item" data-src="settings.html">
+          <span class="nav-icon"><i class="fas fa-cog"></i></span>
+          <span class="nav-text">SETTINGS</span>
+        </a>
+      </nav>
     </div>
-    
-      <!-- PWA Install Banner -->
-  <div id="pwa-install-banner" class="hidden">
-    <div class="banner-content">
-      <div class="banner-text">
-        <i class="fas fa-download"></i>
-        <span id="pwa-install-message">Install Animex for a better experience</span>
-      </div>
-      <div class="banner-actions">
-        <button id="pwa-install-btn">Install</button>
-        <button id="pwa-install-close"><i class="fas fa-times"></i></button>
+
+    <!-- PWA Install Banner -->
+    <div id="pwa-install-banner" class="hidden">
+      <div class="banner-content">
+        <div class="banner-text">
+          <i class="fas fa-download"></i>
+          <span id="pwa-install-message"
+            >Install Animex for a better experience</span
+          >
+        </div>
+        <div class="banner-actions">
+          <button id="pwa-install-btn">Install</button>
+          <button id="pwa-install-close"><i class="fas fa-times"></i></button>
+        </div>
       </div>
     </div>
-  </div>
 
     <!-- INTRO OVERLAY (hidden by default) -->
-    <div id="intro-overlay" style="display:none; position:fixed; z-index:2000; top:0; left:0; width:100vw; height:100vh; background:#111;">
-        <iframe id="intro-iframe" src="intro.html" style="width:100vw; height:100vh; border:none; background:#111;"></iframe>
+    <div
+      id="intro-overlay"
+      style="
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #111;
+      "
+    >
+      <iframe
+        id="intro-iframe"
+        src="intro.html"
+        style="width: 100vw; height: 100vh; border: none; background: #111"
+      ></iframe>
     </div>
 
     <script>
-  let deferredPrompt;
+      let deferredPrompt;
+      // Get URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const skipIntro = urlParams.get("skipIntro") === "true";
 
-// Check if the app is running as a PWA
-function isInStandaloneMode() {
-  return window.matchMedia('(display-mode: standalone)').matches 
-      || window.navigator.standalone === true;
-}
-
-// Should we show the intro?
-function shouldShowIntro() {
-  // Only show intro if NOT in standalone mode AND on mobile
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  return !isInStandaloneMode() && isMobile;
-}
-
-// Show the intro overlay
-function showIntroCover() {
-  const intro = document.getElementById('intro-overlay');
-  if (intro) {
-    intro.style.display = "block";
-  }
-}
-
-// Show the install banner
-function showBanner(message = 'Install Animex for a better experience') {
-  if (isInStandaloneMode()) return;
-  const banner = document.getElementById('pwa-install-banner');
-  document.getElementById('pwa-install-message').textContent = message;
-  banner.classList.remove('hidden');
-  requestAnimationFrame(() => banner.classList.add('show'));
-}
-
-// Hide the banner
-function hideBanner() {
-  const banner = document.getElementById('pwa-install-banner');
-  banner.classList.remove('show');
-  banner.addEventListener('transitionend', () => {
-    banner.classList.add('hidden');
-  }, { once: true });
-}
-
-// Listen for beforeinstallprompt (Chrome / Android)
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  showBanner(); // use default message
-});
-
-// DOM loaded: set up install buttons and intro logic
-document.addEventListener('DOMContentLoaded', () => {
-  const installBtn = document.getElementById('pwa-install-btn');
-  const closeBtn = document.getElementById('pwa-install-close');
-
-  if (installBtn) {
-    installBtn.addEventListener('click', async () => {
-      hideBanner();
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        deferredPrompt = null;
+      // Show intro only if skipIntro is false and other conditions are met
+      if (!skipIntro && shouldShowIntro()) {
+        showIntroCover();
       }
-    });
-  }
 
-  if (closeBtn) {
-    closeBtn.addEventListener('click', hideBanner);
-  }
+      // Check if the app is running as a PWA
+      function isInStandaloneMode() {
+        return (
+          window.matchMedia("(display-mode: standalone)").matches ||
+          window.navigator.standalone === true
+        );
+      }
 
-  // Show intro cover only if not in PWA
-  if (shouldShowIntro()) {
-    showIntroCover();
-  }
-});
-</script>
+      // Should we show the intro?
+      function shouldShowIntro() {
+        // Check skipIntro parameter first - this should be the definitive check
+        const urlParams = new URLSearchParams(window.location.search);
+        const skipIntroParam = urlParams.get("skipIntro") === "true";
 
-    <script>
-        // Audio setup for splash screen (mobile-compatible)
-        function playStartupSound() {
-            try {
-                // Create a simple startup sound using Web Audio API
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Create a pleasant startup chime
-                const oscillator1 = audioContext.createOscillator();
-                const oscillator2 = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                // Connect the audio nodes
-                oscillator1.connect(gainNode);
-                oscillator2.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                // Set frequencies for a pleasant chord (C major)
-                oscillator1.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-                oscillator2.frequency.setValueAtTime(659.25, audioContext.currentTime); // E5
-                
-                // Set wave type for a softer sound
-                oscillator1.type = 'sine';
-                oscillator2.type = 'sine';
-                
-                // Create a gentle fade-in and fade-out
-                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
-                
-                // Start and stop the oscillators
-                oscillator1.start(audioContext.currentTime);
-                oscillator2.start(audioContext.currentTime);
-                oscillator1.stop(audioContext.currentTime + 0.8);
-                oscillator2.stop(audioContext.currentTime + 0.8);
-                
-            } catch (error) {
-                console.log('Audio not supported or blocked:', error);
+        if (skipIntroParam) return false;
+
+        // Only show intro if NOT in standalone mode AND on mobile
+        const isMobile =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          );
+        return !isInStandaloneMode() && isMobile;
+      }
+
+      // Show the intro overlay
+      function showIntroCover() {
+        if (skipIntro) return;
+        const intro = document.getElementById("intro-overlay");
+        if (intro) {
+          intro.style.display = "block";
+        }
+      }
+
+      // Show the install banner
+      function showBanner(message = "Install Animex for a better experience") {
+        if (isInStandaloneMode()) return;
+        const banner = document.getElementById("pwa-install-banner");
+        document.getElementById("pwa-install-message").textContent = message;
+        banner.classList.remove("hidden");
+        requestAnimationFrame(() => banner.classList.add("show"));
+      }
+
+      // Hide the banner
+      function hideBanner() {
+        const banner = document.getElementById("pwa-install-banner");
+        banner.classList.remove("show");
+        banner.addEventListener(
+          "transitionend",
+          () => {
+            banner.classList.add("hidden");
+          },
+          { once: true }
+        );
+      }
+
+      // Listen for beforeinstallprompt (Chrome / Android)
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showBanner(); // use default message
+      });
+
+      // DOM loaded: set up install buttons and intro logic
+      document.addEventListener("DOMContentLoaded", () => {
+        const installBtn = document.getElementById("pwa-install-btn");
+        const closeBtn = document.getElementById("pwa-install-close");
+
+        if (installBtn) {
+          installBtn.addEventListener("click", async () => {
+            hideBanner();
+            if (deferredPrompt) {
+              deferredPrompt.prompt();
+              const choice = await deferredPrompt.userChoice;
+              deferredPrompt = null;
             }
+          });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Cinematic splash ---
-            const splashScreen = document.getElementById('splash-screen');
-            setTimeout(() => {
-                splashScreen.classList.add('splash-hide');
-                setTimeout(() => {
-                    splashScreen.style.display = 'none';
-                    if (!navigator.onLine) {
-                        window.location.href = 'offline.html';
-                        return;
-                    }
-                    document.querySelector('.app-container').style.animation = 'fadeIn 0.5s ease-out forwards';
+        if (closeBtn) {
+          closeBtn.addEventListener("click", hideBanner);
+        }
 
-                    // --- Show intro overlay if needed ---
-                    if (shouldShowIntro()) {
-                        const introOverlay = document.getElementById('intro-overlay');
-                        const introIframe = document.getElementById('intro-iframe');
-                        introOverlay.style.display = 'block';
-                        introIframe.src = 'intro.html';
-                        document.querySelector('.app-container').style.display = 'none';
-                        // Listen for message from intro.html to close overlay
-                        window.addEventListener('message', function handleIntroMsg(e) {
-                            if (e.data === 'introDone') {
-                                introOverlay.style.display = 'none';
-                                document.querySelector('.app-container').style.display = '';
-                                localStorage.setItem('introSeen', '1');
-                                window.removeEventListener('message', handleIntroMsg);
-                            }
-                        });
-                        return;
-                    }
-                }, 600);
-            }, 2200); // 0.7s logo zoom + 0.7s flash + 0.8s spinner
+        // Show intro cover only if not in PWA
+      });
+    </script>
 
-            // Enhanced navigation with smooth transitions
-            const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-            const contentFrame = document.getElementById('contentFrame');
-            const defaultSrc = 'anime.html';
-            const bottomNav = document.querySelector('.bottom-nav');
+    <script>
+      // Audio setup for splash screen (mobile-compatible)
+      function playStartupSound() {
+        try {
+          // Create a simple startup sound using Web Audio API
+          const audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
 
-            function setActiveTab(selectedItem) {
-                navItems.forEach(item => {
-                    item.classList.remove('active');
-                });
-                selectedItem.classList.add('active');
+          // Create a pleasant startup chime
+          const oscillator1 = audioContext.createOscillator();
+          const oscillator2 = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
 
-                // Morphing animation for desktop
-                if (window.innerWidth >= 700) {
-                    bottomNav.classList.add('morphing');
-                    setTimeout(() => bottomNav.classList.remove('morphing'), 400);
-                }
+          // Connect the audio nodes
+          oscillator1.connect(gainNode);
+          oscillator2.connect(gainNode);
+          gainNode.connect(audioContext.destination);
 
-                if (contentFrame.src !== selectedItem.dataset.src) {
-                    contentFrame.style.opacity = '0.7';
-                    contentFrame.src = selectedItem.dataset.src;
-                    contentFrame.addEventListener('load', () => {
-                        contentFrame.style.opacity = '1';
-                        // Inject bottom padding for scroll safe zone (desktop only)
-                        try {
-                            const iframeDoc = contentFrame.contentDocument || contentFrame.contentWindow.document;
-                            if (iframeDoc && iframeDoc.body && window.innerWidth >= 700) {
-                                iframeDoc.body.style.paddingBottom = '120px';
-                            } else if (iframeDoc && iframeDoc.body) {
-                                iframeDoc.body.style.paddingBottom = '90px';
-                            }
-                        } catch (e) {
-                            // Cross-origin or other error, ignore
-                        }
-                    }, { once: true });
-                }
+          // Set frequencies for a pleasant chord (C major)
+          oscillator1.frequency.setValueAtTime(
+            523.25,
+            audioContext.currentTime
+          ); // C5
+          oscillator2.frequency.setValueAtTime(
+            659.25,
+            audioContext.currentTime
+          ); // E5
 
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(20);
-                }
+          // Set wave type for a softer sound
+          oscillator1.type = "sine";
+          oscillator2.type = "sine";
+
+          // Create a gentle fade-in and fade-out
+          gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+          gainNode.gain.linearRampToValueAtTime(
+            0.1,
+            audioContext.currentTime + 0.1
+          );
+          gainNode.gain.exponentialRampToValueAtTime(
+            0.01,
+            audioContext.currentTime + 0.8
+          );
+
+          // Start and stop the oscillators
+          oscillator1.start(audioContext.currentTime);
+          oscillator2.start(audioContext.currentTime);
+          oscillator1.stop(audioContext.currentTime + 0.8);
+          oscillator2.stop(audioContext.currentTime + 0.8);
+        } catch (error) {
+          console.log("Audio not supported or blocked:", error);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // --- Cinematic splash ---
+        const splashScreen = document.getElementById("splash-screen");
+        setTimeout(() => {
+          splashScreen.classList.add("splash-hide");
+          setTimeout(() => {
+            splashScreen.style.display = "none";
+
+            const accessToken = localStorage.getItem('accessToken'); // Assuming you're using localStorage
+            if (!accessToken) {
+              window.location.href = "login.html";
+              return; // Stop further execution
             }
 
-            navItems.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    setActiveTab(item);
-                    
-                    // Enable audio context on first user interaction (required for mobile)
-                    if (window.AudioContext || window.webkitAudioContext) {
-                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        if (audioContext.state === 'suspended') {
-                            audioContext.resume();
-                        }
-                    }
-                });
-            });
 
-            // Set initial active tab
-            const initialActiveItem = document.querySelector(`.nav-item[data-src="${defaultSrc}"]`) || navItems[0];
-            if (initialActiveItem) {
-                setActiveTab(initialActiveItem);
+            if (!navigator.onLine) {
+              window.location.href = "offline.html";
+              return;
             }
+            document.querySelector(".app-container").style.animation =
+              "fadeIn 0.5s ease-out forwards";
+
+            // --- Show intro overlay if needed (now properly checks skipIntro) ---
+            if (shouldShowIntro()) {
+              const introOverlay = document.getElementById("intro-overlay");
+              const introIframe = document.getElementById("intro-iframe");
+              introOverlay.style.display = "block";
+              introIframe.src = "intro.html";
+              document.querySelector(".app-container").style.display = "none";
+              // Listen for message from intro.html to close overlay
+              window.addEventListener("message", function handleIntroMsg(e) {
+                if (e.data === "introDone") {
+                  introOverlay.style.display = "none";
+                  document.querySelector(".app-container").style.display = "";
+                  localStorage.setItem("introSeen", "1");
+                  window.removeEventListener("message", handleIntroMsg);
+                }
+              });
+              return;
+            }
+          }, 600);
+        }, 2200);
+
+        // Enhanced navigation with smooth transitions
+        const navItems = document.querySelectorAll(".bottom-nav .nav-item");
+        const contentFrame = document.getElementById("contentFrame");
+        const defaultSrc = "anime.html";
+        const bottomNav = document.querySelector(".bottom-nav");
+
+        function setActiveTab(selectedItem) {
+          navItems.forEach((item) => {
+            item.classList.remove("active");
+          });
+          selectedItem.classList.add("active");
+
+          // Morphing animation for desktop
+          if (window.innerWidth >= 700) {
+            bottomNav.classList.add("morphing");
+            setTimeout(() => bottomNav.classList.remove("morphing"), 400);
+          }
+
+          if (contentFrame.src !== selectedItem.dataset.src) {
+            contentFrame.style.opacity = "0.7";
+            contentFrame.src = selectedItem.dataset.src;
+            contentFrame.addEventListener(
+              "load",
+              () => {
+                contentFrame.style.opacity = "1";
+                // Inject bottom padding for scroll safe zone (desktop only)
+                try {
+                  const iframeDoc =
+                    contentFrame.contentDocument ||
+                    contentFrame.contentWindow.document;
+                  if (iframeDoc && iframeDoc.body && window.innerWidth >= 700) {
+                    iframeDoc.body.style.paddingBottom = "120px";
+                  } else if (iframeDoc && iframeDoc.body) {
+                    iframeDoc.body.style.paddingBottom = "90px";
+                  }
+                } catch (e) {
+                  // Cross-origin or other error, ignore
+                }
+              },
+              { once: true }
+            );
+          }
+
+          if ("vibrate" in navigator) {
+            navigator.vibrate(20);
+          }
+        }
+
+        navItems.forEach((item) => {
+          item.addEventListener("click", (e) => {
+            e.preventDefault();
+            setActiveTab(item);
+
+            // Enable audio context on first user interaction (required for mobile)
+            if (window.AudioContext || window.webkitAudioContext) {
+              const audioContext = new (window.AudioContext ||
+                window.webkitAudioContext)();
+              if (audioContext.state === "suspended") {
+                audioContext.resume();
+              }
+            }
+          });
         });
 
-        // Add CSS for app entrance animation
-        const style = document.createElement('style');
-        style.textContent = `
+        // Set initial active tab
+        const initialActiveItem =
+          document.querySelector(`.nav-item[data-src="${defaultSrc}"]`) ||
+          navItems[0];
+        if (initialActiveItem) {
+          setActiveTab(initialActiveItem);
+        }
+      });
+
+      // Add CSS for app entrance animation
+      const style = document.createElement("style");
+      style.textContent = `
             .app-container {
                 opacity: 0;
             }
@@ -583,14 +868,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 transition: opacity 0.3s ease;
             }
         `;
-        document.head.appendChild(style);
+      document.head.appendChild(style);
 
-        // Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(() => console.log("Service Worker registered"))
-                .catch(error => console.error("Service Worker registration failed:", error));
-        }
+      // Service Worker Registration
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("/sw.js")
+          .then(() => console.log("Service Worker registered"))
+          .catch((error) =>
+            console.error("Service Worker registration failed:", error)
+          );
+      }
     </script>
-</body>
+  </body>
 </html>

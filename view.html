@@ -2,27 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta 
-    name="viewport" 
+  <meta
+    name="viewport"
     content="width=device-width, initial-scale=1.0, user-scalable=no"
   />
   <title>Episode Player</title>
 
   <!-- Inter font -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link 
-    rel="preconnect" 
-    href="https://fonts.gstatic.com" 
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
     crossorigin
   />
-  <link 
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   />
   <style>
     :root {
       --accent-color-active: #FF9500;
-      /* CSS variables for the liquid morph animation */
       --indicator-left: 4px;
       --indicator-width: 0px;
     }
@@ -42,392 +41,211 @@
       flex-direction: column;
       overflow-x: hidden;
     }
-    
-    /* Video Player Container */
-    #player-container {
-      width: 100vw;
-      height: 56.25vw; /* 16:9 aspect ratio */
-      min-height: 200px;
-      max-height: none;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      margin-top: 80px;
-      margin-bottom: 20px;
-      flex-shrink: 0;
+
+    /* Top-left controls for landscape mode */
+    #top-controls {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 120;
+        display: none; /* Hidden by default */
+        gap: 8px;
     }
-    #player-container iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: #111;
-      display: block;
+    .top-btn {
+        background: rgba(30, 30, 30, 0.8);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff;
+        font-size: 0.9em;
+        font-weight: 600;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-left: 90px;
+        margin-top: 10px;
     }
-    
-    /* Info Container - Now scrollable below video */
-    #info-container {
-      width: 100%;
-      background: #0a0a0a;
-      padding: 1.2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-      font-size: 1.05rem;
-      box-sizing: border-box;
-      flex: 1;
-      min-height: calc(100vh - 56.25vw);
+    .top-btn:hover {
+        background: rgba(50, 50, 50, 0.9);
     }
-    
-    #series-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 0.2rem;
-      letter-spacing: 0.01em;
-      line-height: 1.3;
-    }
-    #meta-line {
-      font-size: 0.95rem;
-      opacity: 0.8;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.7em;
-      margin-bottom: 0.8rem;
-    }
-    #error-message {
-      color: #ff6b6b;
-      text-align: center;
-      padding: 2rem 1rem;
-      font-size: 1.1rem;
-    }
-    
-    /* Controls Wrapper */
-    #controls-wrapper {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      margin-top: 0.5rem;
+    #toggle-controls-btn.active {
+        background: var(--accent-color-active);
+        border-color: rgba(255, 149, 0, 0.5);
     }
 
-    /* Liquid Morph Selector */
+    /* Loading Container */
+    #loading-container {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        z-index: 200; background-color: #000; background-size: cover;
+        background-position: center; display: none; align-items: flex-end;
+        justify-content: center;
+    }
+    #loading-container::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%;
+        height: 100%; background: linear-gradient(to top, rgba(0,0,0,1) 20%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);
+        z-index: 1;
+    }
+    #loading-info {
+        position: relative; z-index: 2; text-align: left; padding: 1.5rem;
+        max-width: 90%; max-height: 50%; overflow-y: auto; box-sizing: border-box;
+    }
+    #loading-info h2 { margin: 0 0 0.5rem 0; font-size: 1.5rem; }
+    #loading-info p { margin: 0; font-size: 0.9rem; opacity: 0.8; line-height: 1.5; }
+    .loader-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.2); border-radius: 50%;
+        border-top: 4px solid var(--accent-color-active); width: 40px; height: 40px;
+        animation: spin 1s linear infinite; position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%); z-index: 3;
+    }
+    @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+    /* Video Player Container */
+    #player-container {
+      width: 100vw; height: 56.25vw; min-height: 200px; max-height: none;
+      background: #000; display: flex; align-items: center; justify-content: center;
+      position: relative; margin-top: 80px; margin-bottom: 20px; flex-shrink: 0;
+    }
+    #player-container iframe {
+      width: 100%; height: 100%; border: none; background: #111; display: block;
+    }
+
+    /* Info Container */
+    #info-container {
+      width: 100%; background: #0a0a0a; padding: 1.2rem;
+      display: flex; flex-direction: column; gap: 0.8rem; font-size: 1.05rem;
+      box-sizing: border-box; flex: 1; min-height: calc(100vh - 56.25vw);
+    }
+    #series-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.2rem; }
+    #meta-line { font-size: 0.95rem; opacity: 0.8; display: flex; flex-wrap: wrap; gap: 0.7em; margin-bottom: 0.8rem; }
+    #error-message { color: #ff6b6b; text-align: center; padding: 2rem 1rem; font-size: 1.1rem; }
+
+    /* Synopsis Container (Portrait only) */
+    #synopsis-container {
+        display: none; /* Hidden by default */
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    #synopsis-container h4 {
+        margin: 0 0 0.5rem 0;
+        font-weight: 700;
+        opacity: 0.9;
+    }
+    #synopsis-container p {
+        font-size: 0.9em;
+        line-height: 1.6;
+        opacity: 0.7;
+        margin: 0;
+    }
+
+    /* Controls Wrapper */
+    #controls-wrapper { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 0.5rem; }
+
+    /* Search Options */
     .search-options-list {
-      position: relative;
-      display: flex;
-      gap: 4px;
-      margin: 0;
-      padding: 4px;
-      list-style: none;
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(12px);
-      border-radius: 22px;
-      box-shadow: 0 1px 4px 0 #0003;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative; display: flex; gap: 4px; margin: 0; padding: 4px;
+      list-style: none; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px);
+      border-radius: 22px; border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .search-options-list::before {
-      content: '';
-      position: absolute;
-      top: 4px;
-      left: var(--indicator-left);
-      width: var(--indicator-width);
-      height: calc(100% - 8px);
-      background: rgba(255, 149, 0, 0.9);
-      backdrop-filter: blur(8px);
-      border-radius: 18px;
-      border: 1px solid rgba(255, 149, 0, 0.3);
-      box-shadow: 
-        0 2px 8px rgba(255, 149, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-      z-index: 1;
+      content: ''; position: absolute; top: 4px; left: var(--indicator-left);
+      width: var(--indicator-width); height: calc(100% - 8px);
+      background: rgba(255, 149, 0, 0.9); border-radius: 18px;
+      border: 1px solid rgba(255, 149, 0, 0.3); z-index: 1;
       transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     }
     .search-option-btn {
-      background: none;
-      border: none;
-      color: #ccc;
-      font-size: 1.05em;
-      font-weight: 700;
-      padding: 8px 26px;
-      border-radius: 18px;
-      cursor: pointer;
-      outline: none;
-      letter-spacing: 0.04em;
-      position: relative;
-      z-index: 2;
+      background: none; border: none; color: #ccc; font-size: 1.05em; font-weight: 700;
+      padding: 8px 26px; border-radius: 18px; cursor: pointer; outline: none; z-index: 2;
       transition: color 0.3s ease;
-      touch-action: manipulation;
     }
-    .search-option-btn.active {
-      color: #fff;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    }
-    
+    .search-option-btn.active { color: #fff; }
+
     /* Next Episode Button */
     #next-episode-btn {
-      margin: 0;
-      display: block;
-      background: var(--accent-color-active, #FF9500);
-      color: #fff;
-      font-weight: 700;
-      font-size: 1.08em;
-      border: none;
-      border-radius: 22px;
-      padding: 10px 24px;
-      cursor: pointer;
-      box-shadow: 0 2px 8px 0 #0002;
-      letter-spacing: 0.03em;
-      transition: background 0.18s;
-      white-space: nowrap;
+      display: block; background: var(--accent-color-active, #FF9500); color: #fff;
+      font-weight: 700; font-size: 1.08em; border: none; border-radius: 22px;
+      padding: 10px 24px; cursor: pointer; transition: background 0.18s; white-space: nowrap;
     }
-    #next-episode-btn:hover {
-      background: #e6850a;
+    #next-episode-btn:hover { background: #e6850a; }
+    #series-over-msg { text-align: center; font-weight: 700; font-size: 1.05em; color: var(--accent-color-active, #FF9500); opacity: 0.8; }
+
+    /* Portrait Mode Adjustments */
+    @media (orientation: portrait) {
+      #info-container #synopsis-container {
+        display: block; /* Show synopsis in portrait */
+      }
     }
-    
-    #series-over-msg {
-      margin: 0;
-      text-align: center;
-      font-weight: 700;
-      font-size: 1.05em;
-      color: var(--accent-color-active, #FF9500);
-      opacity: 0.8;
+    @media (max-width: 600px) and (orientation: portrait) {
+      #player-container { height: 56.25vw; min-height: 180px; }
+      #info-container { font-size: 1rem; padding: 1rem; min-height: calc(100vh - 56.25vw); }
+      #series-title { font-size: 1.1rem; }
+      .search-option-btn { padding: 7px 16px; font-size: 1em; }
+      #next-episode-btn { padding: 9px 20px; font-size: 1em; }
     }
 
-    /* Mobile Portrait Adjustments */
-    @media (max-width: 600px) {
-      #player-container {
-        height: 56.25vw;
-        min-height: 180px;
-      }
-      #info-container {
-        font-size: 1rem;
-        padding: 1rem;
-        min-height: calc(100vh - 56.25vw);
-      }
-      #series-title {
-        font-size: 1.1rem;
-      }
-      .search-option-btn {
-        padding: 7px 16px;
-        font-size: 1em;
-      }
-      #next-episode-btn {
-        padding: 9px 20px;
-        font-size: 1em;
-      }
-    }
+    /* Mobile Landscape Orientation */
+    @media (orientation: landscape) and (max-height: 600px) {
+        body.landscape-active { overflow: hidden; }
+        .landscape-active #top-controls { display: flex; }
+        .landscape-active #player-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 100; max-height: 100vh; margin: 0; visibility: hidden;
+        }
+        .landscape-active #player-container.loaded { visibility: visible; }
+        .landscape-active #player-container iframe { width: 100%; height: 100%; }
 
-    /* Mobile Landscape Orientation - Optimized for phones */
-    @media (orientation: landscape) and (max-height: 500px) {
-      body {
-        overflow: hidden;
-      }
-      
-      #player-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 100;
-        max-height: 100vh;
-        margin: 0;
-      }
-      
-      #player-container iframe {
-        width: 100%;
-        height: 100%;
-      }
-      
-      /* Controls overlay - always visible but compact */
-      #info-container {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        min-height: auto;
-        max-height: none;
-        height: auto;
-        overflow: visible;
-        z-index: 110;
-        background: rgba(10, 10, 10, 0.85);
-        backdrop-filter: blur(8px);
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-        box-shadow: 0 -2px 12px 0 rgba(0, 0, 0, 0.6);
-        padding: 8px 12px;
-        transform: translateY(0);
-        transition: opacity 0.3s ease-in-out;
-        opacity: 1;
-      }
-      
-      /* Compact layout for landscape */
-      #info-container #series-title {
-        font-size: 0.9rem;
-        margin-bottom: 0;
-        line-height: 1.2;
-      }
-      
-      #info-container #meta-line {
-        font-size: 0.8rem;
-        margin-bottom: 4px;
-        gap: 0.5em;
-      }
-      
-      #info-container #controls-wrapper {
-        margin-top: 0;
-        gap: 0.5rem;
-      }
-      
-      #info-container .search-options-list {
-        padding: 2px;
-        border-radius: 16px;
-      }
-      
-      #info-container .search-option-btn {
-        padding: 4px 12px;
-        font-size: 0.85em;
-        border-radius: 14px;
-      }
-      
-      #info-container #next-episode-btn {
-        padding: 6px 14px;
-        font-size: 0.85em;
-        border-radius: 16px;
-      }
-      
-      #info-container #series-over-msg {
-        font-size: 0.85em;
-      }
-      
-      /* Hide controls after inactivity */
-      body.controls-hidden #info-container {
-        opacity: 0;
-        pointer-events: none;
-      }
-      
-      /* Add a subtle hint for mobile users */
-      @media (orientation: landscape) and (max-height: 500px) {
-        body::after {
-          content: 'Double tap to show controls';
-          position: fixed;
-          top: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(0, 0, 0, 0.7);
-          color: rgba(255, 255, 255, 0.8);
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-size: 0.75rem;
-          z-index: 120;
-          pointer-events: none;
-          opacity: 0;
-          animation: showHint 0.5s ease-out 1s forwards, hideHint 0.5s ease-out 5s forwards;
+        /* Overlay Controls Panel */
+        .landscape-active #info-container {
+            position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
+            min-height: auto; max-height: none; height: auto; overflow: visible;
+            z-index: 110; background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(8px); box-shadow: 0 -2px 12px 0 rgba(0, 0, 0, 0.6);
+            padding: 8px 12px; transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
         }
-        
-        @keyframes showHint {
-          to { opacity: 1; }
-        }
-        
-        @keyframes hideHint {
-          to { opacity: 0; }
-        }
-      }
-    }
-
-    /* Tablet landscape - keep the slide-up behavior */
-    @media (orientation: landscape) and (min-height: 500px) {
-      body {
-        overflow: hidden;
-      }
-      
-      #player-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 100;
-        max-height: 100vh;
-        margin: 0;
-      }
-      
-      #player-container iframe {
-        width: 100%;
-        height: 100%;
-      }
-      
-      /* Info container slides up from bottom */
-      #info-container {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        min-height: auto;
-        max-height: 70vh;
-        overflow-y: auto;
-        z-index: 110;
-        background: rgba(10, 10, 10, 0.95);
-        backdrop-filter: blur(12px);
-        border-top-left-radius: 16px;
-        border-top-right-radius: 16px;
-        box-shadow: 0 -4px 24px 0 #000000cc;
-        transform: translateY(100%);
-        transition: transform 0.3s ease-in-out;
-      }
-      
-      /* Show controls when tapped */
-      body.controls-visible #info-container {
-        transform: translateY(0);
-      }
-      
-      /* Add a handle indicator for the slide-up panel */
-      #info-container::before {
-        content: '';
-        position: absolute;
-        top: 8px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 40px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 2px;
-      }
+        .landscape-active.controls-visible #info-container { transform: translateY(0); }
+        .landscape-active #synopsis-container { display: none !important; } /* Ensure synopsis is hidden */
+        .landscape-active #info-container #series-title { font-size: 0.9rem; margin-bottom: 0; }
+        .landscape-active #info-container #meta-line { font-size: 0.8rem; margin-bottom: 4px; gap: 0.5em; }
+        .landscape-active #info-container #controls-wrapper { margin-top: 0; gap: 0.5rem; }
+        .landscape-active #info-container .search-options-list { padding: 2px; border-radius: 16px; }
+        .landscape-active #info-container .search-option-btn { padding: 4px 12px; font-size: 0.85em; border-radius: 14px; }
+        .landscape-active #info-container #next-episode-btn { padding: 6px 14px; font-size: 0.85em; border-radius: 16px; }
     }
   </style>
 </head>
 <body>
-  <div id="player-container">
-    <!-- JS will inject the <iframe> here -->
+  <div id="top-controls">
+      <button id="toggle-controls-btn" class="top-btn">Controls</button>
   </div>
-  
-  <div id="info-container">
-    <div id="series-title">
-      <span id="series-name">—</span>
+
+  <div id="loading-container">
+    <div class="loader-spinner"></div>
+    <div id="loading-info">
+      <h2 id="loading-title">—</h2>
+      <p id="loading-synopsis">—</p>
     </div>
+  </div>
+
+  <div id="player-container"></div>
+
+  <div id="info-container">
+    <div id="series-title"><span id="series-name">—</span></div>
     <div id="meta-line">
-      <span>Type: <span id="series-type">—</span></span>
-      <span>|</span>
-      <span>Year: <span id="series-year">—</span></span>
-      <span>|</span>
+      <span>Type: <span id="series-type">—</span></span> |
+      <span>Year: <span id="series-year">—</span></span> |
       <span>Episode: <span id="episode-number">—</span></span>
     </div>
     <div id="controls-wrapper">
       <ul class="search-options-list" id="search-options-list">
-        <li>
-          <button class="search-option-btn active" id="sub-option-btn" type="button">
-            SUB
-          </button>
-        </li>
-        <li>
-          <button class="search-option-btn" id="dub-option-btn" type="button">
-            DUB
-          </button>
-        </li>
+        <li><button class="search-option-btn active" id="sub-option-btn" type="button">SUB</button></li>
+        <li><button class="search-option-btn" id="dub-option-btn" type="button">DUB</button></li>
       </ul>
-      <!-- Next Episode button or Series Over message will be injected here -->
+    </div>
+    <div id="synopsis-container">
+        <h4>Synopsis</h4>
+        <p id="synopsis-text">—</p>
     </div>
   </div>
 
@@ -442,56 +260,119 @@
       const dubOptionBtn = document.getElementById('dub-option-btn');
       const searchOptionsList = document.getElementById('search-options-list');
       const controlsWrapper = document.getElementById('controls-wrapper');
-      
+      const loadingContainer = document.getElementById('loading-container');
+      const toggleControlsBtn = document.getElementById('toggle-controls-btn');
+      const synopsisText = document.getElementById('synopsis-text');
+
       if (!jikanId || !episode) {
         playerContainer.innerHTML = `<div id="error-message">Missing "id" or "ep" parameter.</div>`;
         return;
       }
-
       let userPref = localStorage.getItem('animeDubPref') || 'sub';
 
       function moveActiveIndicator() {
-        const activeButton = searchOptionsList.querySelector('.search-option-btn.active');
+        const activeButton = document.querySelector('.search-option-btn.active');
         if (activeButton) {
-          const left = activeButton.offsetLeft;
-          const width = activeButton.offsetWidth;
-          searchOptionsList.style.setProperty('--indicator-left', `${left}px`);
-          searchOptionsList.style.setProperty('--indicator-width', `${width}px`);
+          const indicator = document.querySelector('.search-options-list');
+          const listRect = indicator.getBoundingClientRect();
+          const buttonRect = activeButton.getBoundingClientRect();
+          const leftPosition = buttonRect.left - listRect.left;
+          
+          indicator.style.setProperty('--indicator-left', `${leftPosition}px`);
+          indicator.style.setProperty('--indicator-width', `${activeButton.offsetWidth}px`);
         }
       }
 
-      // Fetch anime info
-      let title = 'Unknown';
-      let type = 'N/A';
-      let year = 'N/A';
-      try {
-        const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}`);
-        if (resp.ok) {
-          const data = await resp.json();
-          const anime = data.data || {};
-          title = anime.title_english || anime.title || 'Unknown';
-          type = anime.type || 'N/A';
-          year = anime.year || anime.aired?.prop?.from?.year || 'N/A';
-        }
-      } catch (err) { console.warn('Failed to fetch Jikan info:', err); }
+      function isMobileLandscape() {
+        return window.matchMedia("(orientation: landscape) and (max-height: 600px)").matches;
+      }
 
+      function handleOrientation() {
+        if (isMobileLandscape()) {
+          document.body.classList.add('landscape-active');
+        } else {
+          document.body.classList.remove('landscape-active', 'controls-visible');
+          toggleControlsBtn.classList.remove('active');
+          toggleControlsBtn.textContent = 'Controls';
+        }
+        setTimeout(moveActiveIndicator, 100);
+      }
+
+      async function fetchAnimeData() {
+        let title = 'Unknown', type = 'N/A', year = 'N/A', totalEpisodes = null, synopsis = 'No synopsis available.';
+        let episodeSynopsis = 'No episode synopsis available.', episodeThumbnail = null;
+        
+        try {
+            const [jikanInfoResp, jikanEpisodesResp, kitsuMapResp] = await Promise.all([
+                fetch(`https://api.jikan.moe/v4/anime/${jikanId}`),
+                fetch(`https://api.jikan.moe/v4/anime/${jikanId}/episodes`),
+                fetch(`https://arkm20-animex-player-api.hf.space/map/mal/${jikanId}`)
+            ]);
+
+            if (jikanInfoResp.ok) {
+                const data = (await jikanInfoResp.json()).data || {};
+                title = data.title_english || data.title || 'Unknown';
+                type = data.type || 'N/A';
+                year = data.year || data.aired?.prop?.from?.year || 'N/A';
+            }
+
+            if (jikanEpisodesResp.ok) {
+                const data = await jikanEpisodesResp.json();
+                totalEpisodes = data.pagination?.last_visible_page > 1 ? null : data.data?.length;
+            }
+
+            if (kitsuMapResp.ok) {
+                const mapData = await kitsuMapResp.json();
+                const kitsuId = mapData.kitsu_id;
+                
+                // Fetch anime data and episode data in parallel
+                const [kitsuAnimeResp, kitsuEpisodeResp] = await Promise.all([
+                    fetch(`https://kitsu.io/api/edge/anime/${kitsuId}`),
+                    fetch(`https://kitsu.io/api/edge/anime/${kitsuId}/episodes?filter[number]=${episode}`)
+                ]);
+                
+                if (kitsuAnimeResp.ok) {
+                    const kitsuData = await kitsuAnimeResp.json();
+                    const attributes = kitsuData.data.attributes;
+                    synopsis = attributes.synopsis || synopsis;
+                    if (attributes.posterImage?.original) {
+                        loadingContainer.style.backgroundImage = `url(${attributes.posterImage.original})`;
+                    }
+                }
+                
+                // Fetch episode-specific data
+                if (kitsuEpisodeResp.ok) {
+                    const episodeData = await kitsuEpisodeResp.json();
+                    if (episodeData.data && episodeData.data.length > 0) {
+                        const episodeAttributes = episodeData.data[0].attributes;
+                        episodeSynopsis = episodeAttributes.synopsis || episodeAttributes.description || episodeSynopsis;
+                        episodeThumbnail = episodeAttributes.thumbnail?.original;
+                    }
+                }
+            }
+        } catch (err) { console.warn('Failed to fetch some anime data:', err); }
+        
+        return { title, type, year, totalEpisodes, synopsis, episodeSynopsis, episodeThumbnail };
+      }
+
+      const { title, type, year, totalEpisodes, synopsis, episodeSynopsis, episodeThumbnail } = await fetchAnimeData();
+
+      // Update UI with episode-specific data
       document.getElementById('series-name').textContent = title;
       document.getElementById('series-type').textContent = type;
       document.getElementById('series-year').textContent = year;
       document.getElementById('episode-number').textContent = episode;
+      synopsisText.textContent = episodeSynopsis; // Use episode synopsis instead of series synopsis
+      document.getElementById('loading-title').textContent = title;
+      document.getElementById('loading-synopsis').textContent = episodeSynopsis; // Use episode synopsis
+
+      // Set episode thumbnail as background if available
+      if (episodeThumbnail) {
+          loadingContainer.style.backgroundImage = `url(${episodeThumbnail})`;
+      }
+
 
       // Add Next Episode button
-      let totalEpisodes = null;
-      try {
-        const resp = await fetch(`https://api.jikan.moe/v4/anime/${jikanId}/episodes`);
-        if (resp.ok) {
-          const data = await resp.json();
-          totalEpisodes = data.pagination?.last_visible_page > 1 
-            ? null
-            : data.data?.length;
-        }
-      } catch (err) {}
-
       const currentEpNum = parseInt(episode, 10);
       if (totalEpisodes && currentEpNum < totalEpisodes) {
         const nextEpBtn = document.createElement('button');
@@ -508,43 +389,18 @@
         seriesOverMsg.textContent = 'Series Complete';
         controlsWrapper.appendChild(seriesOverMsg);
       }
-      // Move this function definition to before the anime info fetching (around line 200)
-      async function updateWatchHistory(showId, showTitle, episodeNumber) {
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
-          console.log("User not logged in. Skipping watch history update.");
-          return;
-        }
-        try {
-          const params = new URLSearchParams({
-              show_id: String(showId),
-              show_title: String(showTitle),
-              season_number: 1,
-              episode_number: Number(episodeNumber)
-          });
 
-          const url = `https://arkm20-authapi.hf.space/users/me/watch-history?${params.toString()}`;
-
-          const response = await fetch(url, {
-              method: 'GET',
-              headers: {
-                  'Authorization': `Bearer ${token}`
-              }
-          });
-          if (response.ok) {
-            console.log("Watch history updated successfully.");
-          } else {
-            const result = await response.json().catch(() => ({}));
-            console.warn("Failed to update watch history:", result.message || response.status);
+      async function showLoadingScreen() {
+          if (isMobileLandscape()) {
+              loadingContainer.style.display = 'flex';
           }
-        } catch (error) {
-          console.error("Network error while updating watch history:", error);
-        }
       }
 
-      
       async function loadIframe(dub) {
         playerContainer.innerHTML = '';
+        playerContainer.classList.remove('loaded');
+        await showLoadingScreen();
+
         const proxyBase = 'https://arkm20-animex-player-api.hf.space';
         const iframeSrcURL = `${proxyBase}/iframe-src?id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
         try {
@@ -552,171 +408,78 @@
           if (!res.ok) throw new Error(`Proxy error ${res.status}`);
           const json = await res.json();
           if (!json.src) throw new Error('No embed source found');
-          
+
           const iframe = document.createElement('iframe');
           iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-fullscreen');
           iframe.setAttribute('src', json.src);
           iframe.setAttribute('allowfullscreen', 'true');
           iframe.setAttribute('scrolling', 'no');
+          iframe.onload = () => {
+              loadingContainer.style.display = 'none';
+              playerContainer.classList.add('loaded');
+          };
           playerContainer.appendChild(iframe);
         } catch (err) {
           console.error('Error loading player:', err);
+          loadingContainer.style.display = 'none';
           playerContainer.innerHTML = `<div id="error-message">Could not load player. Please try another option.</div>`;
         }
       }
-      
-      // Setup initial state
-      if (userPref === 'dub') {
-        dubOptionBtn.classList.add('active');
-        subOptionBtn.classList.remove('active');
-        await loadIframe(true);
-      } else {
-        subOptionBtn.classList.add('active');
-        dubOptionBtn.classList.remove('active');
-        await loadIframe(false);
-      }
-      setTimeout(moveActiveIndicator, 50);
 
+      // Initial setup
+      if (userPref === 'dub') { dubOptionBtn.classList.add('active'); subOptionBtn.classList.remove('active'); }
+      else { subOptionBtn.classList.add('active'); dubOptionBtn.classList.remove('active'); }
+      handleOrientation();
+      await loadIframe(userPref === 'dub');
+      setTimeout(moveActiveIndicator, 150);
+
+      // Event Listeners
       subOptionBtn.addEventListener('click', async () => {
-        if (subOptionBtn.classList.contains('active')) return;
-        dubOptionBtn.classList.remove('active');
-        subOptionBtn.classList.add('active');
-        localStorage.setItem('animeDubPref', 'sub');
-        moveActiveIndicator();
-        await loadIframe(false);
+        if (userPref !== 'sub') {
+            userPref = 'sub';
+            localStorage.setItem('animeDubPref', 'sub');
+            subOptionBtn.classList.add('active');
+            dubOptionBtn.classList.remove('active');
+            moveActiveIndicator();
+            await loadIframe(false);
+        }
       });
-
       dubOptionBtn.addEventListener('click', async () => {
-        if (dubOptionBtn.classList.contains('active')) return;
-        subOptionBtn.classList.remove('active');
-        dubOptionBtn.classList.add('active');
-        localStorage.setItem('animeDubPref', 'dub');
-        moveActiveIndicator();
-        await loadIframe(true);
+        if (userPref !== 'dub') {
+            userPref = 'dub';
+            localStorage.setItem('animeDubPref', 'dub');
+            dubOptionBtn.classList.add('active');
+            subOptionBtn.classList.remove('active');
+            moveActiveIndicator();
+            await loadIframe(true);
+        }
       });
 
-      // --- Enhanced landscape controls logic ---
-      let controlsTimer;
-      
-      // Check if device is mobile (small height in landscape)
-      function isMobileLandscape() {
-        return window.matchMedia("(orientation: landscape) and (max-height: 500px)").matches;
-      }
-      
-      // Check if device is tablet/desktop landscape
-      function isTabletLandscape() {
-        return window.matchMedia("(orientation: landscape) and (min-height: 500px)").matches;
-      }
-      
+      // Landscape Controls Logic
       function showControls() {
-        if (isMobileLandscape()) {
-          // Mobile landscape - show controls and hide after timeout
-          document.body.classList.remove('controls-hidden');
-          clearTimeout(controlsTimer);
-          controlsTimer = setTimeout(() => {
-            document.body.classList.add('controls-hidden');
-          }, 3000); // Hide after 3 seconds on mobile
-        } else if (isTabletLandscape()) {
-          // Tablet landscape - use slide-up behavior
-          document.body.classList.add('controls-visible');
-          clearTimeout(controlsTimer);
-          controlsTimer = setTimeout(() => {
-            document.body.classList.remove('controls-visible');
-          }, 4000); // Hide after 4 seconds on tablet
-        }
+        if (!isMobileLandscape()) return;
+        document.body.classList.add('controls-visible');
+        toggleControlsBtn.classList.add('active');
+        toggleControlsBtn.textContent = 'Hide';
       }
-      
+
       function hideControls() {
-        if (isMobileLandscape()) {
-          document.body.classList.add('controls-hidden');
-        } else if (isTabletLandscape()) {
-          document.body.classList.remove('controls-visible');
-        }
-        clearTimeout(controlsTimer);
+        if (!isMobileLandscape()) return;
+        document.body.classList.remove('controls-visible');
+        toggleControlsBtn.classList.remove('active');
+        toggleControlsBtn.textContent = 'Controls';
       }
 
-      // Double tap gesture handler for mobile
-      let lastTapTime = 0;
-      let tapTimer = null;
-      
-      function handleDoubleTap(e) {
-        const currentTime = Date.now();
-        const timeDiff = currentTime - lastTapTime;
-        
-        if (timeDiff < 300) { // Double tap detected (within 300ms)
-          clearTimeout(tapTimer);
-          if (isMobileLandscape() || isTabletLandscape()) {
-            showControls();
-          }
-        } else {
-          // Single tap - wait to see if there's a second tap
-          tapTimer = setTimeout(() => {
-            // This was just a single tap, do nothing special
-          }, 300);
-        }
-        
-        lastTapTime = currentTime;
-      }
-      
-      // Multiple ways to show controls on mobile
-      function addControlTriggers() {
-        // Double tap anywhere on the screen
-        document.addEventListener('touchend', handleDoubleTap);
-        
-        // Fallback: Single tap on video player for desktop/tablet
-        playerContainer.addEventListener('click', (e) => {
-          if (isTabletLandscape()) {
-            showControls();
-          }
-        });
-        
-        // Mouse movement for desktop debugging
-        document.addEventListener('mousemove', (e) => {
-          if (isTabletLandscape()) {
-            showControls();
-          }
-        });
-      }
-
-      
-      
-      addControlTriggers();
-      
-      // Handle orientation changes
-      window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-          hideControls(); // Reset controls state
-          
-          if (isMobileLandscape() || isTabletLandscape()) {
-            // Show controls briefly when rotating to landscape
-            setTimeout(showControls, 100);
-          }
-          
-          setTimeout(moveActiveIndicator, 200);
-        }, 100);
-      });
-
-      // Initial setup for landscape mode
-      if (isMobileLandscape() || isTabletLandscape()) {
-        setTimeout(() => {
-          showControls();
-        }, 500);
-      }
-
-      // Keyboard support for hiding controls
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && (isMobileLandscape() || isTabletLandscape())) {
+      toggleControlsBtn.addEventListener('click', () => {
+        if (document.body.classList.contains('controls-visible')) {
           hideControls();
+        } else {
+          showControls();
         }
       });
 
-      // Add this call after the anime info is fetched and before the iframe loading
-      // Around line 280, after setting the episode number display
-      document.getElementById('episode-number').textContent = episode;
-
-      // Add this line to update watch history when page loads
-      await updateWatchHistory(jikanId, title, episode);
-
+      window.addEventListener('orientationchange', () => setTimeout(handleOrientation, 100));
+      window.addEventListener('resize', () => setTimeout(moveActiveIndicator, 100));
     });
   </script>
 </body>

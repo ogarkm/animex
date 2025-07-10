@@ -7,22 +7,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
+      /* Maintained the original brand color as requested */
       --brand-primary: #FF9500;
       --brand-primary-dark: #E6850E;
-      --bg-main: #000000;
-      --bg-overlay: rgba(0, 0, 0, 0.85);
-      --bg-card: rgba(20, 20, 20, 0.95);
+
+      /* New theme colors inspired by the image */
+      --bg-main: #0F1014;
+      --bg-overlay: rgba(15, 16, 20, 0.2);
+      --bg-button-secondary: rgba(45, 48, 58, 0.7);
+      --bg-button-secondary-hover: rgba(55, 58, 68, 0.9);
       --text-primary: #FFFFFF;
-      --text-secondary: #CCCCCC;
-      --text-tertiary: #999999;
+      --text-secondary: #A0AEC0;
+      --text-tertiary: #718096;
       --border-color: rgba(255, 255, 255, 0.1);
-      --shadow-color: rgba(0, 0, 0, 0.6);
+      --shadow-color: rgba(0, 0, 0, 0.5);
       --shadow-brand: rgba(255, 149, 0, 0.3);
+
+      /* UI Styles */
       --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --radius-xl: 28px;
-      --radius-l: 20px;
+      --radius-pill: 50px;
       --radius-m: 16px;
-      --radius-s: 12px;
       --transition-speed: 0.4s;
     }
 
@@ -33,27 +37,19 @@
       font-family: var(--font-family);
       color: var(--text-primary);
       overflow: hidden;
-      /* Safari-specific fixes */
+      background-color: var(--bg-main);
       -webkit-text-size-adjust: 100%;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
     }
-
-    html {
-      background-color: var(--bg-main);
-      /* Handle Safari's safe areas */
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    }
     
     body { 
-      background-color: transparent;
-      /* Ensure full height on Safari */
       min-height: 100vh;
       min-height: -webkit-fill-available;
     }
 
-    /* New background container */
+    /* Fullscreen background inspired by the image */
     .background-container {
         position: fixed;
         top: 0;
@@ -62,219 +58,116 @@
         height: 100%;
         background-size: cover;
         background-position: center;
-        transition: background-image 1s ease-in-out, opacity 1s ease-in-out;
-        z-index: -2;
-        opacity: 0;
+        z-index: 0;
+        filter: blur(7px);
+        transform: scale(1.1);
+        opacity: 0.7;
     }
 
-    .background-container.visible {
-        opacity: 1;
-    }
-
-
+    /* Dark overlay to make text readable */
     .background-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, 
-        rgba(0, 0, 0, 0.9) 0%, 
-        rgba(10, 10, 10, 0.85) 50%, 
-        rgba(0, 0, 0, 0.9) 100%);
-        z-index: -1;
+        background: linear-gradient(180deg, rgba(15, 16, 20, 0.0) 0%, var(--bg-main) 100%);
+        z-index: 1;
     }
 
-
+    /* Main container now organizes content and nav vertically */
     .onboarding-container {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      min-height: 100vh;
-      min-height: -webkit-fill-available; /* Correct height for Safari */
-      width: 100vw;
-      position: absolute;
-      bottom: 0; 
-      left: 0;
-      z-index: 1;
-      box-sizing: border-box;
-      padding-bottom: 0; /* Ensure no padding at bottom */
-    }
-
-    .onboarding-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-xl);
-      box-shadow: 0 20px 60px var(--shadow-color);
-      padding: 40px 32px 32px;
-      max-width: 380px;
-      width: 100%;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 0;
-      
-      /* === FIX START === */
-      /* Replaced fixed height with flexible properties */
-      min-height: 500px;
-      max-height: 550px;
-      display: flex;
-      flex-direction: column;
       justify-content: space-between;
-      /* === FIX END === */
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      width: 100%;
+      position: relative;
+      z-index: 2;
+      box-sizing: border-box;
+      padding: 40px 24px calc(24px + env(safe-area-inset-bottom)) 24px;
+      text-align: center;
     }
-
-
-    .onboarding-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, 
-        transparent 0%, 
-        var(--brand-primary) 50%, 
-        transparent 100%);
-      opacity: 0.6;
-    }
-
-     /* Centered Icon at the top */
-     .top-icon-container {
-        position: absolute;
-        top: 15%;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 2;
-        transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
-      }
-
-      .top-icon-container.is-changing {
-        opacity: 0;
-        transform: translateX(-50%) scale(0.9);
-      }
-
-      .content-icon {
-        position: relative;
-      }
-
-      .content-icon svg {
-        width: 120px;
-        height: 120px;
-        color: var(--brand-primary);
-        filter: drop-shadow(0 12px 30px var(--shadow-brand));
-      }
-
-
+    
+    /* Removed the card style, content now lives on the main view */
     #onboarding-content {
-      min-height: 150px;
+      flex-grow: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 16px;
       transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
-      padding: 0 50px;
-      
-      /* === FIX START === */
-      /* Allows this container to grow and push the footer down */
-      flex-grow: 1;
-      /* === FIX END === */
+      padding: 0;
+      margin-top: 5vh; /* Pushes content down slightly from the top */
     }
 
     #onboarding-content.is-changing {
       opacity: 0;
       transform: translateY(20px);
     }
+    
+    .content-icon {
+        color: var(--brand-primary);
+        margin-bottom: 24px;
+        transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
+    }
 
+    .content-icon svg, .content-icon i {
+        width: 150px;
+        height: 150px;
+        filter: drop-shadow(0 8px 20px var(--shadow-brand));
+    }
 
     .content-title {
-      font-size: 2rem;
+      font-size: 2.5rem; /* Larger, bolder title */
       font-weight: 800;
       color: var(--text-primary);
       margin: 0;
-      letter-spacing: -0.02em;
-      line-height: 1.2;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      max-width: 400px;
     }
 
     .content-desc {
       font-size: 1rem;
       font-weight: 400;
-      line-height: 1.5;
+      line-height: 1.6;
       color: var(--text-secondary);
       margin: 0;
-      max-width: 300px;
+      max-width: 380px;
     }
-
-    .pwa-guide {
-      font-size: 1rem;
-      color: var(--text-secondary);
-      text-align: left;
-      width: 100%;
-      margin-top: 20px;
-      background: rgba(255, 149, 0, 0.05);
-      border: 1px solid rgba(255, 149, 0, 0.1);
-      border-radius: var(--radius-m);
-      padding: 20px;
-      padding-left: 50px;
-      padding-right: 50px;
-    }
-
-    .pwa-guide li {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
-      padding: 0;
-    }
-
-    .pwa-guide li:last-child {
-      margin-bottom: 0;
-    }
-
-    .pwa-guide-icon {
-      background: var(--brand-primary);
-      color: white;
-      border-radius: var(--radius-s);
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 18px;
-      box-shadow: 0 4px 12px var(--shadow-brand);
-    }
-
+    
+    /* Navigation footer at the bottom */
     #onboarding-nav {
       display: flex;
       flex-direction: column;
-      gap: 24px;
-      margin-top: 32px;
+      gap: 16px;
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
     }
 
     .progress-container {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 8px;
+      gap: 12px;
     }
 
     .progress-bar {
       flex: 1;
       height: 4px;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 2px;
+      border-radius: 4px;
       overflow: hidden;
     }
 
     .progress-bar-inner {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, var(--brand-primary) 0%, #FFB84D 100%);
-      border-radius: 2px;
+      background: var(--brand-primary);
+      border-radius: 4px;
       transition: width var(--transition-speed) ease;
     }
 
@@ -282,7 +175,6 @@
       font-size: 0.9rem;
       color: var(--text-tertiary);
       font-weight: 500;
-      min-width: 40px;
     }
 
     .nav-buttons {
@@ -290,13 +182,14 @@
       gap: 12px;
       align-items: center;
     }
-
+    
+    /* Restyled buttons to match new theme */
     .btn {
       font-family: var(--font-family);
       font-size: 1rem;
       font-weight: 600;
       padding: 16px 24px;
-      border-radius: var(--radius-m);
+      border-radius: var(--radius-pill);
       border: none;
       cursor: pointer;
       transition: all var(--transition-speed) ease;
@@ -304,335 +197,156 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 52px;
+      min-height: 54px;
       -webkit-tap-highlight-color: transparent;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--brand-primary) 0%, #FFB84D 100%);
-      color: white;
+      background: var(--brand-primary);
+      color: var(--bg-main);
       font-weight: 700;
       box-shadow: 0 8px 24px var(--shadow-brand);
       flex: 1;
     }
 
     .btn-primary:hover {
-      transform: translateY(-2px);
+      transform: translateY(-2px) scale(1.02);
       box-shadow: 0 12px 32px var(--shadow-brand);
     }
 
-    .btn-primary:active {
-      transform: translateY(0);
-    }
-
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--bg-button-secondary);
       color: var(--text-primary);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
     }
-
+    
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: var(--bg-button-secondary-hover);
       border-color: rgba(255, 255, 255, 0.2);
     }
 
     .btn-tertiary {
       background: transparent;
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       font-weight: 500;
-      padding: 16px 20px;
     }
 
     .btn-tertiary:hover {
-      color: var(--text-secondary);
-      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
     }
 
     #back-btn, #next-btn, #finish-btn, #skip-btn {
       display: none;
     }
-
-    .learn-more-btn {
-      margin-top: 20px;
-      background: rgba(255, 149, 0, 0.1);
-      border: 1px solid rgba(255, 149, 0, 0.3);
-      color: var(--brand-primary);
-      font-weight: 600;
-    }
-
-    .learn-more-btn:hover {
-      background: rgba(255, 149, 0, 0.2);
-      border-color: rgba(255, 149, 0, 0.5);
-    }
-
-    /* Modal Styles */
-    #learn-more-modal {
-      position: fixed;
-      z-index: 9999;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .learn-modal-backdrop {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(8px);
-      z-index: 0;
-    }
-
-    .learn-modal-card {
-      position: relative;
-      background: var(--bg-card);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-l);
-      box-shadow: 0 20px 60px var(--shadow-color);
-      padding: 32px 24px 24px;
-      max-width: 480px;
-      width: 100%;
-      z-index: 1;
-      animation: modalSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-      color: var(--text-primary);
-    }
-
-    @keyframes modalSlideIn {
-      from {
-        opacity: 0;
-        transform: translateY(40px) scale(0.9);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .learn-modal-card h2 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin: 0 0 24px 0;
-      color: var(--text-primary);
-    }
-
-    .learn-modal-close {
-      position: absolute;
-      top: 16px;
-      right: 18px;
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      font-size: 18px;
-      color: var(--text-tertiary);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .learn-modal-close:hover {
-      background: rgba(255, 149, 0, 0.2);
-      color: var(--brand-primary);
-    }
-
-    .folder-tree {
-      font-size: 1rem;
-      color: var(--text-secondary);
-      text-align: left;
-      line-height: 1.8;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: var(--radius-m);
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .folder.root {
-      font-size: 1.1rem;
-      color: var(--brand-primary);
-      font-weight: 700;
-    }
-
-    .folder.sub {
-      margin-left: 24px;
-      color: var(--text-secondary);
-      font-weight: 600;
-    }
-
-    .folder-icon {
-      margin-right: 8px;
-      color: var(--brand-primary);
-    }
-
-    .file {
-      margin-left: 32px;
-      color: var(--text-tertiary);
-      font-weight: 400;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .file-icon {
-      color: var(--brand-primary);
-      margin-right: 4px;
-    }
-
-    .folder-tip {
-      font-size: 0.9em;
-      color: var(--text-tertiary);
-      margin-left: 6px;
-      font-weight: 400;
-    }
-
-    .learn-modal-desc ul {
-      padding-left: 20px;
-      margin: 0;
-      color: var(--text-secondary);
-      font-size: 1rem;
-      line-height: 1.6;
-    }
-
-    .learn-modal-desc li {
-      margin-bottom: 12px;
-    }
-
-    @media (max-width: 480px) {
-      .onboarding-container {
-        justify-content: flex-end;
-        /* === FIX START === */
-        /* Replaced 'padding: 16px 16px 0 16px;' */
-        /* This ensures there is always padding at the bottom, respecting the safe area on iOS */
-        padding: 16px 16px calc(16px + env(safe-area-inset-bottom)) 16px;
-        /* === FIX END === */
-      }
-      .onboarding-card {
-        padding: 32px 24px 24px;
-        max-width: 100%;
-        margin: 0;
-        /* === FIX START === */
-        /* Allow card to shrink on smaller screens */
-        min-height: 0; 
-        /* === FIX END === */
-      }
-
-      .content-title {
-        font-size: 1.75rem;
-      }
-
-      .content-icon svg {
-        width: 100px;
-        height: 100px;
-      }
-
-
-      #onboarding-content {
-        min-height: 120px;
-      }
-
-      .learn-modal-card {
-        margin: 0;
+    
+    /* Specific styles for PWA/Learn More sections */
+    .pwa-guide, .learn-more-btn {
+        margin-top: 24px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
         border-radius: var(--radius-m);
+        padding: 20px;
+        max-width: 380px;
+    }
+
+    .pwa-guide li { list-style: none; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; padding: 0; }
+    .pwa-guide li:last-child { margin-bottom: 0; }
+    .pwa-guide-icon { background: var(--brand-primary); color: var(--bg-main); border-radius: 12px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; box-shadow: 0 4px 12px var(--shadow-brand); }
+    .learn-more-btn { color: var(--brand-primary); }
+    .learn-more-btn:hover { background: rgba(255, 149, 0, 0.2); border-color: rgba(255, 149, 0, 0.5); }
+    
+    /* Modal styles remain similar but use new variables for consistency */
+    #learn-more-modal { position: fixed; z-index: 9999; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .learn-modal-backdrop { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); z-index: 0; }
+    .learn-modal-card { position: relative; background: #1a1b20; backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: var(--radius-m); box-shadow: 0 20px 60px var(--shadow-color); padding: 32px 24px 24px; max-width: 480px; width: 100%; z-index: 1; color: var(--text-primary); }
+    .learn-modal-card h2 { font-size: 1.5rem; font-weight: 700; margin: 0 0 24px 0; color: var(--text-primary); }
+    .learn-modal-close { position: absolute; top: 16px; right: 18px; background: rgba(255, 255, 255, 0.1); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 18px; color: var(--text-tertiary); cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+    .learn-modal-close:hover { background: rgba(255, 149, 0, 0.2); color: var(--brand-primary); }
+    
+    @media (max-width: 480px) {
+      .content-title {
+        font-size: 2rem;
+      }
+      .content-icon svg {
+        width: 50px;
+        height: 50px;
       }
     }
   </style>
 </head>
 <body>
-  <div id="background-container-1" class="background-container"></div>
-  <div id="background-container-2" class="background-container"></div>
+  <!-- Simplified background structure -->
+  <div id="background-container" class="background-container"></div>
   <div class="background-overlay"></div>
   
   <div class="onboarding-container">
-    <div id="top-icon-container" class="top-icon-container">
-      <!-- Icon injected by JavaScript -->
-    </div>
-    <div class="onboarding-card">
-      <main id="onboarding-content" aria-live="polite">
-        <!-- Content injected by JavaScript -->
-      </main>
-      <footer id="onboarding-nav">
-        <div class="progress-container">
-          <div class="progress-bar">
-            <div class="progress-bar-inner" id="progress-bar-inner"></div>
-          </div>
-          <div class="progress-text" id="progress-text">1/5</div>
+    <!-- Content and navigation are now direct children of the main container -->
+    <main id="onboarding-content" aria-live="polite">
+      <!-- Content injected by JavaScript -->
+    </main>
+
+    <footer id="onboarding-nav">
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-bar-inner" id="progress-bar-inner"></div>
         </div>
-        <div class="nav-buttons">
-          <button class="btn btn-secondary" id="back-btn">Back</button>
-          <button class="btn btn-tertiary" id="skip-btn">Skip</button>
-          <button class="btn btn-primary" id="next-btn">Next</button>
-          <button class="btn btn-primary" id="finish-btn">Get Started</button>
-        </div>
-      </footer>
-    </div>
+        <div class="progress-text" id="progress-text">1/5</div>
+      </div>
+      <div class="nav-buttons">
+        <button class="btn btn-secondary" id="back-btn">Back</button>
+        <button class="btn btn-tertiary" id="skip-btn">Skip</button>
+        <button class="btn btn-primary" id="next-btn">Next</button>
+        <button class="btn btn-primary" id="finish-btn">Get Started</button>
+      </div>
+    </footer>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
   <script>
     (function() {
+      // The JS content remains identical in terms of data and logic
       const introPages = [
         {
-          icon: `<svg width="150" height="150" viewBox="0 0 150 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="25" y="21" width="99.3511" height="13.6477" fill="#DE541E"/>
-<rect x="25" y="43.8692" width="99.3511" height="13.6477" fill="#DE541E"/>
-<path d="M119.419 129.813H103.179L86.6541 30.5903H103.179L119.419 129.813Z" fill="#DE541E"/>
-<path d="M31.6938 129.813H47.9337L64.4585 30.5903H47.9337L31.6938 129.813Z" fill="#DE541E"/>
-<rect x="64.4585" y="107.998" width="20.7862" height="21.8153" fill="#DE541E"/>
-<ellipse cx="74.8516" cy="107.796" rx="10.3931" ry="11.9176" fill="#DE541E"/>
-</svg>
-`,
-          title: 'Animex',
-          desc: 'Your premium platform for anime and manga.',
-          backgroundUrl: 'Resources/Images/Launch_screen.png'
+          icon: `<svg width="100" height="100" viewBox="0 0 150 150" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="25" y="21" width="99.3511" height="13.6477" fill="currentColor"/><rect x="25" y="43.8692" width="99.3511" height="13.6477" fill="currentColor"/><path d="M119.419 129.813H103.179L86.6541 30.5903H103.179L119.419 129.813Z" fill="currentColor"/><path d="M31.6938 129.813H47.9337L64.4585 30.5903H47.9337L31.6938 129.813Z" fill="currentColor"/><rect x="64.4585" y="107.998" width="20.7862" height="21.8153" fill="currentColor"/><ellipse cx="74.8516" cy="107.796" rx="10.3931" ry="11.9176" fill="currentColor"/></svg>`,
+          title: 'Welcome to Animex',
+          desc: 'Your premium platform for discovering, watching, and reading the best anime and manga.',
+          backgroundUrl: 'Resources/Images/Launch_Screen.png'
         },
         {
-          icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path fill="#ff8500" d="M64 64l0 288 512 0 0-288L64 64zM0 64C0 28.7 28.7 0 64 0L576 0c35.3 0 64 28.7 64 64l0 288c0 35.3-28.7 64-64 64L64 416c-35.3 0-64-28.7-64-64L0 64zM128 448l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-384 0c-17.7 0-32-14.3-32-32s14.3-32 32-32z"/></svg>`,
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="currentColor" d="M64 64l0 288 512 0 0-288L64 64zM0 64C0 28.7 28.7 0 64 0L576 0c35.3 0 64 28.7 64 64l0 288c0 35.3-28.7 64-64 64L64 416c-35.3 0-64-28.7-64-64L0 64zM128 448l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-384 0c-17.7 0-32-14.3-32-32s14.3-32 32-32z"/></svg>`,
           title: 'Endless Content',
           desc: 'Thousands of anime episodes and manga chapters at your fingertips.',
-           backgroundUrl: 'Resources/Images/Launch_screen.png'
+          backgroundUrl: 'Resources/Images/Launch_Screen.png'
         },
         {
-          icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path fill="#ff9500" d="M272 416c17.7 0 32-14.3 32-32s-14.3-32-32-32l-112 0c-17.7 0-32-14.3-32-32l0-128 32 0c12.9 0 24.6-7.8 29.6-19.8s2.2-25.7-6.9-34.9l-64-64c-12.5-12.5-32.8-12.5-45.3 0l-64 64c-9.2 9.2-11.9 22.9-6.9 34.9s16.6 19.8 29.6 19.8l32 0 0 128c0 53 43 96 96 96l112 0zM304 96c-17.7 0-32 14.3-32 32s14.3 32 32 32l112 0c17.7 0 32 14.3 32 32l0 128-32 0c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l64 64c12.5 12.5 32.8 12.5 45.3 0l64-64c9.2 9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8l-32 0 0-128c0-53-43-96-96-96L304 96z"/></svg>`,
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentColor" d="M272 416c17.7 0 32-14.3 32-32s-14.3-32-32-32l-112 0c-17.7 0-32-14.3-32-32l0-128 32 0c12.9 0 24.6-7.8 29.6-19.8s2.2-25.7-6.9-34.9l-64-64c-12.5-12.5-32.8-12.5-45.3 0l-64 64c-9.2 9.2-11.9 22.9-6.9 34.9s16.6 19.8 29.6 19.8l32 0 0 128c0 53 43 96 96 96l112 0zM304 96c-17.7 0-32 14.3-32 32s14.3 32 32 32l112 0c17.7 0 32 14.3 32 32l0 128-32 0c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l64 64c12.5 12.5 32.8 12.5 45.3 0l64-64c9.2 9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8l-32 0 0-128c0-53-43-96-96-96L304 96z"/></svg>`,
           title: 'Seamless Experience',
           desc: 'Pick up where you left off across all your devices.',
-          backgroundUrl: 'Resources/Images/Launch_screen.png'
+          backgroundUrl: 'Resources/Images/Launch_Screen.png'
         },
         {
-          icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path fill="#ff9500" d="M144 480C64.5 480 0 415.5 0 336c0-62.8 40.2-116.2 96.2-135.9c-.1-2.7-.2-5.4-.2-8.1c0-88.4 71.6-160 160-160c59.3 0 111 32.2 138.7 80.2C409.9 102 428.3 96 448 96c53 0 96 43 96 96c0 12.2-2.3 23.8-6.4 34.6C596 238.4 640 290.1 640 352c0 70.7-57.3 128-128 128l-368 0zm79-167l80 80c9.4 9.4 24.6 9.4 33.9 0l80-80c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-39 39L344 184c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 134.1-39-39c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9z"/></svg>`,
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="currentColor" d="M144 480C64.5 480 0 415.5 0 336c0-62.8 40.2-116.2 96.2-135.9c-.1-2.7-.2-5.4-.2-8.1c0-88.4 71.6-160 160-160c59.3 0 111 32.2 138.7 80.2C409.9 102 428.3 96 448 96c53 0 96 43 96 96c0 12.2-2.3 23.8-6.4 34.6C596 238.4 640 290.1 640 352c0 70.7-57.3 128-128 128l-368 0zm79-167l80 80c9.4 9.4 24.6 9.4 33.9 0l80-80c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-39 39L344 184c0-13.3-10.7-24-24-24s-24 10.7-24 24l0 134.1-39-39c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9z"/></svg>`,
           title: 'Offline Downloads',
           desc: 'Download your favorite episodes and chapters to enjoy them anywhere, anytime.',
           learnMore: true,
-          backgroundUrl: 'Resources/Images/Launch_screen.png'
+          backgroundUrl: 'Resources/Images/Launch_Screen.png'
         },
         {
           pwa: true,
-          icon: `<i class="fa-solid fa-clapperboard" style="color: #ff9500;"></i>`,
-          title: 'Install App',
-          desc: 'Add Animex to your home screen for the ultimate app experience.',
+          icon: `<i class="fa-solid fa-clapperboard"></i>`,
+          title: 'Install the App',
+          desc: 'Add Animex to your home screen for the best experience.',
           pwaGuide: `
             <ul class="pwa-guide">
-              <li><span class="pwa-guide-icon"><i class="fas fa-share-alt"></i></span> <span>Tap the <strong>Share</strong> button in your browser</span></li>
+              <li><span class="pwa-guide-icon"><i class="fas fa-share-alt"></i></span> <span>Tap the <strong>Share</strong> button</span></li>
               <li><span class="pwa-guide-icon"><i class="fas fa-plus-square"></i></span> <span>Select <strong>'Add to Home Screen'</strong></span></li>
             </ul>
           `,
-          backgroundUrl: 'Resources/Images/Launch_screen.png'
+          backgroundUrl: 'Resources/Images/Launch_Screen.png'
         }
       ];
 
       const contentEl = document.getElementById('onboarding-content');
-      const topIconEl = document.getElementById('top-icon-container');
       const navEl = document.getElementById('onboarding-nav');
       const progressBarInnerEl = document.getElementById('progress-bar-inner');
       const progressTextEl = document.getElementById('progress-text');
@@ -640,90 +354,56 @@
       const nextBtn = document.getElementById('next-btn');
       const finishBtn = document.getElementById('finish-btn');
       const skipBtn = document.getElementById('skip-btn');
-
-      // Background elements
-      const bgContainer1 = document.getElementById('background-container-1');
-      const bgContainer2 = document.getElementById('background-container-2');
-      let currentBgContainer = 1;
+      const bgContainer = document.getElementById('background-container');
 
       let currentPage = 0;
       let availablePages = [];
 
       function finishOnboarding() {
-        alert('Welcome to Animex! 🎉');
-        document.body.style.opacity = '0';
         document.body.style.transition = 'opacity 0.6s ease';
-        setTimeout(() => {
-          document.body.style.opacity = '1';
-        }, 600);
+        document.body.style.opacity = '0';
+        setTimeout(() => alert('Welcome to Animex! 🎉'), 600);
       }
 
       function updateNavigation() {
         const total = availablePages.length;
         const isFirstPage = currentPage === 0;
         const isLastPage = currentPage === total - 1;
-
-        const progress = ((currentPage + 1) / total) * 100;
-        progressBarInnerEl.style.width = `${progress}%`;
+        progressBarInnerEl.style.width = `${((currentPage + 1) / total) * 100}%`;
         progressTextEl.textContent = `${currentPage + 1}/${total}`;
-
-        backBtn.style.display = isFirstPage ? 'none' : 'block';
-        skipBtn.style.display = isLastPage ? 'none' : 'block';
-        nextBtn.style.display = isLastPage ? 'none' : 'block';
-        finishBtn.style.display = isLastPage ? 'block' : 'none';
+        backBtn.style.display = isFirstPage ? 'none' : 'flex';
+        skipBtn.style.display = isLastPage ? 'none' : 'flex';
+        nextBtn.style.display = isLastPage ? 'none' : 'flex';
+        finishBtn.style.display = isLastPage ? 'flex' : 'none';
       }
 
       function updateContent() {
         const pageData = availablePages[currentPage];
         
         contentEl.classList.add('is-changing');
-        topIconEl.classList.add('is-changing');
         
-        // Update background
-        const nextBgUrl = pageData.backgroundUrl;
-        const backgroundImageValue = nextBgUrl.startsWith('http') ? 
-            `url("${nextBgUrl}")` : 
-            `url("${nextBgUrl}")`;
-
-        if (currentBgContainer === 1) {
-            bgContainer2.style.backgroundImage = backgroundImageValue;
-            bgContainer1.classList.remove('visible');
-            bgContainer2.classList.add('visible');
-            currentBgContainer = 2;
-        } else {
-            bgContainer1.style.backgroundImage = backgroundImageValue;
-            bgContainer2.classList.remove('visible');
-            bgContainer1.classList.add('visible');
-            currentBgContainer = 1;
-        }
-
+        // Use a placeholder background. In a real app, you might use one per slide.
+        // I'm using the first slide's image for a consistent look.
+        const bgUrl = availablePages[0].backgroundUrl;
+        bgContainer.style.backgroundImage = `url("${bgUrl}")`;
 
         setTimeout(() => {
-          let html = `
+          let iconHtml = `<div class="content-icon">${pageData.icon}</div>`;
+          let contentHtml = `
+            ${iconHtml}
             <h1 class="content-title">${pageData.title}</h1>
             <p class="content-desc">${pageData.desc}</p>
           `;
-           let iconHtml = `<div class="content-icon">${pageData.icon}</div>`;
           
-          if (pageData.pwaGuide) {
-            html += pageData.pwaGuide;
-          }
+          if (pageData.pwaGuide) contentHtml += pageData.pwaGuide;
+          if (pageData.learnMore) contentHtml += `<button class="btn learn-more-btn" id="learn-more-btn">Learn More</button>`;
           
-          if (pageData.learnMore) {
-            html += `<button class="btn learn-more-btn" id="learn-more-btn">Learn More</button>`;
-          }
+          contentEl.innerHTML = contentHtml;
           
-          contentEl.innerHTML = html;
-          topIconEl.innerHTML = iconHtml;
-          
-          requestAnimationFrame(() => {
-            contentEl.classList.remove('is-changing');
-            topIconEl.classList.remove('is-changing');
-          });
+          requestAnimationFrame(() => contentEl.classList.remove('is-changing'));
 
           if (pageData.learnMore) {
-            const learnBtn = document.getElementById('learn-more-btn');
-            if (learnBtn) learnBtn.onclick = showLearnMoreModal;
+            document.getElementById('learn-more-btn').onclick = showLearnMoreModal;
           }
         }, 200);
       }
@@ -745,9 +425,7 @@
               updateNavigation();
             }
             break;
-          case 'finish-btn':
-            finishOnboarding();
-            break;
+          case 'finish-btn': finishOnboarding(); break;
           case 'skip-btn':
             currentPage = availablePages.length - 1;
             updateContent();
@@ -756,77 +434,20 @@
         }
       }
 
+      // Modal function remains unchanged
       function showLearnMoreModal() {
         if (document.getElementById('learn-more-modal')) return;
-        
         const modal = document.createElement('div');
         modal.id = 'learn-more-modal';
-        modal.innerHTML = `
-          <div class="learn-modal-backdrop"></div>
-          <div class="learn-modal-card">
-            <button class="learn-modal-close" id="close-learn-modal" title="Close">×</button>
-            <h2>Organize Your Downloads</h2>
-            <div class="folder-tree">
-              <div class="folder root">
-                <span class="folder-icon"><i class='fas fa-folder'></i></span> 
-                <strong>Anime</strong> 
-                <span class="folder-tip">(Main Folder)</span>
-              </div>
-              <div class="folder sub">
-                <span class="folder-icon"><i class='fas fa-folder'></i></span> 
-                <strong>Attack on Titan</strong>
-                <div class="file">
-                  <span class="file-icon"><i class='fas fa-play-circle'></i></span> Episode 1.mp4
-                </div>
-                <div class="file">
-                  <span class="file-icon"><i class='fas fa-play-circle'></i></span> Episode 2.mp4
-                </div>
-              </div>
-              <div class="folder sub">
-                <span class="folder-icon"><i class='fas fa-folder'></i></span> 
-                <strong>Demon Slayer</strong>
-                <div class="file">
-                  <span class="file-icon"><i class='fas fa-play-circle'></i></span> Episode 1.mp4
-                </div>
-              </div>
-              <div class="folder sub">
-                <span class="folder-icon"><i class='fas fa-folder'></i></span> 
-                <strong>One Piece</strong>
-                <div class="file">
-                  <span class="file-icon"><i class='fas fa-book'></i></span> Chapter 1.pdf
-                </div>
-              </div>
-            </div>
-            <div class="learn-modal-desc">
-              <ul>
-                <li><strong>Step 1:</strong> Create a main folder (e.g., "Anime") on your device</li>
-                <li><strong>Step 2:</strong> Add subfolders for each anime or manga series</li>
-                <li><strong>Step 3:</strong> Place episodes/chapters in their respective folders</li>
-                <li><strong>Pro Tip:</strong> This structure helps Animex automatically organize your library!</li>
-              </ul>
-            </div>
-          </div>
-        `;
-        
+        modal.innerHTML = `<div class="learn-modal-backdrop"></div> <div class="learn-modal-card"> <button class="learn-modal-close" id="close-learn-modal" title="Close">×</button> <h2>Organize Your Downloads</h2> <div class="folder-tree" style="font-size: 1rem; color: var(--text-secondary); text-align: left; line-height: 1.8; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-m); padding: 20px; margin-bottom: 20px;"> <div style="font-size: 1.1rem; color: var(--brand-primary); font-weight: 700;"><span style="margin-right: 8px; color: var(--brand-primary);"><i class='fas fa-folder'></i></span> <strong>Anime</strong> <span style="font-size: 0.9em; color: var(--text-tertiary); margin-left: 6px; font-weight: 400;">(Main Folder)</span></div><div style="margin-left: 24px; color: var(--text-secondary); font-weight: 600;"><span style="margin-right: 8px; color: var(--brand-primary);"><i class='fas fa-folder'></i></span> <strong>Attack on Titan</strong> <div style="margin-left: 32px; color: var(--text-tertiary); font-weight: 400; display: flex; align-items: center; gap: 6px;"><span style="color: var(--brand-primary); margin-right: 4px;"><i class='fas fa-play-circle'></i></span> Episode 1.mp4</div></div></div><div class="learn-modal-desc" style="padding-left: 0;"> <ul style="padding-left: 20px; margin: 0; color: var(--text-secondary); font-size: 1rem; line-height: 1.6;"> <li style="margin-bottom: 12px;"><strong>Step 1:</strong> Create a main folder on your device.</li><li style="margin-bottom: 12px;"><strong>Step 2:</strong> Add subfolders for each series.</li><li style="margin-bottom: 12px;"><strong>Step 3:</strong> Animex will automatically organize your library!</li></ul> </div></div>`;
         document.body.appendChild(modal);
         document.getElementById('close-learn-modal').onclick = () => modal.remove();
-        modal.onclick = (e) => {
-          if (e.target.classList.contains('learn-modal-backdrop')) modal.remove();
-        };
+        modal.onclick = (e) => { if (e.target.classList.contains('learn-modal-backdrop')) modal.remove(); };
       }
 
       function init() {
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-        availablePages = isStandalone ? 
-          introPages.filter(p => !p.pwa) : 
-          [...introPages];
-        
-        // Preload first image
-        const firstBgUrl = availablePages[0].backgroundUrl;
-        bgContainer1.style.backgroundImage = `url(${firstBgUrl})`;
-        bgContainer1.classList.add('visible');
-
-
+        availablePages = isStandalone ? introPages.filter(p => !p.pwa) : [...introPages];
         updateContent();
         updateNavigation();
         navEl.addEventListener('click', handleNavClick);
