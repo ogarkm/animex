@@ -710,13 +710,13 @@
                 if (response.ok) {
                     // Note: localStorage is not available in Claude artifacts
                     // In a real implementation, you would store the token
-                    // localStorage.setItem('accessToken', data.access_token);
+                    localStorage.setItem('accessToken', data.access_token);
                     showMessage('Login successful! Welcome back.', false);
                     
                     // Simulate redirect after successful login
                     setTimeout(() => {
                         showMessage('Redirecting to dashboard...', false);
-                        // window.location.href = 'index.html';
+                        window.location.href = 'index.html';
                     }, 1000);
                 } else {
                     showMessage(data.detail || 'Login failed. Please check your credentials.');
