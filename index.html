@@ -739,18 +739,21 @@
       }
 
       document.addEventListener("DOMContentLoaded", () => {
+        function checkAccessToken() {
+          const accessToken = localStorage.getItem('accessToken');
+          if (!accessToken) {
+            window.location.href = "login.html";
+          }
+        }
         // --- Cinematic splash ---
         const splashScreen = document.getElementById("splash-screen");
         setTimeout(() => {
           splashScreen.classList.add("splash-hide");
           setTimeout(() => {
             splashScreen.style.display = "none";
+            checkAccessToken();
+            setInterval(checkAccessToken, 5000);
 
-            const accessToken = localStorage.getItem('accessToken'); // Assuming you're using localStorage
-            if (!accessToken) {
-              window.location.href = "login.html";
-              return; // Stop further execution
-            }
 
 
             if (!navigator.onLine) {
