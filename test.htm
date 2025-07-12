@@ -56,7 +56,7 @@
             statusDiv.style.color = 'orange';
 
             // Construct the API URL for our backend
-            const apiUrl = `https://arkm20-animex-player-api.hf.space/download-link?jikan_id=${jikanId}&episode=${episode}&dub=${isDub}&quality=${quality}`;
+            const apiUrl = `https://animex-player.vercel.app/download-link?jikan_id=${jikanId}&episode=${episode}&dub=${isDub}&quality=${quality}`;
 
             try {
                 const response = await fetch(apiUrl);

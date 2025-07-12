@@ -306,7 +306,7 @@
             const [jikanInfoResp, jikanEpisodesResp, kitsuMapResp] = await Promise.all([
                 fetch(`https://api.jikan.moe/v4/anime/${jikanId}`),
                 fetch(`https://api.jikan.moe/v4/anime/${jikanId}/episodes`),
-                fetch(`https://arkm20-animex-player-api.hf.space/map/mal/${jikanId}`)
+                fetch(`https://animex-player.vercel.app/map/mal/${jikanId}`)
             ]);
 
             if (jikanInfoResp.ok) {
@@ -401,7 +401,7 @@
         playerContainer.classList.remove('loaded');
         await showLoadingScreen();
 
-        const proxyBase = 'https://arkm20-animex-player-api.hf.space';
+        const proxyBase = 'https://animex-player.vercel.app';
         const iframeSrcURL = `${proxyBase}/iframe-src?id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
         try {
           const res = await fetch(iframeSrcURL);
