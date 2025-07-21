@@ -254,6 +254,7 @@
       const params = new URLSearchParams(window.location.search);
       const jikanId = params.get('id');
       const episode = params.get('ep');
+      const dubOrSub = params.get('dubOrSub') || 'sub';
 
       const playerContainer = document.getElementById('player-container');
       const subOptionBtn = document.getElementById('sub-option-btn');
@@ -263,9 +264,14 @@
       const loadingContainer = document.getElementById('loading-container');
       const toggleControlsBtn = document.getElementById('toggle-controls-btn');
       const synopsisText = document.getElementById('synopsis-text');
+      const serverIp = localStorage.getItem('extension_server_ip');
 
       if (!jikanId || !episode) {
         playerContainer.innerHTML = `<div id="error-message">Missing "id" or "ep" parameter.</div>`;
+        return;
+      }
+      if (!serverIp) {
+        playerContainer.innerHTML = `<div id="error-message">Extension server IP not set. Please configure it on the main page.</div>`;
         return;
       }
       let userPref = localStorage.getItem('animeDubPref') || 'sub';
@@ -306,7 +312,7 @@
             const [jikanInfoResp, jikanEpisodesResp, kitsuMapResp] = await Promise.all([
                 fetch(`https://api.jikan.moe/v4/anime/${jikanId}`),
                 fetch(`https://api.jikan.moe/v4/anime/${jikanId}/episodes`),
-                fetch(`https://animex-player.vercel.app/map/mal/${jikanId}`)
+                fetch(`http://${serverIp}:7275/map/mal/${jikanId}`)
             ]);
 
             if (jikanInfoResp.ok) {
@@ -401,8 +407,7 @@
         playerContainer.classList.remove('loaded');
         await showLoadingScreen();
 
-        const proxyBase = 'https://animex-player.vercel.app';
-        const iframeSrcURL = `${proxyBase}/iframe-src?id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
+        const iframeSrcURL = `http://${serverIp}:7275/iframe-src?mal_id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
         try {
           const res = await fetch(iframeSrcURL);
           if (!res.ok) throw new Error(`Proxy error ${res.status}`);

@@ -16,6 +16,10 @@
       rel="stylesheet"
     />
     <link
+      href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
@@ -31,6 +35,31 @@
     <!-- iOS support -->
     <link rel="apple-touch-icon" href="/Resources/Images/icon-196.png" />
     <style>
+      :root {
+        /* Palette */
+        --color-bg-overlay: rgba(0, 0, 0, 0.75);
+        --color-bg-modal: #1c1c1e;
+        --color-bg-input: #2f2f31;
+        --color-border: rgba(255, 255, 255, 0.12);
+
+        --text-primary: #ffffff;
+        --text-secondary: #b3b3b5;
+
+        --accent: #ff9500;
+        --accent-light: #ffac33; /* hover */
+        --accent-fade: rgba(255, 149, 0, 0.3);
+
+        --status-ok: #34c759;
+        --status-error: #ff3b30;
+
+        /* Dimensions */
+        --radius: 0.5rem;
+        --spacing-sm: 0.75rem;
+        --spacing: 1rem;
+        --spacing-lg: 1.5rem;
+        --transition-fast: 0.2s ease;
+        --transition-medium: 0.3s ease;
+      }
       /* --- GENERAL LAYOUT STYLES --- */
       body,
       html {
@@ -485,6 +514,139 @@
           padding-bottom: 0;
         }
       }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0; /* top:0; right:0; bottom:0; left:0; */
+        background: var(--color-bg-overlay);
+        backdrop-filter: blur(8px);
+        display: flex;
+        place-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition-medium);
+        z-index: 10_000;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .modal-content {
+        background: var(--color-bg-modal);
+        padding: var(--spacing-lg) var(--spacing-lg);
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        text-align: center;
+        max-width: 28rem; /* ~ 450px */
+        width: 100%;
+        transform: scale(0.95);
+        transition: transform var(--transition-medium);
+      }
+
+      .modal-overlay.active .modal-content {
+        transform: scale(1);
+      }
+
+      .modal-content h2 {
+        margin-bottom: var(--spacing);
+        font-size: 1.75rem;
+        font-weight: 400;
+        color: var(--text-primary);
+        font-family: "Bitcount Grid Single";
+      }
+
+      .modal-content p {
+        margin-bottom: var(--spacing-lg);
+        font-size: 1rem;
+        line-height: 1.6;
+        color: var(--text-secondary);
+        font-family: Tahoma;
+      }
+
+      .modal-content a {
+        color: var(--accent);
+        font-weight: 600;
+        text-decoration: none;
+        transition: color var(--transition-fast);
+      }
+      .modal-content a:hover,
+      .modal-content a:focus {
+        color: var(--accent-light);
+        outline: none;
+      }
+
+      /* Input + button */
+      .ip-input-container {
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .ip-input {
+        width: 90%;
+        background: var(--color-bg-input);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        padding: var(--spacing) calc(var(--spacing) * 1.25);
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        text-align: center;
+        outline: none;
+        transition: box-shadow var(--transition-fast),
+          border-color var(--transition-fast);
+      }
+
+      .ip-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 0.25rem var(--accent-fade);
+      }
+
+      /* Connect button */
+      .connect-button {
+        display: block;
+        width: 100%;
+        padding: var(--spacing) 0;
+        background: var(--accent);
+        border: none;
+        border-radius: var(--radius);
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fff;
+        cursor: pointer;
+        transition: background var(--transition-fast),
+          box-shadow var(--transition-fast);
+      }
+
+      .connect-button:hover {
+        background: var(--accent-light);
+      }
+
+      .connect-button:focus {
+        outline: none;
+        box-shadow: 0 0 0 0.25rem var(--accent-fade);
+      }
+
+      /* Status text */
+      .status-indicator {
+        margin-top: var(--spacing-sm);
+        font-size: 0.9rem;
+        min-height: 1.25rem;
+        color: var(--text-secondary);
+        transition: color var(--transition-fast);
+      }
+
+      .status-indicator.connecting {
+        color: var(--text-secondary);
+      }
+      .status-indicator.connected {
+        color: var(--status-ok);
+      }
+      .status-indicator.error {
+        color: var(--status-error);
+      }
     </style>
   </head>
   <body>
@@ -586,6 +748,31 @@
         src="intro.html"
         style="width: 100vw; height: 100vh; border: none; background: #111"
       ></iframe>
+    </div>
+
+    <!-- Server Connection Modal -->
+    <div id="server-modal" class="modal-overlay active">
+      <div class="modal-content">
+        <h2>Extension Server Not Connected</h2>
+        <p>
+          Please enter the IP address of your Animex extension server.
+          <a
+            href="https://github.com/Animex-App/Extension-Servers"
+            id="learn-more-link"
+            >Learn More</a
+          >
+        </p>
+        <div class="ip-input-container">
+          <input
+            type="text"
+            id="ip-input"
+            class="ip-input"
+            placeholder="e.g., 192.168.1.100"
+          />
+        </div>
+        <button id="connect-btn" class="connect-button">Connect</button>
+        <div id="status-indicator" class="status-indicator"></div>
+      </div>
     </div>
 
     <script>
@@ -738,9 +925,51 @@
         }
       }
 
+      const serverModal = document.getElementById("server-modal");
+      const ipInput = document.getElementById("ip-input");
+      const connectBtn = document.getElementById("connect-btn");
+      const statusIndicator = document.getElementById("status-indicator");
+
+      async function checkServerStatus(ip) {
+        statusIndicator.textContent = "Connecting...";
+        statusIndicator.className = "status-indicator connecting";
+        try {
+          const response = await fetch(`http://${ip}:7275/identify`, {
+            method: "GET",
+            mode: "cors",
+            signal: AbortSignal.timeout(5000) // 5 second timeout
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.app === "Animex Extension API") {
+              statusIndicator.textContent = "Connected!";
+              statusIndicator.className = "status-indicator connected";
+              localStorage.setItem("extension_server_ip", ip);
+              setTimeout(() => {
+                serverModal.classList.remove("active");
+              }, 1000);
+              return true;
+            }
+          }
+          throw new Error("Not a valid Animex server.");
+        } catch (error) {
+          console.error("Server connection error:", error);
+          statusIndicator.textContent = "Connection failed. Please check the IP address and ensure the server is running.";
+          statusIndicator.className = "status-indicator error";
+          return false;
+        }
+      }
+
+      connectBtn.addEventListener("click", () => {
+        const ip = ipInput.value.trim();
+        if (ip) {
+          checkServerStatus(ip);
+        }
+      });
+
       document.addEventListener("DOMContentLoaded", () => {
         function checkAccessToken() {
-          const accessToken = localStorage.getItem('accessToken');
+          const accessToken = localStorage.getItem("accessToken");
           if (!accessToken) {
             window.location.href = "login.html";
           }
@@ -754,7 +983,17 @@
             checkAccessToken();
             setInterval(checkAccessToken, 5000);
 
-
+            const savedIp = localStorage.getItem("extension_server_ip");
+            if (savedIp) {
+              ipInput.value = savedIp;
+              checkServerStatus(savedIp).then((connected) => {
+                if (!connected) {
+                  serverModal.classList.add("active");
+                }
+              });
+            } else {
+              serverModal.classList.add("active");
+            }
 
             if (!navigator.onLine) {
               window.location.href = "offline.html";
@@ -847,6 +1086,8 @@
             }
           });
         });
+
+        // --- Server Connection Modal Logic ---
 
         // Set initial active tab
         const initialActiveItem =
