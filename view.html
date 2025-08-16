@@ -170,10 +170,39 @@
     #next-episode-btn:hover { background: #e6850a; }
     #series-over-msg { text-align: center; font-weight: 700; font-size: 1.05em; color: var(--accent-color-active, #FF9500); opacity: 0.8; }
 
+    #source-changer-container {
+      display: none; /* Hidden by default, shown in portrait */
+      margin-top: 1rem;
+    }
+    #source-changer-select {
+      width: 100%;
+      background-color: rgba(30, 30, 30, 0.8);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.95em;
+      font-family: 'Inter', sans-serif;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 16px;
+      cursor: pointer;
+    }
+    #source-changer-select:focus {
+        outline: none;
+        border-color: var(--accent-color-active);
+    }
+
     /* Portrait Mode Adjustments */
     @media (orientation: portrait) {
       #info-container #synopsis-container {
         display: block; /* Show synopsis in portrait */
+      }
+      #source-changer-container {
+        display: block;
       }
     }
     @media (max-width: 600px) and (orientation: portrait) {
@@ -218,6 +247,7 @@
 <body>
   <div id="top-controls">
       <button id="toggle-controls-btn" class="top-btn">Controls</button>
+      <button id="reload-player-btn" class="top-btn">Reload Player</button>
   </div>
 
   <div id="loading-container">
@@ -243,6 +273,10 @@
         <li><button class="search-option-btn" id="dub-option-btn" type="button">DUB</button></li>
       </ul>
     </div>
+    <div id="source-changer-container">
+      <label for="source-changer-select" style="display: none;">Source</label>
+      <select id="source-changer-select" name="source-changer"></select>
+    </div>
     <div id="synopsis-container">
         <h4>Synopsis</h4>
         <p id="synopsis-text">—</p>
@@ -254,8 +288,7 @@
       const params = new URLSearchParams(window.location.search);
       const jikanId = params.get('id');
       const episode = params.get('ep');
-      const dubOrSub = params.get('dubOrSub') || 'sub';
-
+      
       const playerContainer = document.getElementById('player-container');
       const subOptionBtn = document.getElementById('sub-option-btn');
       const dubOptionBtn = document.getElementById('dub-option-btn');
@@ -263,8 +296,16 @@
       const controlsWrapper = document.getElementById('controls-wrapper');
       const loadingContainer = document.getElementById('loading-container');
       const toggleControlsBtn = document.getElementById('toggle-controls-btn');
+      const reloadPlayerBtn = document.getElementById('reload-player-btn');
       const synopsisText = document.getElementById('synopsis-text');
       const serverIp = localStorage.getItem('extension_server_ip');
+      const sourceChangerContainer = document.getElementById('source-changer-container');
+      const sourceChangerSelect = document.getElementById('source-changer-select');
+
+      const profileId = localStorage.getItem("currentProfileId");
+      let currentProfile = null;
+      let userPref = localStorage.getItem('animeDubPref') || 'sub';
+      let currentModule = 'default';
 
       if (!jikanId || !episode) {
         playerContainer.innerHTML = `<div id="error-message">Missing "id" or "ep" parameter.</div>`;
@@ -274,7 +315,38 @@
         playerContainer.innerHTML = `<div id="error-message">Extension server IP not set. Please configure it on the main page.</div>`;
         return;
       }
-      let userPref = localStorage.getItem('animeDubPref') || 'sub';
+      
+      if (profileId) {
+        try {
+            const response = await fetch(`/profiles/${profileId}`);
+            if (response.ok) {
+                currentProfile = await response.json();
+            } else {
+                console.warn("Could not load active profile.");
+            }
+        } catch (e) {
+            console.error("Error fetching profile:", e);
+        }
+      }
+
+      async function logWatchHistory(malId, episodeNumber, seriesTitle) {
+          if (!currentProfile) {
+              console.log("No profile active, skipping history log.");
+              return;
+          }
+          const params = new URLSearchParams({
+              mal_id: malId,
+              episode_number: episodeNumber,
+              series_title: seriesTitle,
+              season_number: 1,
+          });
+          try {
+              await fetch(`/profiles/${currentProfile.id}/watch-history?${params.toString()}`, { method: 'POST' });
+              console.log(`Logged watch history for Ep. ${episodeNumber} on profile ${currentProfile.name}.`);
+          } catch (error) {
+              console.error("Failed to log watch history:", error);
+          }
+      }
 
       function moveActiveIndicator() {
         const activeButton = document.querySelector('.search-option-btn.active');
@@ -331,7 +403,6 @@
                 const mapData = await kitsuMapResp.json();
                 const kitsuId = mapData.kitsu_id;
                 
-                // Fetch anime data and episode data in parallel
                 const [kitsuAnimeResp, kitsuEpisodeResp] = await Promise.all([
                     fetch(`https://kitsu.io/api/edge/anime/${kitsuId}`),
                     fetch(`https://kitsu.io/api/edge/anime/${kitsuId}/episodes?filter[number]=${episode}`)
@@ -346,7 +417,6 @@
                     }
                 }
                 
-                // Fetch episode-specific data
                 if (kitsuEpisodeResp.ok) {
                     const episodeData = await kitsuEpisodeResp.json();
                     if (episodeData.data && episodeData.data.length > 0) {
@@ -361,24 +431,49 @@
         return { title, type, year, totalEpisodes, synopsis, episodeSynopsis, episodeThumbnail };
       }
 
-      const { title, type, year, totalEpisodes, synopsis, episodeSynopsis, episodeThumbnail } = await fetchAnimeData();
+      async function populateSourceChanger() {
+        try {
+            const response = await fetch(`http://${serverIp}:7275/modules/streaming`);
+            if (!response.ok) throw new Error('Failed to fetch streaming modules');
+            const modules = await response.json();
 
-      // Update UI with episode-specific data
+            if (modules.length > 1) {
+                sourceChangerSelect.innerHTML = '';
+                const defaultOption = document.createElement('option');
+                defaultOption.textContent = 'Default Source';
+                defaultOption.value = 'default';
+                sourceChangerSelect.appendChild(defaultOption);
+
+                modules.forEach(module => {
+                    const option = document.createElement('option');
+                    option.value = module.id;
+                    option.textContent = module.name;
+                    sourceChangerSelect.appendChild(option);
+                });
+            } else {
+                sourceChangerContainer.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Could not populate source changer:', error);
+            sourceChangerContainer.style.display = 'none';
+        }
+      }
+
+      const { title, type, year, totalEpisodes, synopsis, episodeSynopsis, episodeThumbnail } = await fetchAnimeData();
+      await logWatchHistory(jikanId, episode, title);
+
       document.getElementById('series-name').textContent = title;
       document.getElementById('series-type').textContent = type;
       document.getElementById('series-year').textContent = year;
       document.getElementById('episode-number').textContent = episode;
-      synopsisText.textContent = episodeSynopsis; // Use episode synopsis instead of series synopsis
+      synopsisText.textContent = episodeSynopsis;
       document.getElementById('loading-title').textContent = title;
-      document.getElementById('loading-synopsis').textContent = episodeSynopsis; // Use episode synopsis
+      document.getElementById('loading-synopsis').textContent = episodeSynopsis;
 
-      // Set episode thumbnail as background if available
       if (episodeThumbnail) {
           loadingContainer.style.backgroundImage = `url(${episodeThumbnail})`;
       }
 
-
-      // Add Next Episode button
       const currentEpNum = parseInt(episode, 10);
       if (totalEpisodes && currentEpNum < totalEpisodes) {
         const nextEpBtn = document.createElement('button');
@@ -402,17 +497,26 @@
           }
       }
 
-      async function loadIframe(dub) {
+      async function loadIframe(dub, preferModule = 'default') {
         playerContainer.innerHTML = '';
         playerContainer.classList.remove('loaded');
         await showLoadingScreen();
 
-        const iframeSrcURL = `http://${serverIp}:7275/iframe-src?mal_id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
+        let iframeSrcURL = `http://${serverIp}:7275/iframe-src?mal_id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
+        if (preferModule && preferModule !== 'default') {
+          iframeSrcURL += `&prefer_module=${encodeURIComponent(preferModule)}`;
+        }
+
         try {
           const res = await fetch(iframeSrcURL);
           if (!res.ok) throw new Error(`Proxy error ${res.status}`);
           const json = await res.json();
           if (!json.src) throw new Error('No embed source found');
+
+          if (json.source_module) {
+            sourceChangerSelect.value = json.source_module;
+            currentModule = json.source_module;
+          }
 
           const iframe = document.createElement('iframe');
           iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-fullscreen');
@@ -431,14 +535,15 @@
         }
       }
 
-      // Initial setup
+      await populateSourceChanger();
+
       if (userPref === 'dub') { dubOptionBtn.classList.add('active'); subOptionBtn.classList.remove('active'); }
       else { subOptionBtn.classList.add('active'); dubOptionBtn.classList.remove('active'); }
+      
       handleOrientation();
-      await loadIframe(userPref === 'dub');
+      await loadIframe(userPref === 'dub', currentModule);
       setTimeout(moveActiveIndicator, 150);
 
-      // Event Listeners
       subOptionBtn.addEventListener('click', async () => {
         if (userPref !== 'sub') {
             userPref = 'sub';
@@ -446,7 +551,7 @@
             subOptionBtn.classList.add('active');
             dubOptionBtn.classList.remove('active');
             moveActiveIndicator();
-            await loadIframe(false);
+            await loadIframe(false, currentModule);
         }
       });
       dubOptionBtn.addEventListener('click', async () => {
@@ -456,11 +561,22 @@
             dubOptionBtn.classList.add('active');
             subOptionBtn.classList.remove('active');
             moveActiveIndicator();
-            await loadIframe(true);
+            await loadIframe(true, currentModule);
         }
       });
 
-      // Landscape Controls Logic
+      sourceChangerSelect.addEventListener('change', async () => {
+        const selectedModule = sourceChangerSelect.value;
+        if (selectedModule !== currentModule) {
+            currentModule = selectedModule;
+            await loadIframe(userPref === 'dub', currentModule);
+        }
+      });
+
+      reloadPlayerBtn.addEventListener('click', async () => {
+        await loadIframe(userPref === 'dub', currentModule);
+      });
+
       function showControls() {
         if (!isMobileLandscape()) return;
         document.body.classList.add('controls-visible');

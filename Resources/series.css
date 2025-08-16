@@ -107,6 +107,34 @@ body {
     margin-bottom: 0.5rem; /* Add some spacing below title */
 }
 
+.hero-action-btn {
+    background: transparent;
+    border: 1px solid var(--brand-accent);
+    width: auto;
+    color: var(--brand-accent);
+    height: 44px;
+    border-radius: var(--border-radius);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-duration) ease, transform var(--transition-duration) ease;
+    margin-top: 1rem;
+    padding: 10px 10px;
+}
+
+.hero-action-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.hero-action-btn i {
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
 .back-btn {
     position: absolute;
     top: 20px;
@@ -505,6 +533,34 @@ body {
     background: rgba(255, 149, 0, 0.1);
 }
 
+.episode-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Adjust gap between buttons */
+    margin-left: auto; /* Pushes buttons to the right */
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+
+.episode-action-icon {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-duration), color var(--transition-duration);
+}
+
+.episode-action-icon:hover {
+    background-color: var(--background-tertiary);
+    color: var(--brand-accent);
+}
+
 .watched-indicator {
     color: var(--brand-accent);
     font-size: 0.9em;
@@ -699,51 +755,6 @@ body {
 }
 
 /* --- USER-PROVIDED STYLES (INTEGRATED & THEMED) --- */
-.glassy-download-btn {
-    margin-top: 5px;
-    font-size: 1.5em;
-    font-weight: 600;
-    color: #fff;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 18px;
-    backdrop-filter: blur(8px);
-    transition: background var(--transition-duration);
-    cursor: pointer;
-    outline: none;
-    margin-left: -20px;
-    box-shadow: 0 2px 6px var(--shadow-color);
-}
-.glassy-download-btn:hover {
-    background: rgba(255,255,255,0.2);
-}
-
-.episode-download-icon {
-    background: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background var(--transition-duration);
-    flex-shrink: 0;
-}
-.episode-download-icon i {
-    color: var(--text-muted);
-    font-size: 0.8em;
-    pointer-events: none;
-    transition: color var(--transition-duration);
-}
-.episode-item:hover .episode-download-icon i {
-    color: var(--text-secondary);
-}
-.episode-download-icon:hover i {
-    color: var(--brand-accent) !important;
-}
 
 /* --- EPISODE POPUP OVERLAY --- */
 .episode-popup-overlay {
@@ -962,4 +973,9 @@ body {
 }
 .popup-btn.cancel:hover {
     background-color: #333;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 0.5rem;
 }

@@ -168,6 +168,43 @@
             color: #fff;
         }
 
+        /* --- Source Toggle (for Manga) --- */
+        .source-toggle-container {
+            position: relative;
+            background-color: #2a2a2a;
+            border-radius: 20px;
+            padding: 5px;
+            display: flex;
+            border: 1px solid #444;
+            max-width: 220px;
+            justify-content: center;
+        }
+        #source-toggle-indicator {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            height: calc(100% - 10px);
+            background-color: var(--accent-color-active, #e50914);
+            border-radius: 16px;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1;
+        }
+        .source-toggle-btn {
+            padding: 8px 18px;
+            font-size: 0.9em;
+            font-weight: 600;
+            background-color: transparent;
+            color: #aaa;
+            border: none;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            z-index: 2;
+            border-radius: 16px;
+        }
+        .source-toggle-btn.active {
+            color: white;
+        }
+
         /* --- Styles for Browse Tab --- */
         .horizontal-scroll-container {
             display: flex;
@@ -219,55 +256,6 @@
             text-overflow: ellipsis;
         }
         #genre-results-list { padding-top: 10px; }
-
-        /* --- NEW: Styles for Full-Screen Iframe Overlay --- */
-        
-        /* Prevent body scrolling when overlay is active */
-        body.iframe-open {
-            overflow: hidden;
-        }
-
-        /* Hide main content when iframe is active */
-        .main-content.iframe-view-active > *:not(#iframe-container) {
-            visibility: hidden;
-            opacity: 0;
-            transition: visibility 0s 0.3s, opacity 0.3s ease;
-        }
-
-        #iframe-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--background-color, #141414);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            
-            /* Animation setup: start off-screen (bottom) and invisible */
-            transform: translateY(100%);
-            visibility: hidden;
-            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), visibility 0s 0.5s;
-        }
-
-        #iframe-container.visible {
-            transform: translateY(0);
-            visibility: visible;
-            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        #iframe-container .back-button {
-            margin: 15px; /* Give button space from edge */
-            flex-shrink: 0; /* Prevent button from shrinking */
-        }
-
-        #series-info-iframe {
-            flex-grow: 1;
-            border: none;
-            width: 100%;
-            height: 100%;
-        }
     </style>
 </head>
 <body>
@@ -279,10 +267,15 @@
                 <i class="fas fa-search" id="search-icon"></i>
                 <button id="clear-search-btn" style="display:none;" aria-label="Clear search" tabindex="0"><i class="fas fa-times"></i></button>
             </div>
+            <div class="source-toggle-container" id="manga-source-toggle" style="display: none; margin: -10px auto 20px auto;">
+                <span id="source-toggle-indicator"></span>
+                <button class="source-toggle-btn active" data-source="jikan">Jikan</button>
+                <button class="source-toggle-btn" data-source="mangadex">MangaDex</button>
+            </div>
             <ul class="search-options-list" id="search-options-list">
-                <li><button class="search-option-btn active" id="anime-option-btn" type="button"><i class="fa-solid fa-tv"></i> Anime</button></li>
-                <li><button class="search-option-btn" id="manga-option-btn" type="button"><i class="fa-solid fa-book"></i> Manga</button></li>
-                <li><button class="search-option-btn" id="browse-option-btn" type="button"><i class="fa-solid fa-compass"></i> Browse</button></li>
+                <li><button class="search-option-btn active" data-mode="anime" type="button"><i class="fa-solid fa-tv"></i> Anime</button></li>
+                <li><button class="search-option-btn" data-mode="manga" type="button"><i class="fa-solid fa-book"></i> Manga</button></li>
+                <li><button class="search-option-btn" data-mode="browse" type="button"><i class="fa-solid fa-compass"></i> Browse</button></li>
             </ul>
 
             <!-- Search Content Area -->
@@ -314,12 +307,6 @@
                     <div class="horizontal-scroll-container" id="popular-manga-list"></div>
                 </div>
             </section>
-
-            <!-- Iframe Container for Details Page (will be animated) -->
-            <section id="iframe-container">
-                <button id="back-from-iframe-btn" class="back-button"><i class="fas fa-arrow-left"></i> Back to Search</button>
-                <iframe id="series-info-iframe" title="Series Information"></iframe>
-            </section>
         </main>
     </div>
 
@@ -333,18 +320,13 @@
             const resultsTitle = document.getElementById('results-title');
             const clearSearchBtn = document.getElementById('clear-search-btn');
 
-            // Iframe Overlay Elements
-            const iframeContainer = document.getElementById('iframe-container');
-            const seriesInfoIframe = document.getElementById('series-info-iframe');
-            const backFromIframeBtn = document.getElementById('back-from-iframe-btn');
-
             // Main Sections & Tabs
             const searchInteractionArea = document.getElementById('search-interaction-area');
             const browseInteractionArea = document.getElementById('browse-interaction-area');
             const searchBarContainer = document.getElementById('search-bar-container');
-            const animeOptionBtn = document.getElementById('anime-option-btn');
-            const mangaOptionBtn = document.getElementById('manga-option-btn');
-            const browseOptionBtn = document.getElementById('browse-option-btn');
+            const mainTabs = document.querySelectorAll('#search-options-list .search-option-btn');
+            const mangaSourceToggle = document.getElementById('manga-source-toggle');
+            const sourceToggleIndicator = document.getElementById('source-toggle-indicator');
             
             // Browse View Elements
             const mainBrowseView = document.getElementById('main-browse-view');
@@ -361,73 +343,97 @@
             const genreMangaBtn = document.getElementById('genre-manga-btn');
 
             // --- State Variables ---
-            let searchMode = 'anime'; // 'anime' or 'manga'
+            let searchMode = 'anime'; // 'anime', 'manga'
+            let mangaSource = 'jikan'; // 'jikan', 'mangadex'
             let currentView = 'search'; // 'search' or 'browse'
             let currentGenre = { id: null, name: null };
             let allSearchResults = [];
             let searchTimeout;
+            const serverUrl = `http://${localStorage.getItem("extension_server_ip") || "localhost"}:7275`;
 
             // --- View Management ---
+            function updateToggleIndicator() {
+                const activeButton = mangaSourceToggle.querySelector('.source-toggle-btn.active');
+                if (activeButton) {
+                    sourceToggleIndicator.style.width = `${activeButton.offsetWidth}px`;
+                    sourceToggleIndicator.style.transform = `translateX(${activeButton.offsetLeft - 5}px)`;
+                }
+            }
+
             function switchView(view) {
                 currentView = view;
                 searchInteractionArea.style.display = 'none';
                 browseInteractionArea.style.display = 'none';
                 searchBarContainer.style.display = (view === 'browse') ? 'none' : 'flex';
-
-                [animeOptionBtn, mangaOptionBtn, browseOptionBtn].forEach(btn => btn.classList.remove('active'));
+                mangaSourceToggle.style.display = (view === 'search' && searchMode === 'manga') ? 'flex' : 'none';
 
                 if (view === 'search') {
                     searchInteractionArea.style.display = 'block';
-                    (searchMode === 'anime' ? animeOptionBtn : mangaOptionBtn).classList.add('active');
                     if (!searchInput.value.trim()) displayRecentSearches();
                 } else if (view === 'browse') {
                     browseInteractionArea.style.display = 'block';
-                    browseOptionBtn.classList.add('active');
                     if (genreListContainer.innerHTML.trim() === '') loadBrowseContent();
+                }
+                if (mangaSourceToggle.style.display === 'flex') {
+                    setTimeout(updateToggleIndicator, 50);
                 }
             }
             
             // --- Iframe Overlay Logic ---
             function openSeriesInfo(id, type) {
-                document.body.classList.add('iframe-open');
-                mainContent.classList.add('iframe-view-active');
-                seriesInfoIframe.src = `series-info.html?id=${id}${type === 'manga' ? '&manga=true' : ''}`;
-                iframeContainer.classList.add('visible');
-            }
-
-            function closeSeriesInfo() {
-                iframeContainer.classList.remove('visible');
-                iframeContainer.addEventListener('transitionend', (e) => {
-                    if (e.propertyName !== 'transform') return;
-                    seriesInfoIframe.src = 'about:blank';
-                    document.body.classList.remove('iframe-open');
-                    mainContent.classList.remove('iframe-view-active');
-                }, { once: true });
+                let url;
+                if (type === 'mangadex') {
+                    url = `manga-info.html?source=mangadex&id=${id}`;
+                } else {
+                    url = type === 'manga' ? `manga-info.html?id=${id}` : `series-info.html?id=${id}`;
+                }
+                window.parent.openPopup(url);
             }
 
             // --- API & Rendering Helper Functions ---
             const apiCall = async (url) => {
                 const response = await fetch(url);
-                if (!response.ok) throw new Error(`Jikan API error: ${response.status}`);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
                 return response.json();
             };
 
             function createResultCard(item, type) {
                 const listItem = document.createElement('div');
                 listItem.className = 'list-item card-style';
-                listItem.addEventListener('click', () => openSeriesInfo(item.mal_id, type));
                 
-                const thumbnail = `<div class="item-thumbnail"><img src="${item.images?.jpg?.image_url || ''}" alt="${item.title}" loading="lazy"></div>`;
+                let id, title, imageUrl, score, episodes, chapters, synopsis;
+
+                if (type === 'mangadex') {
+                    id = item.id;
+                    title = item.attributes.title.en || Object.values(item.attributes.title)[0];
+                    imageUrl = item.cover_url || '';
+                    score = null; // Not available in this search result
+                    episodes = null;
+                    chapters = null; // Not available
+                    synopsis = item.attributes.description.en || 'No description available.';
+                    listItem.addEventListener('click', () => openSeriesInfo(id, 'mangadex'));
+                } else {
+                    id = item.mal_id;
+                    title = item.title_english || item.title;
+                    imageUrl = item.images?.jpg?.image_url || '';
+                    score = item.score;
+                    episodes = item.episodes;
+                    chapters = item.chapters;
+                    synopsis = item.synopsis || 'No description available.';
+                    listItem.addEventListener('click', () => openSeriesInfo(id, type));
+                }
+                
+                const thumbnail = `<div class="item-thumbnail"><img src="${imageUrl}" alt="${title}" loading="lazy"></div>`;
                 const metaPills = [];
-                if (item.score) metaPills.push(`<span class="meta-pill">${item.score}/10</span>`);
-                if (type === 'anime' && item.episodes) metaPills.push(`<span class="meta-pill">${item.episodes} EP</span>`);
-                if (type === 'manga' && item.chapters) metaPills.push(`<span class="meta-pill">${item.chapters} CH</span>`);
-                const synopsis = item.synopsis ? (item.synopsis.length > 100 ? item.synopsis.substring(0, 100) + '...' : item.synopsis) : 'No description available.';
+                if (score) metaPills.push(`<span class="meta-pill">${score}/10</span>`);
+                if (type === 'anime' && episodes) metaPills.push(`<span class="meta-pill">${episodes} EP</span>`);
+                if (type === 'manga' && chapters) metaPills.push(`<span class="meta-pill">${chapters} CH</span>`);
+                const shortSynopsis = synopsis.length > 100 ? synopsis.substring(0, 100) + '...' : synopsis;
                 
                 const details = `<div class="item-details">
-                        <h3 class="item-title">${item.title_english || item.title}</h3>
+                        <h3 class="item-title">${title}</h3>
                         <div class="item-meta">${metaPills.join('')}</div>
-                        <p class="item-description">${synopsis}</p>
+                        <p class="item-description">${shortSynopsis}</p>
                     </div>`;
                 const arrow = `<div class="item-arrow"><i class="fas fa-chevron-right"></i></div>`;
                 listItem.innerHTML = thumbnail + details + arrow;
@@ -480,22 +486,38 @@
                 searchItemList.innerHTML = '<p style="width: 100%; text-align: center;">Loading...</p>';
                 searchItemList.className = 'item-list';
                 try {
-                    const data = await apiCall(`https://api.jikan.moe/v4/${searchMode}?q=${encodeURIComponent(query)}&limit=25`);
-                    displaySearchResults(data.data, query);
-                    if (data.data?.length > 0) addRecentSearch(query);
+                    let url;
+                    let type;
+
+                    if (searchMode === 'manga') {
+                        type = mangaSource; // 'jikan' or 'mangadex'
+                        if (mangaSource === 'mangadex') {
+                            url = `${serverUrl}/mangadex/search?q=${encodeURIComponent(query)}`;
+                        } else {
+                            url = `https://api.jikan.moe/v4/manga?q=${encodeURIComponent(query)}&limit=25`;
+                        }
+                    } else {
+                        type = 'anime';
+                        url = `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=25`;
+                    }
+                    
+                    const data = await apiCall(url);
+                    const results = type === 'mangadex' ? data.data : data.data;
+                    displaySearchResults(results, query, type === 'jikan' ? 'manga' : type);
+                    if (results?.length > 0) addRecentSearch(query);
                 } catch (error) {
                     console.error("Failed to fetch search results:", error);
                     searchItemList.innerHTML = `<p style="width: 100%; text-align: center; color: red;">Error: ${error.message}.</p>`;
                 }
             }
-            function displaySearchResults(data, query) {
+            function displaySearchResults(data, query, type) {
                 allSearchResults = data || [];
                 searchItemList.innerHTML = '';
                 if (allSearchResults.length === 0) {
                     searchItemList.innerHTML = `<p style="width: 100%; text-align: center;">No results found for "${query}".</p>`;
                     return;
                 }
-                allSearchResults.forEach(item => searchItemList.appendChild(createResultCard(item, searchMode)));
+                allSearchResults.forEach(item => searchItemList.appendChild(createResultCard(item, type)));
             }
 
             // --- Browse Logic ---
@@ -566,18 +588,40 @@
             }
 
             // --- Event Listeners ---
-            backFromIframeBtn.addEventListener('click', closeSeriesInfo);
+            document.getElementById('search-options-list').addEventListener('click', (e) => {
+                const button = e.target.closest('.search-option-btn');
+                if (!button) return;
 
-            [animeOptionBtn, mangaOptionBtn, browseOptionBtn].forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const newMode = btn === browseOptionBtn ? 'browse' : 'search';
-                    if (newMode === 'search') {
-                        searchMode = (btn === animeOptionBtn) ? 'anime' : 'manga';
-                        searchInput.placeholder = `Type to Search ${searchMode.charAt(0).toUpperCase() + searchMode.slice(1)}...`;
-                        searchInput.value = '';
+                const newMode = button.dataset.mode;
+                
+                mainTabs.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                if (newMode === 'browse') {
+                    switchView('browse');
+                } else {
+                    searchMode = newMode;
+                    searchInput.placeholder = `Type to Search ${searchMode.charAt(0).toUpperCase() + searchMode.slice(1)}...`;
+                    switchView('search');
+                    if (searchInput.value.trim()) {
+                        performSearch(searchInput.value.trim());
+                    } else {
+                        displayRecentSearches();
                     }
-                    switchView(newMode);
-                });
+                }
+            });
+
+            mangaSourceToggle.addEventListener('click', (e) => {
+                const button = e.target.closest('.source-toggle-btn');
+                if (button && button.dataset.source !== mangaSource) {
+                    mangaSource = button.dataset.source;
+                    mangaSourceToggle.querySelector('.active').classList.remove('active');
+                    button.classList.add('active');
+                    updateToggleIndicator();
+                    if (searchInput.value.trim()) {
+                        performSearch(searchInput.value.trim());
+                    }
+                }
             });
 
             searchInput.addEventListener('input', () => {

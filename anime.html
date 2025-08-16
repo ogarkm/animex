@@ -37,6 +37,40 @@
         overflow: hidden;
       }
 
+      /* --- NEW: Liquid Glass Navbar --- */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        padding: 15px 0;
+        background: transparent; /* Initially transparent */
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        border-bottom: 1px solid transparent; /* Initially transparent */
+        transition: background 0.4s ease-out, backdrop-filter 0.4s ease-out,
+          border-color 0.4s ease-out;
+      }
+      .navbar.scrolled {
+        background: rgba(18, 18, 18, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .navbar svg {
+        display: block;
+        margin: 0 auto;
+        height: 50px;
+        width: auto;
+        max-width: 80%;
+        opacity: 0;
+        transition: opacity 0.4s ease-out;
+      }
+      .navbar.scrolled svg {
+        opacity: 1;
+      }
+
       /* --- Hero Section Carousel --- */
       #hero-section {
         position: relative;
@@ -224,7 +258,7 @@
         overflow-y: hidden;
         padding-bottom: 15px;
         gap: 20px;
-        min-height: 50px;
+        min-height: 50px; /* Prevents layout shift while loading */
       }
       .horizontal-scroll-container::-webkit-scrollbar {
         display: none;
@@ -285,9 +319,6 @@
         width: 100%;
         height: 4px;
         background-color: rgba(255, 255, 255, 0.3);
-        border-bottom-left-radius: 8px;
-        border-bottom-right-radius: 8px;
-        overflow: hidden;
       }
       .progress-bar-inner {
         height: 100%;
@@ -316,79 +347,146 @@
         font-style: italic;
       }
 
-      /* --- Series Overlay Styles --- */
-      .series-overlay-container {
+      /* --- NEW: Poster Info Button --- */
+      .poster-info-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 3;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        border: none; /* Reset button styles */
+        padding: 0; /* Reset button styles */
+      }
+      .poster-info-btn:hover {
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #000;
+        transform: scale(1.1);
+      }
+
+      /* --- NEW: Context Menu --- */
+      .context-menu-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        z-index: 1000;
+        z-index: 2000;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         display: flex;
-        align-items: center;
         justify-content: center;
+        align-items: flex-end;
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        transition: opacity 0.3s ease;
       }
-
-      .series-overlay-container.visible {
+      .context-menu-overlay.visible {
         opacity: 1;
         visibility: visible;
       }
-
-      .close-overlay-btn {
-        position: absolute;
-        top: 20px;
-        right: 25px;
-        background: rgba(0, 0, 0, 0.5);
-        border: 1px solid var(--border-color);
-        color: white;
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        font-size: 28px;
-        line-height: 45px;
-        text-align: center;
-        cursor: pointer;
-        z-index: 1002;
-        transition: transform 0.2s, background-color 0.2s;
+      .context-menu {
+        width: calc(100% - 20px);
+        max-width: 400px;
+        margin-bottom: 20px;
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
       }
-
-      .close-overlay-btn:hover {
-        transform: scale(1.1);
-        background-color: var(--accent-color);
-        border-color: var(--accent-color);
+      .context-menu-overlay.visible .context-menu {
+        transform: translateY(0);
       }
-
-      .overlay-content-wrapper {
-        position: relative;
-        width: 95%;
-        height: 90%;
-        max-width: 1600px;
-        background-color: var(--background-color-secondary);
-        border-radius: 15px;
+      .context-menu-group {
+        background-color: rgba(40, 40, 40, 0.85);
+        border-radius: 14px;
+        margin-bottom: 8px;
         overflow: hidden;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-        transform: scale(0.8);
-        transition: transform 0.3s ease-in-out;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
       }
-
-      .series-overlay-container.visible .overlay-content-wrapper {
-        transform: scale(1);
-      }
-
-      #series-iframe {
+      .context-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
         width: 100%;
-        height: 100%;
+        padding: 16px;
+        font-size: 1.05em;
+        color: var(--text-primary);
+        background-color: transparent;
         border: none;
+        text-align: left;
+        cursor: pointer;
+      }
+      .context-menu-item:not(:last-child) {
+         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .context-menu-item:active {
+          background-color: rgba(255, 255, 255, 0.1);
+      }
+      .context-menu-item i {
+        width: 20px;
+        text-align: center;
+        color: var(--text-secondary);
+      }
+      .context-menu-item.context-menu-cancel {
+          font-weight: 600;
+          text-align: center;
+          justify-content: center;
+          color: var(--accent-color);
       }
     </style>
   </head>
   <body>
+    <nav class="navbar">
+      <svg
+        width="1767"
+        height="292"
+        viewBox="0 0 1767 292"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect
+          width="1767"
+          height="292"
+          rx="146"
+          fill="black"
+          fill-opacity="0.01"
+        />
+        <rect x="802" y="56" width="164" height="22.5285" fill="#DE541E" />
+        <rect x="802" y="93.7502" width="164" height="22.5285" fill="#DE541E" />
+        <path
+          d="M957.858 235.619H931.051L903.773 71.8308H931.051L957.858 235.619Z"
+          fill="#DE541E"
+        />
+        <path
+          d="M813.05 235.619H839.857L867.135 71.8308H839.857L813.05 235.619Z"
+          fill="#DE541E"
+        />
+        <rect
+          x="867.135"
+          y="199.608"
+          width="34.3121"
+          height="36.0108"
+          fill="#DE541E"
+        />
+        <ellipse
+          cx="884.291"
+          cy="199.275"
+          rx="17.156"
+          ry="19.6726"
+          fill="#DE541E"
+        />
+      </svg>
+    </nav>
     <div class="app-container">
       <header id="hero-section">
         <div class="loader"></div>
@@ -397,72 +495,143 @@
       <main class="main-content" id="main-content-area"></main>
     </div>
 
-    <div id="series-overlay" class="series-overlay-container">
-      <button
-        id="close-overlay-btn"
-        class="close-overlay-btn"
-        title="Close (Esc)"
-      >
-        ×
-      </button>
-      <div class="overlay-content-wrapper">
-        <iframe
-          id="series-iframe"
-          src="about:blank"
-          frameborder="0"
-          allowfullscreen
-        ></iframe>
-      </div>
-    </div>
-
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         // --- CONFIGURATION ---
-        const API_BASE_URL = "https://arkm20-authapi.hf.space";
         const JIKAN_API_BASE_URL = "https://api.jikan.moe/v4";
         const CONTENT_JSON_URL = "content.json";
 
         // --- ELEMENT SELECTORS ---
         const mainContentArea = document.getElementById("main-content-area");
-        const seriesOverlay = document.getElementById("series-overlay");
-        const seriesIframe = document.getElementById("series-iframe");
-        const closeOverlayBtn = document.getElementById("close-overlay-btn");
 
         // --- OVERLAY LOGIC ---
         function openSeriesOverlay(malId, episodeToOpen = null) {
           if (!malId) return;
 
           let url = `series-info.html?id=${malId}`;
-          if (episodeToOpen) {
+          // Only add the watch-ep parameter if it's a valid number
+          if (episodeToOpen && !isNaN(episodeToOpen)) {
             url += `&watch-ep=${episodeToOpen}`;
           }
 
-          seriesIframe.src = url;
-          document.body.classList.add("overlay-active");
-          seriesOverlay.classList.add("visible");
+          if (window.parent && typeof window.parent.openPopup === "function") {
+            window.parent.openPopup(url);
+          } else {
+            window.location.href = url;
+          }
         }
 
-        function closeSeriesOverlay() {
-          seriesOverlay.classList.remove("visible");
-          setTimeout(() => {
-            seriesIframe.src = "about:blank";
+        // --- LONG PRESS & CONTEXT MENU LOGIC ---
+        let longPressTimer;
+        let currentContextMenuTarget = null;
+
+        const contextMenuOverlay = document.createElement('div');
+        contextMenuOverlay.id = 'context-menu-overlay';
+        contextMenuOverlay.className = 'context-menu-overlay';
+        contextMenuOverlay.innerHTML = `
+          <div id="context-menu" class="context-menu">
+            <div class="context-menu-group">
+              <button class="context-menu-item" data-action="info">
+                <i class="fas fa-info-circle"></i>
+                <span>Series Info</span>
+              </button>
+              <button class="context-menu-item" data-action="mark-watched">
+                <i class="fas fa-check-circle"></i>
+                <span>Mark as Watched</span>
+              </button>
+            </div>
+            <div class="context-menu-group">
+              <button class="context-menu-item context-menu-cancel" data-action="cancel">
+                <span>Cancel</span>
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(contextMenuOverlay);
+        const contextMenu = document.getElementById('context-menu');
+
+
+        function showContextMenu(element) {
+            currentContextMenuTarget = element;
+            contextMenuOverlay.classList.add("visible");
+            document.body.classList.add("overlay-active");
+        }
+
+        function hideContextMenu() {
+            contextMenuOverlay.classList.remove("visible");
             document.body.classList.remove("overlay-active");
-          }, 300);
+            currentContextMenuTarget = null;
         }
 
-        closeOverlayBtn.addEventListener("click", closeSeriesOverlay);
-        seriesOverlay.addEventListener("click", (e) => {
-          if (e.target === seriesOverlay) closeSeriesOverlay();
+        function setupLongPress(element) {
+            let touchstartX = 0;
+            let touchstartY = 0;
+
+            const onTouchStart = (e) => {
+                touchstartX = e.touches[0].clientX;
+                touchstartY = e.touches[0].clientY;
+
+                longPressTimer = setTimeout(() => {
+                    if (navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+                    showContextMenu(element);
+                }, 500);
+            };
+
+            const onTouchMove = (e) => {
+                const touchX = e.touches[0].clientX;
+                const touchY = e.touches[0].clientY;
+                if (Math.abs(touchX - touchstartX) > 10 || Math.abs(touchY - touchstartY) > 10) {
+                    clearTimeout(longPressTimer);
+                }
+            };
+
+            const onTouchEnd = () => {
+                clearTimeout(longPressTimer);
+            };
+
+            element.addEventListener("touchstart", onTouchStart, { passive: true });
+            element.addEventListener("touchmove", onTouchMove, { passive: true });
+            element.addEventListener("touchend", onTouchEnd);
+            element.addEventListener("touchcancel", onTouchEnd);
+
+            // For desktop: right-click
+            element.addEventListener("contextmenu", (e) => {
+                e.preventDefault();
+                showContextMenu(element);
+            });
+        }
+
+        contextMenuOverlay.addEventListener("click", (e) => {
+            if (e.target === contextMenuOverlay) {
+                hideContextMenu();
+            }
         });
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape") closeSeriesOverlay();
+
+        contextMenu.addEventListener("click", (e) => {
+            const button = e.target.closest(".context-menu-item");
+            if (!button || !currentContextMenuTarget) return;
+
+            const action = button.dataset.action;
+            const malId = currentContextMenuTarget.dataset.malId;
+
+            hideContextMenu(); // Hide menu immediately on action
+
+            if (action === "info") {
+                if (malId) openSeriesOverlay(malId);
+            } else if (action === "mark-watched") {
+                // Placeholder for future implementation
+                window.parent.showToast(`'Mark as Watched' for series ID ${malId} is not yet implemented.`);
+                console.log(`Marking series ${malId} as watched...`);
+            }
         });
 
         // --- HERO CAROUSEL LOGIC ---
         let heroData = [];
         let heroCurrentIndex = 0;
         let isBg1Active = true;
-        let bg1, bg2, heroContent, heroDotsContainer; // Added heroDotsContainer
+        let bg1, bg2, heroContent, heroDotsContainer;
         let heroAutoSwitchTimer;
         let heroTouchStartX = 0;
 
@@ -475,7 +644,6 @@
 
           heroData = spotlightData;
 
-          // MODIFIED: Removed arrow buttons, added hero-dots container
           container.innerHTML = `
             <div id="hero-bg-1" class="hero-background"></div>
             <div id="hero-bg-2" class="hero-background"></div>
@@ -486,9 +654,8 @@
           bg1 = document.getElementById("hero-bg-1");
           bg2 = document.getElementById("hero-bg-2");
           heroContent = container.querySelector(".hero-content");
-          heroDotsContainer = container.querySelector(".hero-dots"); // Get dots container
+          heroDotsContainer = container.querySelector(".hero-dots");
 
-          // NEW: Create dots and add event listeners
           heroData.forEach((_, index) => {
             const dot = document.createElement("span");
             dot.classList.add("hero-dot");
@@ -497,7 +664,6 @@
             heroDotsContainer.appendChild(dot);
           });
 
-          // Touch controls for swiping
           container.addEventListener(
             "touchstart",
             (e) => (heroTouchStartX = e.touches[0].clientX),
@@ -515,22 +681,20 @@
 
         function startHeroTimer() {
           clearInterval(heroAutoSwitchTimer);
-          // Auto-switches slide every 5 seconds
           heroAutoSwitchTimer = setInterval(() => navigateHero(1, false), 5000);
         }
 
-        // NEW: Function to navigate directly to a specific slide (for dot clicks)
         function navigateToSlide(index) {
           heroCurrentIndex = index;
           updateHero();
-          startHeroTimer(); // Reset timer on manual navigation
+          startHeroTimer();
         }
 
         function navigateHero(direction, isManual = true) {
           heroCurrentIndex =
             (heroCurrentIndex + direction + heroData.length) % heroData.length;
           updateHero();
-          if (isManual) startHeroTimer(); // Reset timer on manual navigation
+          if (isManual) startHeroTimer();
         }
 
         function updateHero(isInitial = false) {
@@ -551,7 +715,6 @@
           }
           isBg1Active = !isBg1Active;
 
-          // NEW: Update active dot
           const dots = heroDotsContainer.querySelectorAll(".hero-dot");
           dots.forEach((dot, index) => {
             dot.classList.toggle("active", index === heroCurrentIndex);
@@ -559,7 +722,6 @@
 
           setTimeout(
             () => {
-              // --- MODIFIED: Replaced h2 title with img logo ---
               heroContent.innerHTML = `
                 <img src="${currentAnime.logo}" alt="${currentAnime.name} Logo" class="hero-logo">
                 <div class="hero-buttons">
@@ -583,56 +745,59 @@
           );
         }
 
-        // --- CONTINUE WATCHING LOGIC ---
-        async function initializeContinueWatching() {
-          const token = localStorage.getItem("accessToken");
-          if (!token) return;
+        // --- CONTINUE WATCHING LOGIC (FIXED) ---
+        async function initializeContinueWatching(watchHistory) {
+          if (!watchHistory || Object.keys(watchHistory).length === 0) {
+            return; // No history, so we do nothing.
+          }
 
-          try {
-            const response = await fetch(`${API_BASE_URL}/users/me`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            if (response.status === 401) {
-              localStorage.removeItem("accessToken");
-              return;
+          const processedList = [];
+
+          // Iterate over each show ID in the history object
+          for (const showId in watchHistory) {
+            const showData = watchHistory[showId];
+            if (!showData || !showData.seasons) continue;
+
+            let lastWatchedTimestamp = null;
+            let lastWatchedEpisodeNumber = 0;
+
+            // Find the absolute most recently watched episode for this show
+            for (const seasonNumber in showData.seasons) {
+              const seasonData = showData.seasons[seasonNumber];
+              if (!seasonData || !seasonData.episodes) continue;
+
+              for (const episodeNumber in seasonData.episodes) {
+                const episodeData = seasonData.episodes[episodeNumber];
+                if (episodeData && episodeData.watched_at) {
+                  const currentTimestamp = new Date(episodeData.watched_at);
+                  if (
+                    !lastWatchedTimestamp ||
+                    currentTimestamp > lastWatchedTimestamp
+                  ) {
+                    lastWatchedTimestamp = currentTimestamp;
+                    lastWatchedEpisodeNumber = parseInt(episodeNumber, 10);
+                  }
+                }
+              }
             }
-            if (!response.ok) throw new Error(`API error: ${response.status}`);
 
-            const userData = await response.json();
-            const history = userData.watch_history_detailed;
-            if (!history || Object.keys(history).length === 0) return;
-
-            const continueWatchingList = Object.values(history)
-              .map((show) => {
-                let latestEpisode = { timestamp: null, episode_number: -1 };
-                Object.values(show.seasons).forEach((season) => {
-                  Object.entries(season.episodes).forEach(
-                    ([epNum, timestamp]) => {
-                      if (
-                        !latestEpisode.timestamp ||
-                        new Date(timestamp) > new Date(latestEpisode.timestamp)
-                      ) {
-                        latestEpisode = {
-                          timestamp,
-                          episode_number: parseInt(epNum),
-                        };
-                      }
-                    }
-                  );
-                });
-                return { show_id: show.show_id, ...latestEpisode };
-              })
-              .filter((item) => item.episode_number > -1)
-              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-            if (continueWatchingList.length > 0) {
-              await renderContinueWatchingSection(continueWatchingList);
+            // If we found a watched episode, add it to our list for sorting
+            if (lastWatchedTimestamp) {
+              processedList.push({
+                show_id: showId,
+                last_watched_date: lastWatchedTimestamp,
+                last_watched_episode: lastWatchedEpisodeNumber,
+              });
             }
-          } catch (error) {
-            console.error(
-              "Failed to initialize Continue Watching section:",
-              error
-            );
+          }
+
+          // Sort the entire list by the most recent timestamp, descending
+          processedList.sort(
+            (a, b) => b.last_watched_date - a.last_watched_date
+          );
+
+          if (processedList.length > 0) {
+            await renderContinueWatchingSection(processedList);
           }
         }
 
@@ -640,15 +805,20 @@
           const section = document.createElement("section");
           section.className = "content-section";
           section.innerHTML = `<h2 class="section-title">Continue Watching</h2><div class="horizontal-scroll-container"></div>`;
-          mainContentArea.prepend(section);
+          mainContentArea.prepend(section); // Add this section to the top
 
           const container = section.querySelector(
             ".horizontal-scroll-container"
           );
 
           for (const item of list.slice(0, 15)) {
+            // Use the pre-calculated last watched episode number
+            const lastWatchedEp = item.last_watched_episode;
+            if (!lastWatchedEp) continue;
+
             try {
-              await new Promise((resolve) => setTimeout(resolve, 350)); // Rate limit Jikan
+              // Add a small delay between Jikan API calls to avoid rate-limiting
+              await new Promise((resolve) => setTimeout(resolve, 350));
               const response = await fetch(
                 `${JIKAN_API_BASE_URL}/anime/${item.show_id}`
               );
@@ -658,36 +828,46 @@
               if (!animeData) continue;
 
               const title = animeData.title_english || animeData.title;
-              const progressPercent =
-                animeData.episodes && animeData.episodes > 0
-                  ? (item.episode_number / animeData.episodes) * 100
-                  : 0;
+              const totalEpisodes = animeData.episodes; // Can be null if ongoing
 
-              const totalEpisodes = animeData.episodes;
-              const lastWatchedEp = item.episode_number;
+              const progressPercent =
+                totalEpisodes > 0 ? (lastWatchedEp / totalEpisodes) * 100 : 0;
+
               const isFinished =
                 totalEpisodes && lastWatchedEp >= totalEpisodes;
 
+              // We want to open the *next* episode, unless it's finished
+              const episodeToOpen = isFinished ? null : lastWatchedEp + 1;
               const indicatorText = isFinished
                 ? "Finished"
-                : `On Episode ${lastWatchedEp}`;
-              const episodeToOpen = isFinished ? null : lastWatchedEp + 1;
+                : `Episode ${lastWatchedEp}`;
 
               const posterContainer = document.createElement("div");
               posterContainer.className = "poster-container";
+              posterContainer.dataset.malId = animeData.mal_id; // Set ID for context menu
               posterContainer.innerHTML = `
                 <div class="poster-image-wrapper">
-                  <div class="episode-indicator">${indicatorText}</div>
-                  <img src="${animeData.images?.jpg?.image_url}" alt="${title}" loading="lazy">
-                  <div class="progress-bar">
-                    <div class="progress-bar-inner" style="width: ${progressPercent}%;"></div>
-                  </div>
+                    <div class="episode-indicator">${indicatorText}</div>
+                    <button class="poster-info-btn" title="Series Info"><i class="fas fa-info-circle"></i></button>
+                    <img src="${
+                      animeData.images?.jpg?.large_image_url ||
+                      animeData.images?.jpg?.image_url
+                    }" alt="${title}" loading="lazy">
+                    <div class="progress-bar">
+                        <div class="progress-bar-inner" style="width: ${progressPercent}%;"></div>
+                    </div>
                 </div>
                 <p class="poster-title" title="${title}">${title}</p>
               `;
               posterContainer.addEventListener("click", () =>
                 openSeriesOverlay(animeData.mal_id, episodeToOpen)
               );
+              posterContainer.querySelector('.poster-info-btn').addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  openSeriesOverlay(animeData.mal_id);
+              });
+              
+              setupLongPress(posterContainer);
               container.appendChild(posterContainer);
             } catch (err) {
               console.error(
@@ -718,6 +898,7 @@
 
                 const posterContainer = document.createElement("div");
                 posterContainer.className = "poster-container";
+                posterContainer.dataset.malId = anime.id;
                 posterContainer.innerHTML = `
                   <div class="poster-image-wrapper">
                     <img src="${anime.image}" alt="${anime.name}" loading="lazy">
@@ -727,6 +908,7 @@
                 posterContainer.addEventListener("click", () =>
                   openSeriesOverlay(anime.id)
                 );
+                setupLongPress(posterContainer);
                 scrollContainer.appendChild(posterContainer);
               });
             }
@@ -743,7 +925,22 @@
             const contentData = await contentResponse.json();
 
             initializeHero(contentData.spotlight);
-            await initializeContinueWatching();
+
+            // This block is now corrected
+            const watchHistoryRaw = localStorage.getItem("watch_history");
+            if (watchHistoryRaw) {
+              try {
+                const watchHistory = JSON.parse(watchHistoryRaw);
+                // Call the corrected function with the parsed data
+                await initializeContinueWatching(watchHistory);
+              } catch (e) {
+                console.error(
+                  "Failed to parse or process watch history from localStorage",
+                  e
+                );
+              }
+            }
+
             createHorizontalSections(contentData.sections);
           } catch (error) {
             console.error("Failed to initialize the page:", error);
@@ -755,6 +952,16 @@
         }
 
         initializePage();
+
+        // --- NAVBAR SCROLL EFFECT ---
+        const navbar = document.querySelector(".navbar");
+        window.addEventListener("scroll", () => {
+          if (window.scrollY > 50) {
+            navbar.classList.add("scrolled");
+          } else {
+            navbar.classList.remove("scrolled");
+          }
+        });
       });
     </script>
   </body>

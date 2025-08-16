@@ -22,155 +22,84 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
     <style>
-      /*
-        MODERNIZED UI V2 - KEY CHANGES:
-        - Accent Color: Switched to a vibrant orange (#FF9500).
-        - Layout: Card-based design for settings groups, improving separation and focus.
-        - Spacing & Typography: Generous spacing and refined typography for a clean, scannable interface.
-        - Interactivity: Enhanced hover states and transitions on all interactive elements.
-        - Iconography: Integrated icons for each setting item for better visual cues.
-        - New Component: Added a styled <select> dropdown for the "Download Quality" setting.
-        - Refined Dark/Light Mode: Robust theme switching using the `data-theme` attribute.
-        - NEW: Added Change Password modal and replaced Payment Methods with Help & Support.
-        - FIX: Refactored custom dropdown logic for stability.
-        - NEW: Added iOS-style "About" shelf with animations and drag-to-dismiss gesture.
-        */
-
       :root {
         --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
           Roboto, Helvetica, Arial, sans-serif;
-
-        /* New Color Palette (Dark Mode - Default) */
-        --background-primary: #121212; /* True black for OLED screens */
-        --background-secondary: #1e1e1e; /* Dark grey for cards/groups */
-        --background-tertiary-hover: #2a2a2a; /* Subtle hover background */
+        --background-primary: #121212;
+        --background-secondary: #1e1e1e;
+        --background-tertiary-hover: #2a2a2a;
         --background-modal: #252525;
-        --background-shelf: #212124; /* Slightly different bg for the shelf */
-        --background-shelf-rgb: 33, 33, 36; /* RGB version for gradients */
-
-        --foreground-primary: #e6e6e6; /* Off-white text */
-        --foreground-secondary: #a0a0a0; /* Lighter grey for secondary text/icons */
+        --foreground-primary: #e6e6e6;
+        --foreground-secondary: #a0a0a0;
         --foreground-tertiary: #6b6b6b;
-
-        --border-color: #2c2c2c; /* Soft border color */
+        --border-color: #2c2c2c;
         --input-border-color: #3a3a3c;
-
-        --accent-primary: #ff9500; /* New vibrant orange accent */
-        --accent-primary-rgb: 255, 149, 0; /* RGB version for shadows */
+        --accent-primary: #ff9500;
+        --accent-primary-rgb: 255, 149, 0;
         --accent-primary-hover: #e68600;
-
-        --destructive: #ff453a; /* iOS-style red */
-        --destructive-hover: #ff3b30;
-
+        --destructive: #ff453a;
         --radius-sm: 8px;
         --radius-md: 16px;
-        --radius-lg: 24px;
       }
-
-      /* --- Light Mode --- */
       body[data-theme="light"] {
         --background-primary: #f0f2f5;
         --background-secondary: #ffffff;
         --background-tertiary-hover: #f1f1f1;
         --background-modal: #ffffff;
-        --background-shelf: #f9f9f9;
-        --background-shelf-rgb: 249, 249, 249; /* RGB version for gradients */
         --foreground-primary: #1c1c1e;
         --foreground-secondary: #636366;
-        --foreground-tertiary: #c7c7cc;
         --border-color: #e5e5e5;
         --input-border-color: #c7c7cc;
       }
-
-      /* --- Base & Globals --- */
-      html {
-        box-sizing: border-box;
-        font-size: 16px;
-      }
-      *,
-      *:before,
-      *:after {
-        box-sizing: inherit;
-      }
+      html,
       body {
+        box-sizing: border-box;
         font-family: var(--font-sans);
         background-color: var(--background-primary);
         color: var(--foreground-primary);
         margin: 0;
         padding: 1rem;
         -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        transition: background-color 0.3s ease, color 0.3s ease;
       }
-
-      /* --- Layout --- */
       .app-container {
         max-width: 640px;
         margin: 0 auto;
-        padding-bottom: 4rem; /* Space at the bottom */
-        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-          filter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-          opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        padding-bottom: 4rem;
       }
       .settings-sections {
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
       }
-
-      /* --- User Profile Header --- */
       .user-profile-header {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: 1rem;
+        gap: 1.5rem;
         padding: 2rem 1rem;
-        text-align: center;
-      }
-      .user-profile-header .avatar-wrapper {
-        position: relative;
-        cursor: pointer;
       }
       .user-profile-header img {
-        width: 100px;
-        height: 100px;
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         object-fit: cover;
-        border: 4px solid var(--background-secondary);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease;
-      }
-      .user-profile-header .avatar-wrapper:hover img {
-        transform: scale(1.05);
+        cursor: pointer;
       }
       .user-profile-header .username {
         font-weight: 700;
         font-size: 1.75rem;
-        letter-spacing: -0.02em;
+        cursor: pointer;
       }
-      .user-profile-header .user-email {
-        font-size: 1rem;
-        color: var(--foreground-secondary);
-        margin-top: -0.75rem;
-      }
-
-      /* --- Settings Grouping --- */
       .settings-group {
         background-color: var(--background-secondary);
         border-radius: var(--radius-md);
         overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
       }
-
-      /* --- Settings Item --- */
       .settings-item {
         display: flex;
         align-items: center;
         gap: 1rem;
         padding: 1rem 1.25rem;
         cursor: pointer;
-        transition: background-color 0.2s ease;
         border-bottom: 1px solid var(--border-color);
       }
       .settings-group .settings-item:last-child {
@@ -191,13 +120,7 @@
       }
       .settings-item .item-action {
         color: var(--foreground-secondary);
-        transition: transform 0.2s ease;
       }
-      .settings-item:hover .item-action.fa-chevron-right {
-        transform: translateX(4px);
-      }
-
-      /* --- Specific Item Controls --- */
       .toggle-switch {
         position: relative;
         display: inline-block;
@@ -234,7 +157,6 @@
       input:checked + .slider:before {
         transform: translateX(20px);
       }
-
       .custom-dropdown-wrapper {
         position: relative;
         min-width: 160px;
@@ -245,18 +167,11 @@
         border: none;
         color: var(--foreground-secondary);
         font-size: 1rem;
-        font-weight: 500;
         padding: 0.5rem 2rem 0.5rem 0.5rem;
-        border-radius: var(--radius-sm);
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        transition: background 0.2s;
-      }
-      .custom-dropdown-btn:focus {
-        outline: 2px solid var(--accent-primary);
-        color: var(--accent-primary);
       }
       .custom-dropdown-list {
         display: none;
@@ -266,87 +181,26 @@
         width: 100%;
         background: var(--background-secondary);
         border-radius: var(--radius-sm);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-        margin: 0;
-        padding: 0.25rem 0;
-        list-style: none;
         z-index: 1002;
         border: 1px solid var(--border-color);
-        max-height: 150px;
-        overflow-y: auto;
+        list-style: none;
+        padding: 0.25rem 0;
       }
       .custom-dropdown-wrapper.is-open .custom-dropdown-list {
         display: block;
       }
       .custom-dropdown-list li {
         padding: 0.75rem 1rem;
-        color: var(--foreground-secondary);
         cursor: pointer;
-        transition: background 0.18s, color 0.18s;
-        font-size: 1rem;
       }
       .custom-dropdown-list li:hover,
       .custom-dropdown-list li.selected {
         background: var(--accent-primary);
         color: #fff;
       }
-
-      /* --- Buttons & Prompts --- */
-      #logoutButton {
-        width: 100%;
-        color: var(--destructive);
-        font-weight: 500;
-        cursor: pointer;
-        border: none;
-        background: none;
-        padding: 4px 1rem;
-        text-align: left;
-        transition: background-color 0.2s ease;
-      }
-      .settings-item.logout-item:hover {
-        background-color: rgba(255, 69, 58, 0.1);
-      }
-      .guest-prompt {
-        padding: 2rem 1.5rem;
-        text-align: center;
-        background-color: var(--background-secondary);
-        border-radius: var(--radius-md);
-      }
-      .guest-prompt p {
-        margin: 0 0 1.5rem 0;
-        color: var(--foreground-secondary);
-        line-height: 1.5;
-      }
-      .primary-button {
-        width: 100%;
-        padding: 0.875rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 600;
-        border-radius: var(--radius-sm);
-        cursor: pointer;
-        border: none;
-        background-color: var(--accent-primary);
-        color: white;
-        transition: all 0.2s ease;
-      }
-      .primary-button:hover {
-        background-color: var(--accent-primary-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(var(--accent-primary-rgb), 0.2);
-      }
-      .primary-button:disabled {
-        background-color: var(--foreground-tertiary);
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-      }
-
-      /* --- Modals --- */
       .modal-backdrop {
         position: fixed;
         inset: 0;
-        width: 100vw;
-        height: 100vh;
         background-color: rgba(0, 0, 0, 0.7);
         backdrop-filter: blur(8px);
         display: none;
@@ -354,1322 +208,1131 @@
         align-items: center;
         z-index: 1000;
       }
-      #loginModal .modal-content {
-        background: none;
-        box-shadow: none;
-        border: none;
-        padding: 0;
-        width: 100vw;
-        max-width: 100vw;
-        height: 100vh;
-        max-height: 100vh;
-        border-radius: 0;
-        position: relative;
+      .modal-backdrop.active {
         display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: flex-end;
       }
-      #closeModalBtn {
-        position: absolute;
-        top: 2rem;
-        right: 2rem;
-        font-size: 2.5rem;
-        color: var(--foreground-primary);
-        cursor: pointer;
-        border: none;
-        background: rgba(30, 30, 30, 0.35);
-        border-radius: 50%;
-        padding: 0.5rem 1.1rem 0.7rem 1.1rem;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-        transition: background 0.2s, color 0.2s;
-        z-index: 1001;
-        backdrop-filter: blur(8px);
-      }
-      #closeModalBtn:hover {
-        background: rgba(255, 255, 255, 0.18);
-        color: var(--accent-primary);
-      }
-      #loginFrame {
-        width: 100vw;
-        height: 100vh;
-        border: none;
-        border-radius: 0;
-        margin: 0;
-        display: block;
-      }
-      #changePasswordModal .modal-content {
+      .modal-content {
         background-color: var(--background-modal);
         padding: 2rem;
         border-radius: var(--radius-md);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         width: 90%;
         max-width: 400px;
-        position: relative;
       }
-      #changePasswordModal h2 {
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-        text-align: center;
-      }
-      #changePasswordModal .form-group {
-        margin-bottom: 1rem;
-      }
-      #changePasswordModal label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-        color: var(--foreground-secondary);
-      }
-      #changePasswordModal input {
-        width: 100%;
-        padding: 0.75rem;
-        background-color: var(--background-primary);
-        border: 1px solid var(--input-border-color);
-        border-radius: var(--radius-sm);
-        color: var(--foreground-primary);
-        font-size: 1rem;
-      }
-      #changePasswordModal input:focus {
-        outline: none;
-        border-color: var(--accent-primary);
-        box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.3);
-      }
-      #changePasswordModal .modal-actions {
+      .modal-actions {
         display: flex;
         gap: 1rem;
         margin-top: 2rem;
       }
-      #closePasswordModalBtn {
-        flex-grow: 1;
-        background-color: var(--background-secondary);
-        color: var(--foreground-primary);
-      }
-
-      /* --- Watch History Page --- */
-      #watchHistoryPage {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: var(--background-primary);
-        z-index: 2000;
-        transition: transform 0.35s cubic-bezier(0.4, 1.2, 0.4, 1);
-        transform: translateX(100vw);
-      }
-
-      /* --- NEW: About Shelf --- */
-      #aboutShelf {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 90vh;
-        max-height: 550px;
-        background-image: linear-gradient(
-            to bottom,
-            rgba(var(--background-shelf-rgb), 0.95) 0%,
-            rgba(var(--background-shelf-rgb), 0.7) 50%,
-            rgba(var(--background-shelf-rgb), 0) 100%
-          ),
-          url("Resources/Images/aesthetic.jpg");
-        background-size: cover;
-        background-position: left;
-        background-repeat: no-repeat;
-        z-index: 3000;
-        border-top-left-radius: var(--radius-lg);
-        border-top-right-radius: var(--radius-lg);
-        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
-        transform: translateY(100%);
-        opacity: 0;
-        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-          opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-        display: none;
-        flex-direction: column;
-        padding: 0.75rem 1.5rem 2rem 1.5rem;
-        will-change: transform;
-        touch-action: none;
-        overflow: hidden;
-      }
-      #aboutShelf.is-visible {
-        transform: translateY(0);
-        opacity: 1;
-      }
-      #aboutShelf.is-fading-out {
-        opacity: 0;
-      }
-
-      /* --- About Shelf Content Styling --- */
-      #aboutShelf .about-content {
-        position: relative;
-        z-index: 2;
-        background: none;
-        padding: 2.5rem 1.5rem 1rem 1.5rem;
-        border-radius: var(--radius-md);
-        max-width: 420px;
-        margin: 0 auto;
-        text-align: center;
-        color: var(--foreground-primary);
-      }
-      #aboutShelf h3 {
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0 0 0.5rem 0;
-        letter-spacing: -0.01em;
-      }
-      #aboutShelf .creator-text {
-        color: var(--foreground-secondary);
-        font-size: 1.1rem;
-        margin-bottom: 1.5rem;
-      }
-      #aboutShelf .icon-row {
-        display: flex;
-        justify-content: center;
-        gap: 1.5rem;
-        font-size: 2.2rem;
-        margin-bottom: 1.5rem;
-        color: var(--accent-primary);
-      }
-      #aboutShelf .icon-row i {
-        filter: drop-shadow(0 2px 8px rgba(var(--accent-primary-rgb), 0.15));
-      }
-      #aboutShelf .links-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        margin-top: 1.5rem;
-      }
-      #aboutShelf .about-link {
-        display: flex;
-        align-items: center;
-        gap: 0.7rem;
-        justify-content: center;
-        background: var(--background-secondary);
-        color: var(--foreground-primary);
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 1.1rem;
-        border-radius: var(--radius-sm);
-        padding: 0.75rem 1.5rem;
-        transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      }
-      #aboutShelf .about-link:hover {
-        background: var(--accent-primary);
-        color: #fff;
-        box-shadow: 0 4px 16px rgba(var(--accent-primary-rgb), 0.18);
-      }
-      #aboutShelfGrabber {
-        width: 48px;
-        height: 6px;
-        background: var(--foreground-tertiary);
-        border-radius: 3px;
-        margin: 0.5rem auto 1.5rem auto;
-        cursor: pointer;
-        opacity: 0.7;
-      }
-      @media (max-width: 600px) {
-        #aboutShelf .about-content {
-          padding: 1.5rem 0.5rem 1rem 0.5rem;
-        }
-      }
-
-      /* --- NEW: Sakura Animation --- */
-      #sakuraContainer {
-        position: absolute;
-        top: 0;
-        left: 0;
+      .primary-button {
         width: 100%;
-        height: 100%;
-        overflow: hidden;
-        pointer-events: none;
-        z-index: 0;
+        padding: 0.875rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        border: none;
+        background-color: var(--accent-primary);
+        color: white;
       }
-      .sakura-petal {
-        position: absolute;
-        width: 10px;
-        height: 10px;
-        background: #ffb7c5;
-        border-radius: 5px 0;
-        opacity: 0;
-        animation: fall linear infinite;
-        top: -20px;
+      .secondary-button {
+        width: 100%;
+        padding: 0.875rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        border: 1px solid var(--border-color);
+        background-color: transparent;
+        color: var(--foreground-primary);
       }
-      .sakura-petal::before {
-        content: "";
-        position: absolute;
-        width: 10px;
-        height: 10px;
-        background: inherit;
-        border-radius: 0 5px;
-        transform: rotate(15deg) translate(-2px, 2px);
+      .ip-input {
+        width: 100%;
+        background: var(--background-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        padding: var(--spacing, 1rem);
+        font-size: 1rem;
+        color: var(--text-primary, #fff);
+        outline: none;
+        transition: box-shadow 0.2s, border-color 0.2s;
+        box-sizing: border-box;
       }
-      @keyframes fall {
-        0% {
-          transform: translateY(0vh) rotateZ(0deg);
-          opacity: 1;
-        }
-        100% {
-          transform: translateY(110vh) rotateZ(720deg);
-          opacity: 0;
-        }
-      }
-
       .status-indicator {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        min-height: 1.25rem;
         color: var(--foreground-secondary);
-        transition: color 0.3s ease;
-      }
-      .status-indicator.connecting {
-        color: var(--accent-primary);
       }
       .status-indicator.connected {
         color: #34c759;
       }
       .status-indicator.error {
-        color: var(--destructive);
+        color: #ff3b30;
       }
-
-      /* --- Extension Server Modal Styles --- */
-      #extensionServerModal .modal-content {
-        background-color: var(--background-modal);
-        padding: 2rem;
-        border-radius: var(--radius-md);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        width: 90%;
-        max-width: 400px;
-        position: relative;
-        font-family: Tahoma;
+      .module-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
       }
-
-      #extensionServerModal h2 {
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-        text-align: center;
-        font-family: "Bitcount Grid Single";
-        font-weight: 300;
+      .module-list .settings-item {
+        justify-content: space-between;
       }
-
-      #extensionServerModal .form-group {
-        margin-bottom: 1rem;
-      }
-
-      #extensionServerModal label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-        color: var(--foreground-secondary);
-        font-family: Tahoma;
-      }
-
-      #extensionServerModal input {
-        width: 100%;
-        padding: 0.75rem;
-        background-color: var(--background-primary);
-        border: 1px solid var(--input-border-color);
-        border-radius: var(--radius-sm);
-        color: var(--foreground-primary);
-        font-size: 1rem;
-        font-family: Tahoma;
-      }
-
-      #extensionServerModal input:focus {
-        outline: none;
-        border-color: var(--accent-primary);
-        box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.3);
-      }
-
-      #extensionServerModal .modal-actions {
+      .module-reorder-controls {
         display: flex;
-        gap: 1rem;
-        margin-top: 2rem;
-        justify-content: flex-end; /* Align buttons to the right */
+        flex-direction: column;
+        gap: 2px;
+        margin-left: 1rem;
       }
-      .modal-actions button {
-        background-color: var(--background-secondary);
-      }
-
-      /* Adjust button styles to fit within the modal */
-      #extensionServerModal .primary-button {
-        padding: 0.6rem 1rem; /* Slightly smaller padding */
-        font-size: 0.9rem; /* Slightly smaller font size */
-        font-family: Tahoma;
-      }
-
-      #extensionServerModal small {
+      .module-reorder-controls i {
+        cursor: pointer;
         color: var(--foreground-secondary);
-        font-size: 0.9rem;
-        font-family: Tahoma;
+        padding: 4px;
+        border-radius: 4px;
+      }
+      .module-reorder-controls i:hover {
+        background-color: var(--background-tertiary-hover);
+      }
+      #moduleCategoriesContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
       }
     </style>
   </head>
   <body data-theme="dark">
-    <div id="loginModal" class="modal-backdrop">
-      <div class="modal-content">
-        <button id="closeModalBtn" title="Close">×</button>
-        <iframe id="loginFrame" src=""></iframe>
-      </div>
+    <script>
+      console.log("settings.html body loaded.");
+    </script>
+    <div id="loadingScreen" style="text-align: center; padding-top: 10rem">
+      <h2>Loading Profile...</h2>
     </div>
 
-    <div id="changePasswordModal" class="modal-backdrop">
-      <div class="modal-content">
-        <h2>Change Password</h2>
-        <form id="changePasswordForm">
-          <div class="form-group">
-            <label for="currentPassword">Current Password</label
-            ><input type="password" id="currentPassword" required />
-          </div>
-          <div class="form-group">
-            <label for="newPassword">New Password</label
-            ><input type="password" id="newPassword" required />
-          </div>
-          <div class="form-group">
-            <label for="confirmNewPassword">Confirm New Password</label
-            ><input type="password" id="confirmNewPassword" required />
-          </div>
-          <div class="modal-actions">
-            <button
-              type="button"
-              id="closePasswordModalBtn"
-              class="primary-button"
-            >
-              Cancel
-            </button>
-            <button type="submit" id="submitPasswordBtn" class="primary-button">
-              Update
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Add this modal after the changePasswordModal -->
-    <div id="extensionServerModal" class="modal-backdrop">
-      <div class="modal-content">
-        <h2>Extension Server Settings</h2>
-        <form id="extensionServerForm">
-          <div class="form-group">
-            <label for="serverIpInput">Server IP Address</label>
-            <input
-              type="text"
-              id="serverIpInput"
-              placeholder="e.g., 192.168.1.100"
-              required
-            />
-          </div>
-          <div class="form-group">
-            <small
-              style="color: var(--foreground-secondary); font-size: 0.9rem"
-            >
-              Enter the IP address of your Animex extension server.
-              <a
-                href="https://github.com/Animex-App/Extension-Servers"
-                target="_blank"
-                style="color: var(--accent-primary)"
-                >Learn More</a
-              >
-            </small>
-          </div>
-          <div
-            id="serverStatusIndicator"
-            class="status-indicator"
-            style="margin: 1rem 0; font-size: 0.9rem; min-height: 1.25rem"
-          ></div>
-          <div class="modal-actions">
-            <button
-              type="button"
-              id="closeServerModalBtn"
-              class="primary-button"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              id="testServerBtn"
-              class="primary-button"
-            >
-              Test Connection
-            </button>
-            <button
-              type="submit"
-              id="saveServerBtn"
-              class="primary-button"
-              disabled
-            >
-              Save
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div class="app-container">
-      <div class="settings-sections" id="settingsSections">
+    <div class="app-container" id="settingsContainer" style="display: none">
+      <div class="settings-sections">
         <header class="user-profile-header">
-          <div class="avatar-wrapper" id="avatarWrapper" title="Change Avatar">
-            <img
-              id="userAvatar"
-              src="https://placehold.co/100/1e1e1e/a0a0a0?text=?"
-              alt="User Avatar"
-            />
-          </div>
+          <img
+            id="userAvatar"
+            src="https://placehold.co/100/1e1e1e/a0a0a0?text=?"
+            alt="User Avatar"
+          />
           <input
             type="file"
-            id="profilePicUpload"
+            id="avatarUpload"
             accept="image/*"
             style="display: none"
           />
           <div>
-            <h1 class="username" id="usernameDisplay">Guest</h1>
-            <p class="user-email" id="userEmailDisplay"></p>
+            <h1 class="username" id="usernameDisplay">Profile</h1>
           </div>
         </header>
 
-        <div id="guest-login-prompt" class="guest-prompt" style="display: none">
-          <p>
-            Login or create an account to sync your settings and watch history.
-          </p>
-          <button id="showLoginBtn" class="primary-button">
-            Login / Signup
-          </button>
+        <div class="settings-group">
+          <div class="settings-item" id="switchProfileItem">
+            <i class="item-icon fas fa-users"></i
+            ><span class="item-text">Switch Profile</span
+            ><i class="item-action fas fa-chevron-right"></i>
+          </div>
         </div>
 
-        <div id="user-settings-groups" style="display: none">
-          <div class="settings-group">
-            <div class="settings-item">
-              <i class="item-icon fas fa-palette"></i
-              ><span class="item-text">Light Mode</span>
-              <div class="item-action">
-                <label class="toggle-switch"
-                  ><input type="checkbox" id="themeToggle" /><span
-                    class="slider"
-                  ></span
-                ></label>
-              </div>
-            </div>
-            <div class="settings-item">
-              <i class="item-icon fas fa-bell"></i
-              ><span class="item-text">Push Notifications</span>
-              <div class="item-action">
-                <label class="toggle-switch"
-                  ><input type="checkbox" id="pushNotificationsToggle" /><span
-                    class="slider"
-                  ></span
-                ></label>
-              </div>
+        <div class="settings-group">
+          <div class="settings-item">
+            <i class="item-icon fas fa-palette"></i
+            ><span class="item-text">Light Mode</span>
+            <div class="item-action">
+              <label class="toggle-switch"
+                ><input type="checkbox" id="themeToggle" /><span
+                  class="slider"
+                ></span
+              ></label>
             </div>
           </div>
+          <div class="settings-item">
+            <i class="item-icon fas fa-bell"></i
+            ><span class="item-text">Push Notifications</span>
+            <div class="item-action">
+              <label class="toggle-switch"
+                ><input type="checkbox" id="pushNotificationsToggle" /><span
+                  class="slider"
+                ></span
+              ></label>
+            </div>
+          </div>
+          <div class="settings-item" id="nsfw-toggle-container">
+            <i class="item-icon fas fa-mask"></i
+            ><span class="item-text">NSFW Content</span>
+            <div class="item-action">
+              <label class="toggle-switch"
+                ><input type="checkbox" id="nsfwToggle" /><span
+                  class="slider"
+                ></span
+              ></label>
+            </div>
+          </div>
+          <!-- NSFW Portal Link - Hidden by default -->
+          <div class="settings-item" id="nsfwPortalItem" style="display: none;">
+            <i class="item-icon fas fa-door-open" style="color: var(--destructive);"></i
+            ><span class="item-text" style="color: var(--destructive);">NSFW Portal</span
+            ><i class="item-action fas fa-chevron-right" style="color: var(--destructive);"></i>
+          </div>
+        </div>
 
-          <!-- Add this new settings group after the existing Download Quality group -->
-          <div class="settings-group">
-            <div class="settings-item">
-              <i class="item-icon fas fa-download"></i
-              ><span class="item-text">Download Quality</span>
-              <div
-                class="item-action custom-dropdown-wrapper"
-                id="customDropdownWrapper"
+        <div class="settings-group">
+          <div class="settings-item">
+            <i class="item-icon fas fa-download"></i
+            ><span class="item-text">Download Quality</span>
+            <div
+              class="item-action custom-dropdown-wrapper"
+              id="customDropdownWrapper"
+            >
+              <button
+                type="button"
+                class="custom-dropdown-btn"
+                id="customDropdownBtn"
               >
-                <button
-                  type="button"
-                  class="custom-dropdown-btn"
-                  id="customDropdownBtn"
-                >
-                  <span id="customDropdownSelected">1080p (Best)</span
-                  ><i class="fas fa-chevron-down"></i>
-                </button>
-                <ul class="custom-dropdown-list" id="customDropdownList">
-                  <li data-value="1080p">1080p (Best)</li>
-                  <li data-value="720p">720p (Good)</li>
-                  <li data-value="360p">360p (Data Saver)</li>
-                </ul>
-              </div>
-            </div>
-            <div class="settings-item" id="extensionServerItem">
-              <i class="item-icon fas fa-server"></i
-              ><span class="item-text">Extension Server</span
-              ><i class="item-action fas fa-chevron-right"></i>
-            </div>
-            <div class="settings-item" id="watchHistoryItem">
-              <i class="item-icon fas fa-history"></i
-              ><span class="item-text">Watch History</span
-              ><i class="item-action fas fa-chevron-right"></i>
+                <span id="customDropdownSelected">1080p</span
+                ><i class="fas fa-chevron-down"></i>
+              </button>
+              <ul class="custom-dropdown-list" id="customDropdownList">
+                <li data-value="1080p">1080p (Best)</li>
+                <li data-value="720p">720p (Good)</li>
+                <li data-value="360p">360p (Data Saver)</li>
+              </ul>
             </div>
           </div>
-
-          <div class="settings-group">
-            <div class="settings-item" id="changePasswordItem">
-              <i class="item-icon fas fa-lock"></i
-              ><span class="item-text">Change Password</span
-              ><i class="item-action fas fa-chevron-right"></i>
-            </div>
-            <div class="settings-item" id="helpSupportItem">
-              <i class="item-icon fas fa-question-circle"></i
-              ><span class="item-text">Help & Support</span
-              ><i class="item-action fas fa-chevron-right"></i>
-            </div>
-            <!-- FIX: Changed ID from duplicated 'helpSupportItem' to 'aboutItem' -->
-            <div class="settings-item" id="aboutItem">
-              <i class="item-icon fas fa-circle-info"></i
-              ><span class="item-text">About</span
-              ><i class="item-action fas fa-chevron-right"></i>
-            </div>
-          </div>
-
-          <div class="settings-group">
-            <div class="settings-item logout-item">
-              <i
-                class="item-icon fas fa-sign-out-alt"
-                style="color: var(--destructive)"
-              ></i
-              ><button id="logoutButton">Logout</button>
-            </div>
+          <div class="settings-item" id="extensionServerItem">
+            <i class="item-icon fas fa-server"></i
+            ><span class="item-text">Extension Server</span
+            ><i class="item-action fas fa-chevron-right"></i>
           </div>
         </div>
-      </div>
-      <div id="watchHistoryPage">
-        <header
-          style="
-            display: flex;
-            align-items: center;
-            padding: 1.5rem 1rem 1rem 1rem;
-            gap: 1rem;
-            background: var(--background-primary);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-          "
-        >
-          <button
-            id="backToSettingsBtn"
-            style="
-              background: none;
-              border: none;
-              font-size: 2rem;
-              color: var(--accent-primary);
-              cursor: pointer;
-              padding: 0 0.5rem 0 0;
-              line-height: 1;
-            "
-          >
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          <h2
-            style="
-              margin: 0;
-              font-size: 1.4rem;
-              font-weight: 700;
-              letter-spacing: -0.01em;
-            "
-          >
-            Watch History
-          </h2>
-        </header>
-        <div
-          id="watchHistoryContent"
-          style="
-            padding: 1.5rem 1rem 2rem 1rem;
-            max-width: 640px;
-            margin: 0 auto;
-          "
-        ></div>
+
+        <div class="settings-group">
+          <div class="settings-item" id="moduleManagementItem">
+            <i class="item-icon fas fa-puzzle-piece"></i
+            ><span class="item-text">Module Management</span
+            ><i class="item-action fas fa-chevron-right"></i>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="settings-item" id="addOnManagementItem">
+            <i class="item-icon fas fa-puzzle-piece"></i
+            ><span class="item-text">Add-on Management</span
+            ><i class="item-action fas fa-chevron-right"></i>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="settings-item" id="clearCacheItem">
+            <i class="item-icon fas fa-broom"></i>
+            <span class="item-text">Clear Cache</span>
+            <i class="item-action fas fa-chevron-right"></i>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- NEW: About Shelf -->
-    <div id="aboutShelf">
-      <div id="aboutShelfGrabber"></div>
-      <div id="sakuraContainer"></div>
-      <div class="about-content">
-        <h3>About</h3>
-        <p class="creator-text">Created by Arkm</p>
+    <div id="extensionServerModal" class="modal-backdrop">
+      <div class="modal-content">
+        <h2>Extension Server</h2>
+        <p
+          style="
+            color: var(--foreground-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+          "
+        >
+          Enter the IP address of your extension server.
+        </p>
+        <input
+          type="text"
+          id="ip-input"
+          class="ip-input"
+          placeholder="e.g., 192.168.1.100"
+        />
+        <div id="status-indicator" class="status-indicator"></div>
+        <div class="modal-actions">
+          <button id="checkConnectionBtn" class="secondary-button">
+            Check Connection
+          </button>
+          <button id="saveConnectionBtn" class="primary-button" disabled>
+            Save
+          </button>
+        </div>
+        <button
+          id="closeModalBtn"
+          style="
+            background: none;
+            border: none;
+            color: var(--foreground-secondary);
+            cursor: pointer;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+          "
+        >
+          ×
+        </button>
+      </div>
+    </div>
 
-        <div class="icon-row">
-          <i class="fab fa-rebel"></i>
-          <!-- Note: The TIE Fighter icon is part of FontAwesome Pro and may not render with the free CDN -->
-          <i class="fa-solid fa-dragon"></i>
-          <i class="fab fa-empire"></i>
+    <div id="editProfileModal" class="modal-backdrop">
+      <div class="modal-content">
+        <h2>Edit Profile</h2>
+        <p
+          style="
+            color: var(--foreground-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+          "
+        >
+          Enter your new username.
+        </p>
+        <input
+          type="text"
+          id="username-input"
+          class="ip-input"
+          placeholder="New username"
+        />
+        <div class="modal-actions">
+          <button id="saveUsernameBtn" class="primary-button">Save</button>
+        </div>
+        <button
+          id="closeEditProfileModalBtn"
+          style="
+            background: none;
+            border: none;
+            color: var(--foreground-secondary);
+            cursor: pointer;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+          "
+        >
+          ×
+        </button>
+      </div>
+    </div>
+
+    <div id="moduleManagementModal" class="modal-backdrop">
+      <div class="modal-content">
+        <h2>Module Management</h2>
+        <p
+          style="
+            color: var(--foreground-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+          "
+        >
+          Enable/disable modules and set their preferred order.
+        </p>
+
+        <div id="moduleCategoriesContainer">
+          <!-- Categories and modules will be dynamically loaded here -->
         </div>
 
-        <div class="links-container">
-          <a
-            href="https://github.com/Arkm20"
-            target="_blank"
-            class="about-link"
-          >
-            <i class="fab fa-github"></i>
-            <span>GitHub</span>
-          </a>
-          <a
-            href="https://discordapp.com/users/1025194698010271864"
-            target="_blank"
-            class="about-link"
-          >
-            <i class="fab fa-discord"></i>
-            <span>Contact on Discord</span>
-          </a>
+        <div class="modal-actions">
+          <button id="saveModulePreferencesBtn" class="primary-button">
+            Save Preferences
+          </button>
         </div>
+        <button
+          id="closeModuleModalBtn"
+          style="
+            background: none;
+            border: none;
+            color: var(--foreground-secondary);
+            cursor: pointer;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+          "
+        >
+          ×
+        </button>
+      </div>
+    </div>
+
+    <div id="addOnManagementModal" class="modal-backdrop">
+      <div class="modal-content">
+        <h2>Add-on Management</h2>
+        <p
+          style="
+            color: var(--foreground-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+          "
+        >
+          Configure your installed add-ons.
+        </p>
+        <div id="addOnCategoriesContainer">
+          <!-- Categories and add-ons will be dynamically loaded here -->
+        </div>
+        <div class="modal-actions">
+          <button id="saveAddOnPreferencesBtn" class="primary-button">
+            Save Preferences
+          </button>
+        </div>
+        <button
+          id="closeAddOnModalBtn"
+          style="
+            background: none;
+            border: none;
+            color: var(--foreground-secondary);
+            cursor: pointer;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+          "
+        >
+          ×
+        </button>
+      </div>
+    </div>
+
+    <div id="clearCacheModal" class="modal-backdrop">
+      <div class="modal-content">
+        <h2>Clear Cache</h2>
+        <p style="color: var(--foreground-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+          This can help resolve display issues or problems with outdated content.
+        </p>
+        <div class="modal-actions" style="flex-direction: column; gap: 0.75rem;">
+          <button id="clearPagesBtn" class="secondary-button">Clear Cached Pages & Resources</button>
+          <button id="clearAllBtn" class="primary-button" style="background-color: var(--destructive);">Clear All Site Data (Logout)</button>
+          <button id="closeCacheModalBtn" class="secondary-button" style="margin-top: 1rem;">Cancel</button>
+        </div>
+        <button id="closeCacheModalBtnCross" style="background: none; border: none; color: var(--foreground-secondary); cursor: pointer; position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem;">×</button>
       </div>
     </div>
 
     <script>
-      // --- Configuration ---
-      const API_BASE_URL = "https://arkm20-authapi.hf.space";
-      const LOGIN_PAGE_URL = `${API_BASE_URL}/login/login.html`;
-
-      // --- Element Selectors ---
-      const userAvatarImg = document.getElementById("userAvatar");
-      const usernameDisplaySpan = document.getElementById("usernameDisplay");
-      const userEmailDisplay = document.getElementById("userEmailDisplay");
-      const avatarWrapper = document.getElementById("avatarWrapper");
-      const profilePicUploadInput = document.getElementById("profilePicUpload");
-      const guestLoginPrompt = document.getElementById("guest-login-prompt");
-      const userSettingsGroups = document.getElementById(
-        "user-settings-groups"
-      );
-      const logoutButton = document.getElementById("logoutButton");
-      const loginModal = document.getElementById("loginModal");
-      const loginFrame = document.getElementById("loginFrame");
-      const closeModalBtn = document.getElementById("closeModalBtn");
-      const showLoginBtn = document.getElementById("showLoginBtn");
-      const changePasswordModal = document.getElementById(
-        "changePasswordModal"
-      );
-      const changePasswordItem = document.getElementById("changePasswordItem");
-      const closePasswordModalBtn = document.getElementById(
-        "closePasswordModalBtn"
-      );
-      const changePasswordForm = document.getElementById("changePasswordForm");
-      const submitPasswordBtn = document.getElementById("submitPasswordBtn");
-      const watchHistoryItem = document.getElementById("watchHistoryItem");
-      const watchHistoryPage = document.getElementById("watchHistoryPage");
-      const watchHistoryContent = document.getElementById(
-        "watchHistoryContent"
-      );
-      const settingsSections = document.getElementById("settingsSections");
-      const backToSettingsBtn = document.getElementById("backToSettingsBtn");
-
-      // --- NEW: About Shelf Selectors ---
-      const appContainer = document.querySelector(".app-container");
-      const aboutItem = document.getElementById("aboutItem");
-      const aboutShelf = document.getElementById("aboutShelf");
-      const sakuraContainer = document.getElementById("sakuraContainer");
-
-      // Add these variables to the existing selectors section
-      const extensionServerItem = document.getElementById(
-        "extensionServerItem"
-      );
-      const extensionServerModal = document.getElementById(
-        "extensionServerModal"
-      );
-      const closeServerModalBtn = document.getElementById(
-        "closeServerModalBtn"
-      );
-      const extensionServerForm = document.getElementById(
-        "extensionServerForm"
-      );
-      const serverIpInput = document.getElementById("serverIpInput");
-      const testServerBtn = document.getElementById("testServerBtn");
-      const saveServerBtn = document.getElementById("saveServerBtn");
-      const serverStatusIndicator = document.getElementById(
-        "serverStatusIndicator"
-      );
-
-      // --- UI State Management ---
-      function showGuestUI() {
-        usernameDisplaySpan.textContent = "Guest";
-        userEmailDisplay.textContent = "Please log in";
-        userAvatarImg.src = "https://placehold.co/100/1e1e1e/a0a0a0?text=?";
-        userAvatarImg.style.cursor = "default";
-        avatarWrapper.style.cursor = "default";
-        guestLoginPrompt.style.display = "block";
-        userSettingsGroups.style.display = "none";
-      }
-
-      function showUserUI(userData) {
-        usernameDisplaySpan.textContent = userData.username || "User";
-        userEmailDisplay.textContent = userData.email || "";
-        if (userData.profile_picture_url) {
-          userAvatarImg.src = userData.profile_picture_url.startsWith("http")
-            ? userData.profile_picture_url
-            : `${API_BASE_URL}${userData.profile_picture_url}`;
-        } else {
-          const initial = userData.username
-            ? userData.username.charAt(0).toUpperCase()
-            : "U";
-          userAvatarImg.src = `https://placehold.co/100/FF9500/fff?text=${initial}`;
-        }
-        userAvatarImg.style.cursor = "pointer";
-        avatarWrapper.style.cursor = "pointer";
-        guestLoginPrompt.style.display = "none";
-        userSettingsGroups.style.display = "block";
-      }
-
-      // --- API & Data Fetching ---
-      async function fetchUserProfile() {
-        const token = localStorage.getItem("accessToken");
-        if (!token) {
-          showGuestUI();
-          return;
-        }
-        try {
-          const response = await fetch(`${API_BASE_URL}/users/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (response.ok) {
-            showUserUI(await response.json());
-          } else {
-            localStorage.removeItem("accessToken");
-            showGuestUI();
-          }
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
-          showGuestUI();
-        }
-      }
-
-      // --- Profile Picture Upload ---
-      profilePicUploadInput.addEventListener("change", async (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-        const token = localStorage.getItem("accessToken");
-        if (!token) return;
-        const formData = new FormData();
-        formData.append("file", file);
-        try {
-          const response = await fetch(
-            `${API_BASE_URL}/users/me/profile-picture`,
-            {
-              method: "POST",
-              headers: { Authorization: `Bearer ${token}` },
-              body: formData,
-            }
-          );
-          if (response.ok) {
-            alert("Profile picture updated!");
-            fetchUserProfile();
-          } else {
-            const errorData = await response.json();
-            alert(
-              `Error uploading: ${errorData.detail || response.statusText}`
-            );
-          }
-        } catch (error) {
-          console.error("Upload error:", error);
-          alert("An error occurred during upload.");
-        } finally {
-          profilePicUploadInput.value = "";
-        }
-      });
-
-      // --- Settings Controls ---
-      function setupThemeToggle() {
-        const toggle = document.getElementById("themeToggle");
-        const currentTheme = localStorage.getItem("theme") || "dark";
-        document.body.dataset.theme = currentTheme;
-        toggle.checked = currentTheme === "light";
-        toggle.addEventListener("change", () => {
-          const newTheme = toggle.checked ? "light" : "dark";
-          document.body.dataset.theme = newTheme;
-          localStorage.setItem("theme", newTheme);
-        });
-      }
-      function setupToggle(toggleId, storageKey) {
-        const toggle = document.getElementById(toggleId);
-        if (!toggle) return;
-        toggle.checked = localStorage.getItem(storageKey) === "enabled";
-        toggle.addEventListener("change", () => {
-          localStorage.setItem(
-            storageKey,
-            toggle.checked ? "enabled" : "disabled"
-          );
-        });
-      }
-      function setupCustomDropdown() {
-        const wrapper = document.getElementById("customDropdownWrapper");
-        if (!wrapper) return;
-        const btn = document.getElementById("customDropdownBtn");
-        const list = document.getElementById("customDropdownList");
-        const selectedSpan = document.getElementById("customDropdownSelected");
-        const options = list.querySelectorAll("li");
-        let savedValue = localStorage.getItem("quality") || "1080";
-        let found = false;
-        options.forEach((opt) => {
-          if (opt.dataset.value === savedValue) {
-            selectedSpan.textContent = opt.textContent;
-            opt.classList.add("selected");
-            found = true;
-          } else {
-            opt.classList.remove("selected");
-          }
-        });
-        if (!found && options.length > 0) {
-          selectedSpan.textContent = options[0].textContent;
-          options[0].classList.add("selected");
-        }
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          wrapper.classList.toggle("is-open");
-        });
-        options.forEach((opt) => {
-          opt.addEventListener("click", () => {
-            options.forEach((o) => o.classList.remove("selected"));
-            opt.classList.add("selected");
-            selectedSpan.textContent = opt.textContent;
-            localStorage.setItem("quality", opt.dataset.value);
-            wrapper.classList.remove("is-open");
-          });
-        });
-        document.addEventListener("click", (e) => {
-          if (!wrapper.contains(e.target)) {
-            wrapper.classList.remove("is-open");
-          }
-        });
-      }
-
-      // --- Watch History Page Logic ---
-      function slideInWatchHistory() {
-        watchHistoryPage.style.display = "block";
-        setTimeout(() => {
-          watchHistoryPage.style.transform = "translateX(0)";
-          settingsSections.style.filter = "blur(8px)";
-        }, 10);
-      }
-      function slideOutWatchHistory() {
-        watchHistoryPage.style.transform = "translateX(100vw)";
-        settingsSections.style.filter = "";
-        setTimeout(() => {
-          watchHistoryPage.style.display = "none";
-        }, 350);
-      }
-      watchHistoryItem.addEventListener("click", async () => {
-        slideInWatchHistory();
-        await fetchAndRenderWatchHistorySettings();
-      });
-      backToSettingsBtn.addEventListener("click", slideOutWatchHistory);
-      async function fetchAndRenderWatchHistorySettings() {
-        watchHistoryContent.innerHTML =
-          '<p style="color:var(--foreground-secondary);text-align:center;">Loading your watch history...</p>';
-        const token = localStorage.getItem("accessToken");
-        if (!token) {
-          watchHistoryContent.innerHTML =
-            '<p style="color:var(--foreground-secondary);text-align:center;">Login to view your watch history.</p>';
-          return;
-        }
-        try {
-          const response = await fetch(`${API_BASE_URL}/users/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (!response.ok) throw new Error("API Error");
-          renderWatchHistorySettings(
-            (await response.json()).watch_history_detailed
-          );
-        } catch (e) {
-          watchHistoryContent.innerHTML =
-            '<p style="color:var(--destructive);text-align:center;">Failed to load watch history.</p>';
-        }
-      }
-      async function renderWatchHistorySettings(historyData) {
-        watchHistoryContent.innerHTML = "";
-        if (!historyData || Object.keys(historyData).length === 0) {
-          watchHistoryContent.innerHTML =
-            '<p style="color:var(--foreground-secondary);text-align:center;">No watch history found.</p>';
-          return;
-        }
-        const showIds = Object.keys(historyData).sort((a, b) =>
-          historyData[a].title.localeCompare(historyData[b].title)
-        );
-        for (const showId of showIds) {
-          const showMeta = historyData[showId];
-          const jikan = await fetchJikanInfoSettings(showId);
-          if (!jikan) continue;
-          const showDiv = document.createElement("div");
-          Object.assign(showDiv.style, {
-            background: "var(--background-secondary)",
-            borderRadius: "var(--radius-md)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-            display: "flex",
-            alignItems: "flex-start",
-            marginBottom: "1.2rem",
-            cursor: "pointer",
-            padding: "1rem",
-          });
-          const img = document.createElement("img");
-          Object.assign(img, { src: jikan.image, alt: jikan.title });
-          Object.assign(img.style, {
-            width: "60px",
-            height: "80px",
-            objectFit: "cover",
-            borderRadius: "8px",
-            marginRight: "16px",
-          });
-          showDiv.appendChild(img);
-          const infoDiv = document.createElement("div");
-          infoDiv.style.flex = "1";
-          infoDiv.innerHTML = `<div style="font-weight:bold;font-size:1.1em;">${jikan.title}</div>`;
-          Object.keys(showMeta.seasons)
-            .sort((a, b) => a - b)
-            .forEach((seasonNum) => {
-              const season = showMeta.seasons[seasonNum];
-              infoDiv.innerHTML += `<div style="margin-top:8px;font-size:0.95em;color:#aaa;">Season ${seasonNum}</div>`;
-              const episodeList = document.createElement("ul");
-              Object.assign(episodeList.style, {
-                listStyle: "none",
-                padding: "4px 0",
-                margin: "0",
-              });
-              Object.keys(season.episodes)
-                .sort((a, b) => a - b)
-                .forEach((epNum) => {
-                  episodeList.innerHTML += `<li>Ep ${epNum} <span style="font-size:0.85em;color:#888;">(Watched: ${new Date(
-                    season.episodes[epNum]
-                  ).toLocaleString()})</span></li>`;
-                });
-              infoDiv.appendChild(episodeList);
-            });
-          showDiv.appendChild(infoDiv);
-          showDiv.addEventListener("click", () => {
-            window.location.href = `series-info.html?library=true&id=${encodeURIComponent(
-              showId
-            )}`;
-          });
-          watchHistoryContent.appendChild(showDiv);
-        }
-      }
-      async function fetchJikanInfoSettings(id) {
-        try {
-          const res = await fetch(`https://api.jikan.moe/v4/anime/${id}`);
-          if (!res.ok) throw new Error("Jikan fetch failed");
-          const anime = (await res.json()).data;
-          return {
-            title: anime.title_english || anime.title,
-            image: anime.images.jpg.image_url,
-          };
-        } catch (err) {
-          return null;
-        }
-      }
-
-      // --- Change Password Logic ---
-      async function handleChangePassword(e) {
-        e.preventDefault();
-        submitPasswordBtn.disabled = true;
-        submitPasswordBtn.textContent = "Updating...";
-        const currentPassword =
-          document.getElementById("currentPassword").value;
-        const newPassword = document.getElementById("newPassword").value;
-        if (
-          newPassword !== document.getElementById("confirmNewPassword").value
-        ) {
-          alert("New passwords do not match.");
-          submitPasswordBtn.disabled = false;
-          submitPasswordBtn.textContent = "Update";
-          return;
-        }
-        const token = localStorage.getItem("accessToken");
-        if (!token) {
-          alert("You are not logged in.");
-          changePasswordModal.style.display = "none";
-          return;
-        }
-        try {
-          const response = await fetch(`${API_BASE_URL}/users/me/password`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              current_password: currentPassword,
-              new_password: newPassword,
-            }),
-          });
-          if (response.ok) {
-            alert("Password updated successfully.");
-            changePasswordModal.style.display = "none";
-            changePasswordForm.reset();
-          } else {
-            const errorData = await response.json();
-            alert(`Error: ${errorData.detail || "Could not update password."}`);
-          }
-        } catch (error) {
-          console.error("Password change error:", error);
-          alert("An unexpected error occurred. Please try again.");
-        } finally {
-          submitPasswordBtn.disabled = false;
-          submitPasswordBtn.textContent = "Update";
-        }
-      }
-
-      // --- NEW: About Shelf Logic ---
-      let isShelfOpen = false,
-        sakuraInterval = null,
-        startY = 0,
-        currentY = 0,
-        isDragging = false;
-      function openAboutShelf() {
-        if (isShelfOpen) return;
-        isShelfOpen = true;
-        aboutShelf.style.display = "flex";
-        aboutShelf.classList.remove("is-fading-out");
-        appContainer.classList.add("shelf-open");
-        setTimeout(() => {
-          aboutShelf.classList.add("is-visible");
-          startSakuraAnimation();
-        }, 10);
-      }
-      function closeAboutShelf() {
-        if (!isShelfOpen) return;
-        isShelfOpen = false;
-        aboutShelf.classList.remove("is-visible");
-        aboutShelf.classList.add("is-fading-out");
-        appContainer.classList.remove("shelf-open");
-        stopSakuraAnimation();
-        const handleTransitionEnd = (e) => {
-          if (e.propertyName === "opacity") {
-            aboutShelf.style.display = "none";
-            aboutShelf.classList.remove("is-fading-out");
-            aboutShelf.removeEventListener(
-              "transitionend",
-              handleTransitionEnd
-            );
-          }
-        };
-        aboutShelf.addEventListener("transitionend", handleTransitionEnd);
-      }
-      function onTouchStart(e) {
-        if (isShelfOpen) {
-          isDragging = true;
-          startY = e.touches[0].clientY;
-          aboutShelf.style.transition = "none";
-        }
-      }
-      function onTouchMove(e) {
-        if (!isDragging || !isShelfOpen) return;
-        currentY = e.touches[0].clientY;
-        const diffY = currentY - startY;
-        if (diffY > 0) {
-          aboutShelf.style.transform = `translateY(${diffY}px)`;
-        }
-      }
-      function onTouchEnd() {
-        if (!isDragging || !isShelfOpen) return;
-        isDragging = false;
-        aboutShelf.style.transition =
-          "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)";
-        if (currentY - startY > aboutShelf.clientHeight * 0.3) {
-          // BUG FIX: This line ensures the state is updated when the shelf is closed via drag.
-          isShelfOpen = false;
-
-          aboutShelf.style.transform = `translateY(100%)`;
-          aboutShelf.classList.remove("is-visible");
-          aboutShelf.classList.add("is-fading-out");
-          appContainer.classList.remove("shelf-open");
-          stopSakuraAnimation();
-          const handleTransitionEnd = (e) => {
-            if (e.propertyName === "opacity") {
-              aboutShelf.style.display = "none";
-              aboutShelf.classList.remove("is-fading-out");
-              aboutShelf.removeEventListener(
-                "transitionend",
-                handleTransitionEnd
-              );
-            }
-          };
-          aboutShelf.addEventListener("transitionend", handleTransitionEnd);
-        } else {
-          aboutShelf.style.transform = "translateY(0)";
-        }
-        startY = 0;
-        currentY = 0;
-      }
-      function createSakuraPetal() {
-        const petal = document.createElement("div");
-        petal.classList.add("sakura-petal");
-        const duration = Math.random() * 5 + 8,
-          delay = Math.random() * 5;
-        petal.style.left = `${Math.random() * window.innerWidth}px`;
-        petal.style.animationDuration = `${duration}s`;
-        petal.style.animationDelay = `${delay}s`;
-        sakuraContainer.appendChild(petal);
-        setTimeout(() => {
-          petal.remove();
-        }, (duration + delay) * 1000);
-      }
-      function startSakuraAnimation() {
-        if (sakuraInterval) return;
-        for (let i = 0; i < 15; i++) {
-          createSakuraPetal();
-        }
-        sakuraInterval = setInterval(createSakuraPetal, 800);
-      }
-      function stopSakuraAnimation() {
-        clearInterval(sakuraInterval);
-        sakuraInterval = null;
-        sakuraContainer.innerHTML = "";
-      }
-
-      // Add this function for server verification
-      async function verifyExtensionServer(ip) {
-        serverStatusIndicator.textContent = "Testing connection...";
-        serverStatusIndicator.className = "status-indicator connecting";
-
-        try {
-          const response = await fetch(`http://${ip}:7275/identify`, {
-            method: "GET",
-            mode: "cors",
-            signal: AbortSignal.timeout(5000), // 5 second timeout
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.app === "Animex Extension API") {
-              serverStatusIndicator.textContent = "Connection successful!";
-              serverStatusIndicator.className = "status-indicator connected";
-              return true;
-            }
-          }
-          throw new Error("Not a valid Animex server");
-        } catch (error) {
-          serverStatusIndicator.textContent =
-            "Connection failed. Please check the IP address.";
-          serverStatusIndicator.className = "status-indicator error";
-          return false;
-        }
-      }
-
-      // Add this function to handle extension server form
-      async function handleExtensionServerForm(e) {
-        e.preventDefault();
-        const ip = serverIpInput.value.trim();
-
-        if (!ip) {
-          serverStatusIndicator.textContent = "Please enter an IP address.";
-          serverStatusIndicator.className = "status-indicator error";
-          return;
-        }
-
-        // Verify server before saving
-        const isValid = await verifyExtensionServer(ip);
-        if (isValid) {
-          localStorage.setItem("extension_server_ip", ip);
-          alert("Extension server updated successfully!");
-          extensionServerModal.style.display = "none";
-          extensionServerForm.reset();
-          serverStatusIndicator.textContent = "";
-          serverStatusIndicator.className = "status-indicator";
-          saveServerBtn.disabled = true;
-        }
-      }
-
-      // Enable save button when IP input changes after successful test
-
-      // --- Event Listeners ---
       document.addEventListener("DOMContentLoaded", () => {
-        setupThemeToggle();
-        setupToggle("pushNotificationsToggle", "pushNotifications");
-        setupCustomDropdown();
+        console.log("DOMContentLoaded fired.");
+        let currentProfile = null;
 
-        showLoginBtn.addEventListener("click", () => {
-          loginFrame.src = LOGIN_PAGE_URL;
-          loginModal.style.display = "flex";
-        });
-        closeModalBtn.addEventListener("click", () => {
-          loginModal.style.display = "none";
-          loginFrame.src = "about:blank";
-          fetchUserProfile();
-        });
-        logoutButton.addEventListener("click", () => {
-          localStorage.removeItem("accessToken");
-          alert("You have been logged out.");
-          window.location.href = LOGIN_PAGE_URL; // Redirect to login page after logout
-        });
-
-        window.addEventListener(
-          "message",
-          (event) => {
-            if (event.origin !== API_BASE_URL) return;
-            if (event.data && event.data.accessToken) {
-              localStorage.setItem("accessToken", event.data.accessToken);
-              loginModal.style.display = "none";
-              loginFrame.src = "about:blank";
-              fetchUserProfile();
-            }
-          },
-          false
+        const loadingScreen = document.getElementById("loadingScreen");
+        const settingsContainer = document.getElementById("settingsContainer");
+        const userAvatar = document.getElementById("userAvatar");
+        const avatarUpload = document.getElementById("avatarUpload");
+        const usernameDisplay = document.getElementById("usernameDisplay");
+        const switchProfileItem = document.getElementById("switchProfileItem");
+        const extensionServerItem = document.getElementById(
+          "extensionServerItem"
         );
+        const extensionServerModal = document.getElementById(
+          "extensionServerModal"
+        );
+        const nsfwPortalItem = document.getElementById("nsfwPortalItem");
 
-        avatarWrapper.addEventListener("click", () => {
-          if (localStorage.getItem("accessToken")) {
-            profilePicUploadInput.click();
-          }
-        });
-        changePasswordItem.addEventListener("click", () => {
-          changePasswordModal.style.display = "flex";
-        });
-        closePasswordModalBtn.addEventListener("click", () => {
-          changePasswordModal.style.display = "none";
-          changePasswordForm.reset();
-        });
-        changePasswordForm.addEventListener("submit", handleChangePassword);
-        document
-          .getElementById("helpSupportItem")
-          .addEventListener("click", () => {
-            window.location.href =
-              "mailto:support@media.app?subject=Help Request";
-          });
 
-        // --- NEW: About Shelf Listeners ---
-        aboutItem.addEventListener("click", openAboutShelf);
-        document
-          .getElementById("aboutShelfGrabber")
-          .addEventListener("click", closeAboutShelf);
-        aboutShelf.addEventListener("touchstart", onTouchStart, {
-          passive: true,
-        });
-        aboutShelf.addEventListener("touchmove", onTouchMove, {
-          passive: true,
-        });
-        aboutShelf.addEventListener("touchend", onTouchEnd);
-
-        // Add these event listeners to the existing DOMContentLoaded section
-        extensionServerItem.addEventListener("click", () => {
-          const currentIp = localStorage.getItem("extension_server_ip") || "";
-          serverIpInput.value = currentIp;
-          serverStatusIndicator.textContent = "";
-          serverStatusIndicator.className = "status-indicator";
-          saveServerBtn.disabled = true;
-          extensionServerModal.style.display = "flex";
-        });
-
-        closeServerModalBtn.addEventListener("click", () => {
-          extensionServerModal.style.display = "none";
-          extensionServerForm.reset();
-          serverStatusIndicator.textContent = "";
-          serverStatusIndicator.className = "status-indicator";
-          saveServerBtn.disabled = true;
-        });
-
-        testServerBtn.addEventListener("click", async () => {
-          const ip = serverIpInput.value.trim();
-          if (!ip) {
-            serverStatusIndicator.textContent =
-              "Please enter an IP address first.";
-            serverStatusIndicator.className = "status-indicator error";
+        async function initialize() {
+          console.log("Initializing settings page...");
+          const profileId = localStorage.getItem("currentProfileId");
+          console.log("Retrieved profileId from localStorage:", profileId);
+          if (!profileId) {
+            console.log("No profile ID found, redirecting to login.");
+            window.location.href = "login.html";
             return;
           }
+          console.log("Profile ID found:", profileId);
 
-          const isValid = await verifyExtensionServer(ip);
-          saveServerBtn.disabled = !isValid;
-        });
+          try {
+            console.log("Fetching profile data...");
+            const response = await fetch(`/profiles/${profileId}`);
+            if (!response.ok) {
+              console.error(
+                "Failed to fetch profile:",
+                response.status,
+                response.statusText
+              );
+              throw new Error("Profile not found");
+            }
+            currentProfile = await response.json();
+            console.log("Profile data fetched successfully.");
 
-        serverIpInput.addEventListener("input", () => {
-          saveServerBtn.disabled = true;
-          serverStatusIndicator.textContent = "";
-          serverStatusIndicator.className = "status-indicator";
-        });
+            renderSettingsForProfile();
+            setupEventListeners();
+            await checkAndSetupNsfwToggle();
 
-        extensionServerForm.addEventListener(
-          "submit",
-          handleExtensionServerForm
-        );
+            loadingScreen.style.display = "none";
+            settingsContainer.style.display = "block";
+            console.log("Settings page loaded.");
+          } catch (error) {
+            console.error("Error during initialization:", error);
+            localStorage.removeItem("currentProfileId");
+            window.location.href = "login.html";
+          }
+        }
 
-        fetchUserProfile();
+        async function checkAndSetupNsfwToggle() {
+            const nsfwToggleContainer = document.getElementById('nsfw-toggle-container');
+            const nsfwPortalItem = document.getElementById('nsfwPortalItem');
+
+            if (!nsfwToggleContainer) return;
+
+            // The container is hidden by default in HTML to prevent flicker.
+            if (nsfwPortalItem) nsfwPortalItem.style.display = 'none';
+
+            try {
+                const response = await fetch("/extensions");
+                if (!response.ok) throw new Error("Failed to fetch extensions");
+                const installedExtensions = await response.json();
+
+                const nsfwExtensionExists = installedExtensions.includes('nsfw');
+
+                if (nsfwExtensionExists) {
+                    nsfwToggleContainer.style.display = 'flex';
+                    // The portal item's visibility is controlled by the toggle's state,
+                    // which is set in renderSettingsForProfile. We just need to re-evaluate.
+                    if (document.getElementById('nsfwToggle').checked) {
+                       if (nsfwPortalItem) nsfwPortalItem.style.display = 'flex';
+                    }
+                }
+            } catch (error) {
+                console.error("Could not check for NSFW extension, hiding setting as a precaution:", error);
+                // They are already hidden, so no action needed on error.
+            }
+        }
+
+        function renderSettingsForProfile() {
+          if (!currentProfile) return;
+
+          userAvatar.src = currentProfile.avatar_url;
+          usernameDisplay.textContent = currentProfile.name;
+
+          const { settings } = currentProfile;
+          document.body.dataset.theme = settings.theme;
+          document.getElementById("themeToggle").checked =
+            settings.theme === "light";
+          document.getElementById("pushNotificationsToggle").checked =
+            settings.pushNotifications;
+          
+          const nsfwToggle = document.getElementById("nsfwToggle");
+          nsfwToggle.checked = settings.nsfw_enabled;
+          // Show/hide the portal link based on the setting
+          nsfwPortalItem.style.display = settings.nsfw_enabled ? "flex" : "none";
+
+          updateDropdownSelection(settings.downloadQuality);
+        }
+
+        async function updateSetting(key, value) {
+          if (!currentProfile) return;
+          currentProfile.settings[key] = value;
+
+          if (key === "theme") {
+            document.body.dataset.theme = value;
+          }
+
+          try {
+            await fetch(`/profiles/${currentProfile.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(currentProfile),
+            });
+          } catch (error) {
+            console.error("Failed to save settings:", error);
+            window.parent.showToast("Could not sync settings with the server.");
+          }
+        }
+
+        async function uploadAvatar(file) {
+          const formData = new FormData();
+          formData.append("avatar", file);
+
+          try {
+            const response = await fetch(
+              `/profiles/${currentProfile.id}/avatar`,
+              {
+                method: "POST",
+                body: formData,
+              }
+            );
+            if (!response.ok) throw new Error("Avatar upload failed");
+            const updatedProfile = await response.json();
+            currentProfile.avatar_url = updatedProfile.avatar_url;
+            userAvatar.src = currentProfile.avatar_url;
+          } catch (error) {
+            console.error("Failed to upload avatar:", error);
+            window.parent.showToast("Could not upload new avatar.");
+          }
+        }
+
+        function setupEventListeners() {
+          userAvatar.addEventListener("click", () => avatarUpload.click());
+          avatarUpload.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0]) {
+              uploadAvatar(e.target.files[0]);
+            }
+          });
+
+          switchProfileItem.addEventListener("click", () => {
+            window.parent.postMessage({ action: "switchProfile" }, "*");
+          });
+          
+          nsfwPortalItem.addEventListener("click", () => {
+              window.parent.openPopup('portal.html');
+          });
+
+          document
+            .getElementById("themeToggle")
+            .addEventListener("change", (e) => {
+              updateSetting("theme", e.target.checked ? "light" : "dark");
+            });
+
+          document
+            .getElementById("pushNotificationsToggle")
+            .addEventListener("change", (e) => {
+              updateSetting("pushNotifications", e.target.checked);
+            });
+
+          document
+            .getElementById("nsfwToggle")
+            .addEventListener("change", (e) => {
+              const isEnabled = e.target.checked;
+              updateSetting("nsfw_enabled", isEnabled);
+              // Instantly show/hide the portal link
+              nsfwPortalItem.style.display = isEnabled ? "flex" : "none";
+            });
+
+          setupCustomDropdown();
+          setupExtensionServerModal();
+          setupEditProfileModal();
+          setupModuleManagementModal();
+          setupAddOnManagementModal();
+          setupCacheModal();
+        }
+
+        function setupCacheModal() {
+            const modal = document.getElementById('clearCacheModal');
+            if (!modal) return;
+
+            const clearCacheItem = document.getElementById('clearCacheItem');
+            const clearPagesBtn = document.getElementById('clearPagesBtn');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            const closeBtn = document.getElementById('closeCacheModalBtn');
+            const closeBtnCross = document.getElementById('closeCacheModalBtnCross');
+
+            clearCacheItem.addEventListener('click', () => {
+                modal.classList.add('active');
+            });
+
+            const closeModal = () => modal.classList.remove('active');
+
+            closeBtn.addEventListener('click', closeModal);
+            closeBtnCross.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            clearPagesBtn.addEventListener('click', () => {
+                if (confirm('This will clear cached pages and resources, forcing them to be re-downloaded. Are you sure?')) {
+                    window.parent.postMessage({ action: 'clearPageCache' }, '*');
+                    closeModal();
+                }
+            });
+
+            clearAllBtn.addEventListener('click', () => {
+                if (confirm('WARNING: This will delete ALL site data, including your login sessions, settings, and all cached content. You will be logged out. Are you sure?')) {
+                    window.parent.postMessage({ action: 'clearAllData' }, '*');
+                    closeModal();
+                }
+            });
+        }
+
+        function setupCustomDropdown() {
+          const wrapper = document.getElementById("customDropdownWrapper");
+          const btn = document.getElementById("customDropdownBtn");
+          const list = document.getElementById("customDropdownList");
+
+          btn.addEventListener("click", (e) =>
+            wrapper.classList.toggle("is-open")
+          );
+          list.querySelectorAll("li").forEach((opt) => {
+            opt.addEventListener("click", () => {
+              updateSetting("downloadQuality", opt.dataset.value);
+              updateDropdownSelection(opt.dataset.value);
+              wrapper.classList.remove("is-open");
+            });
+          });
+          document.addEventListener("click", (e) => {
+            if (!wrapper.contains(e.target))
+              wrapper.classList.remove("is-open");
+          });
+        }
+
+        function setupExtensionServerModal() {
+          const modal = document.getElementById("extensionServerModal");
+          const ipInput = document.getElementById("ip-input");
+          const checkBtn = document.getElementById("checkConnectionBtn");
+          const saveBtn = document.getElementById("saveConnectionBtn");
+          const closeBtn = document.getElementById("closeModalBtn");
+          const statusIndicator = document.getElementById("status-indicator");
+
+          extensionServerItem.addEventListener("click", () => {
+            ipInput.value = localStorage.getItem("extension_server_ip") || "";
+            statusIndicator.textContent = "";
+            statusIndicator.className = "status-indicator";
+            saveBtn.disabled = true;
+            modal.classList.add("active");
+          });
+
+          closeBtn.addEventListener("click", () =>
+            modal.classList.remove("active")
+          );
+
+          checkBtn.addEventListener("click", async () => {
+            const ip = ipInput.value.trim();
+            if (!ip) return;
+
+            statusIndicator.textContent = "Connecting...";
+            statusIndicator.className = "status-indicator";
+            saveBtn.disabled = true;
+
+            try {
+              const response = await fetch(`http://${ip}:7275/identify`, {
+                signal: AbortSignal.timeout(5000),
+              });
+              if (response.ok) {
+                const data = await response.json();
+                if (data.app === "Animex Extension API") {
+                  statusIndicator.textContent = "Connection successful!";
+                  statusIndicator.className = "status-indicator connected";
+                  saveBtn.disabled = false;
+                } else {
+                  throw new Error("Not a valid server.");
+                }
+              } else {
+                throw new Error("Connection failed.");
+              }
+            } catch (error) {
+              statusIndicator.textContent =
+                "Connection failed. Check IP and server status.";
+              statusIndicator.className = "status-indicator error";
+            }
+          });
+
+          saveBtn.addEventListener("click", () => {
+            localStorage.setItem("extension_server_ip", ipInput.value.trim());
+            modal.classList.remove("active");
+          });
+        }
+
+        function setupEditProfileModal() {
+          const modal = document.getElementById("editProfileModal");
+          const usernameDisplay = document.getElementById("usernameDisplay");
+          const usernameInput = document.getElementById("username-input");
+          const saveBtn = document.getElementById("saveUsernameBtn");
+          const closeBtn = document.getElementById("closeEditProfileModalBtn");
+
+          usernameDisplay.addEventListener("click", () => {
+            usernameInput.value = currentProfile.name;
+            modal.classList.add("active");
+          });
+
+          closeBtn.addEventListener("click", () =>
+            modal.classList.remove("active")
+          );
+
+          saveBtn.addEventListener("click", async () => {
+            const newName = usernameInput.value.trim();
+            if (newName && newName !== currentProfile.name) {
+              try {
+                const response = await fetch(`/profiles/${currentProfile.id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name: newName }),
+                });
+                if (!response.ok) throw new Error("Failed to update username");
+                const updatedProfile = await response.json();
+                currentProfile.name = updatedProfile.name;
+                usernameDisplay.textContent = currentProfile.name;
+                modal.classList.remove("active");
+              } catch (error) {
+                console.error("Failed to update username:", error);
+                window.parent.showToast("Could not update username.");
+              }
+            } else {
+              modal.classList.remove("active");
+            }
+          });
+        }
+
+        async function setupModuleManagementModal() {
+          const modal = document.getElementById("moduleManagementModal");
+          const moduleManagementItem = document.getElementById(
+            "moduleManagementItem"
+          );
+          const closeBtn = document.getElementById("closeModuleModalBtn");
+          const moduleCategoriesContainer = document.getElementById(
+            "moduleCategoriesContainer"
+          );
+          const saveModulePreferencesBtn = document.getElementById(
+            "saveModulePreferencesBtn"
+          );
+
+          moduleManagementItem.addEventListener("click", async () => {
+            modal.classList.add("active");
+            await renderModules();
+          });
+
+          closeBtn.addEventListener("click", () =>
+            modal.classList.remove("active")
+          );
+
+          saveModulePreferencesBtn.addEventListener("click", async () => {
+            try {
+              const response = await fetch(
+                `/profiles/${currentProfile.id}/module-preferences`,
+                {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(
+                    currentProfile.settings.module_preferences
+                  ),
+                }
+              );
+              if (!response.ok)
+                throw new Error("Failed to save module preferences");
+              window.parent.showToast("Module preferences saved successfully!", 'success');
+            } catch (error) {
+              console.error("Error saving module preferences:", error);
+              window.parent.showToast("Could not save module preferences.", 'error');
+            }
+            modal.classList.remove("active");
+          });
+
+          async function renderModules() {
+            moduleCategoriesContainer.innerHTML = "Loading modules...";
+            try {
+              const response = await fetch("/modules");
+              if (!response.ok) throw new Error("Failed to fetch modules");
+              const allModules = await response.json();
+
+              const categorizedModules = {
+                "Anime Streaming": [],
+                "Anime Downloading": [],
+                Manga: [],
+                "Hentai (Anime) Streaming": [],
+                "Hentai (Anime) Downloading": [],
+                "Hentai (Manga)": [],
+                "Generic": [],
+              };
+
+              allModules.forEach((mod) => {
+                const modTypes = [].concat(mod.type || []); // Ensure it's an array
+                let categorized = false;
+
+                if (modTypes.includes("ANIME_STREAMER")) {
+                  if (mod.nsfw) {
+                    categorizedModules["Hentai (Anime) Streaming"].push(mod);
+                  } else {
+                    categorizedModules["Anime Streaming"].push(mod);
+                  }
+                  categorized = true;
+                }
+                
+                if (modTypes.includes("ANIME_DOWNLOADER")) {
+                  if (mod.nsfw) {
+                    categorizedModules["Hentai (Anime) Downloading"].push(mod);
+                  } else {
+                    categorizedModules["Anime Downloading"].push(mod);
+                  }
+                  categorized = true;
+                }
+
+                if (modTypes.includes("MANGA_READER")) {
+                  if (mod.nsfw) {
+                    categorizedModules["Hentai (Manga)"].push(mod);
+                  } else {
+                    categorizedModules["Manga"].push(mod);
+                  }
+                  categorized = true;
+                }
+                
+                if (!categorized) {
+                    categorizedModules["Generic"].push(mod)
+                }
+              });
+
+              moduleCategoriesContainer.innerHTML = ""; // Clear loading message
+
+              for (const category in categorizedModules) {
+                if (categorizedModules[category].length > 0) {
+                  // Sort modules based on user preferences if available
+                  const preferredOrder =
+                    currentProfile.settings.module_preferences[category] || [];
+                  categorizedModules[category].sort((a, b) => {
+                    const indexA = preferredOrder.indexOf(a.id);
+                    const indexB = preferredOrder.indexOf(b.id);
+                    if (indexA === -1 && indexB === -1) return 0; // Both not in preferred, maintain original order
+                    if (indexA === -1) return 1; // A not in preferred, B is
+                    if (indexB === -1) return -1; // B not in preferred, A is
+                    return indexA - indexB;
+                  });
+
+                  const categoryDiv = document.createElement("div");
+                  categoryDiv.classList.add("settings-group"); // Re-use settings-group style
+                  categoryDiv.innerHTML = `
+  <h3 style="padding: 1rem 1.25rem; margin-bottom: 0; border-bottom: 1px solid var(--border-color);">${category}</h3>
+  <ul class="module-list" data-category-key="${category}"></ul>
+`;
+                  moduleCategoriesContainer.appendChild(categoryDiv);
+
+                  const moduleList = categoryDiv.querySelector(".module-list");
+                  categorizedModules[category].forEach((mod) => {
+                    const moduleItem = document.createElement("li");
+                    moduleItem.classList.add("settings-item"); // Re-use settings-item style
+                    moduleItem.dataset.moduleId = mod.id;
+                    moduleItem.innerHTML = `
+  <span class="item-text">${mod.name}</span>
+  <div class="item-action">
+    <label class="toggle-switch">
+      <input type="checkbox" data-module-id="${mod.id}" ${
+                      mod.enabled ? "checked" : ""
+                    }>
+      <span class="slider"></span>
+    </label>
+  </div>
+  <div class="module-reorder-controls">
+    <i class="fas fa-chevron-up reorder-up" data-module-id="${mod.id}"></i>
+    <i class="fas fa-chevron-down reorder-down" data-module-id="${mod.id}"></i>
+  </div>
+`;
+                    moduleList.appendChild(moduleItem);
+
+                    const toggle = moduleItem.querySelector(
+                      `input[type="checkbox"]`
+                    );
+                    toggle.addEventListener("change", async (e) => {
+                      const moduleId = e.target.dataset.moduleId;
+                      const enable = e.target.checked;
+                      try {
+                        const response = await fetch(
+                          `/modules/toggle/${moduleId}/${enable}`
+                        );
+                        if (!response.ok)
+                          throw new Error("Failed to toggle module");
+                        console.log(
+                          `Module ${moduleId} toggled to ${enable}`
+                        );
+                        // Update the local module state (important for re-rendering if needed)
+                        const updatedModule = allModules.find(
+                          (m) => m.id === moduleId
+                        );
+                        if (updatedModule) updatedModule.enabled = enable;
+                      } catch (error) {
+                        console.error(
+                          `Error toggling module ${moduleId}:`,
+                          error
+                        );
+                        window.parent.showToast(`Could not toggle module ${moduleId}.`);
+                        e.target.checked = !enable; // Revert UI on error
+                      }
+                    });
+
+                    // Reorder controls
+                    const reorderUp = moduleItem.querySelector(".reorder-up");
+                    const reorderDown =
+                      moduleItem.querySelector(".reorder-down");
+
+                    reorderUp.addEventListener("click", () =>
+                      reorderModule(mod.id, category, "up")
+                    );
+                    reorderDown.addEventListener("click", () =>
+                      reorderModule(mod.id, category, "down")
+                    );
+                  });
+                }
+              }
+            } catch (error) {
+              console.error("Error fetching modules:", error);
+              moduleCategoriesContainer.innerHTML =
+                '<p style="color: var(--destructive);">Failed to load modules. Please check server connection.</p>';
+            }
+          }
+
+          function reorderModule(moduleId, category, direction) {
+            const moduleListElement = moduleCategoriesContainer.querySelector(
+              `.module-list[data-category-key="${category}"]`
+            );
+            if (!moduleListElement) return;
+
+            const items = Array.from(moduleListElement.children);
+            const index = items.findIndex(
+              (item) => item.dataset.moduleId === moduleId
+            );
+
+            if (index === -1) return;
+
+            let newIndex = index;
+            if (direction === "up" && index > 0) {
+              newIndex = index - 1;
+            } else if (direction === "down" && index < items.length - 1) {
+              newIndex = index + 1;
+            } else {
+              return; // Cannot move further
+            }
+
+            const [movedItem] = items.splice(index, 1);
+            items.splice(newIndex, 0, movedItem);
+
+            // Re-append items in new order
+            moduleListElement.innerHTML = "";
+            items.forEach((item) => moduleListElement.appendChild(item));
+
+            // Update currentProfile.settings.module_preferences
+            currentProfile.settings.module_preferences[category] = items.map(
+              (item) => item.dataset.moduleId
+            );
+            console.log(
+              `Module ${moduleId} moved ${direction} in ${category}. New order:`,
+              currentProfile.settings.module_preferences[category]
+            );
+          }
+        }
+
+        async function setupAddOnManagementModal() {
+          const modal = document.getElementById("addOnManagementModal");
+          const addOnManagementItem = document.getElementById(
+            "addOnManagementItem"
+          );
+          const closeBtn = document.getElementById("closeAddOnModalBtn");
+          const addOnCategoriesContainer = document.getElementById(
+            "addOnCategoriesContainer"
+          );
+          const saveAddOnPreferencesBtn = document.getElementById(
+            "saveAddOnPreferencesBtn"
+          );
+
+          // Hide the save button as toggles will save on change.
+          saveAddOnPreferencesBtn.style.display = 'none';
+
+          addOnManagementItem.addEventListener("click", async () => {
+            modal.classList.add("active");
+            await renderAddOns();
+          });
+
+          closeBtn.addEventListener("click", () =>
+            modal.classList.remove("active")
+          );
+
+          async function renderAddOns() {
+            addOnCategoriesContainer.innerHTML = "Loading add-ons...";
+            try {
+              const response = await fetch("/settings/add-ons");
+              if (!response.ok) throw new Error("Failed to fetch add-ons");
+              const allAddOnsSettings = await response.json();
+
+              addOnCategoriesContainer.innerHTML = ""; // Clear loading message
+
+              if (allAddOnsSettings.length === 0) {
+                addOnCategoriesContainer.innerHTML =
+                  "<p>No add-ons with settings found.</p>";
+                return;
+              }
+
+              // Group settings by extension_id to create categories
+              const groupedSettings = allAddOnsSettings.reduce((acc, setting) => {
+                const extId = setting.extension_id;
+                if (!acc[extId]) {
+                  acc[extId] = { title: extId, settings: [] };
+                }
+                acc[extId].settings.push(setting);
+                return acc;
+              }, {});
+
+              for (const extensionId in groupedSettings) {
+                const { title, settings } = groupedSettings[extensionId];
+                const addOnGroupDiv = document.createElement("div");
+                addOnGroupDiv.classList.add("settings-group");
+
+                const settingsList = document.createElement('div');
+                settingsList.classList.add('add-on-settings-list');
+
+                settings.forEach((setting) => {
+                  const settingItem = document.createElement('div');
+                  settingItem.classList.add('settings-item');
+                  
+                  // Assuming toggle for now, can be expanded with a 'type' field in JSON
+                  settingItem.innerHTML = `
+                      <i class="item-icon ${setting.icon || 'fas fa-cog'}"></i>
+                      <span class="item-text">${setting.text}</span>
+                      <div class="item-action">
+                          <label class="toggle-switch">
+                              <input type="checkbox" id="addon-${extensionId}-${setting.id}" data-setting-id="${setting.id}">
+                              <span class="slider"></span>
+                          </label>
+                      </div>
+                  `;
+                  settingsList.appendChild(settingItem);
+                });
+                
+                addOnGroupDiv.innerHTML = `<h3 style="padding: 1rem 1.25rem; margin-bottom: 0; border-bottom: 1px solid var(--border-color);">${title}</h3>`;
+                addOnGroupDiv.appendChild(settingsList);
+                addOnCategoriesContainer.appendChild(addOnGroupDiv);
+
+                // Add event listeners and set initial state after appending
+                settings.forEach((setting) => {
+                  const toggle = document.getElementById(`addon-${extensionId}-${setting.id}`);
+                  if (toggle) {
+                    if (currentProfile && currentProfile.settings) {
+                      toggle.checked = !!currentProfile.settings[setting.id];
+                    }
+                    toggle.addEventListener('change', (e) => {
+                      const settingId = e.target.dataset.settingId;
+                      const isChecked = e.target.checked;
+                      updateSetting(settingId, isChecked);
+
+                      // Sync with main page NSFW toggle if it exists
+                      if (settingId === 'nsfw_enabled') {
+                          const mainNsfwToggle = document.getElementById('nsfwToggle');
+                          if(mainNsfwToggle) mainNsfwToggle.checked = isChecked;
+                          nsfwPortalItem.style.display = isChecked ? "flex" : "none";
+                      }
+                    });
+                  }
+                });
+              }
+
+            } catch (error) {
+              console.error("Error fetching add-ons:", error);
+              addOnCategoriesContainer.innerHTML =
+                '<p style="color: var(--destructive);">Failed to load add-ons. Please check server connection.</p>';
+            }
+          }
+        }
+
+        function updateDropdownSelection(value) {
+          const list = document.getElementById("customDropdownList");
+          const selectedSpan = document.getElementById(
+            "customDropdownSelected"
+          );
+          let found = false;
+          list.querySelectorAll("li").forEach((opt) => {
+            const isSelected = opt.dataset.value === value;
+            opt.classList.toggle("selected", isSelected);
+            if (isSelected) {
+              selectedSpan.textContent = opt.textContent;
+              found = true;
+            }
+          });
+          if (!found) {
+            const firstOpt = list.querySelector("li");
+            if (firstOpt) {
+              firstOpt.classList.add("selected");
+              selectedSpan.textContent = firstOpt.textContent;
+            }
+          }
+        }
+
+        console.log("Calling initialize()...");
+        initialize();
       });
     </script>
   </body>

@@ -24,8 +24,17 @@
     />
     <script src="https://www.youtube.com/iframe_api"></script>
     <link rel="stylesheet" href="Resources/series.css" />
-    
-
+    <style>
+      .fallback-warning {
+        background-color: #4a3c00;
+        color: #ffecb3;
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        text-align: center;
+        border: 1px solid #7a6300;
+      }
+    </style>
   </head>
   <body>
     <div class="app-container">
@@ -49,6 +58,23 @@
         </button>
         <div class="series-hero-content">
           <h1 class="series-title-text"></h1>
+          <!-- NEW: Add to List button in hero -->
+          <div class="hero-actions">
+            <button
+              id="add-series-to-list-btn"
+              class="hero-action-btn"
+              title="Add Series to List"
+            >
+              <i class="fas fa-bookmark"></i> ADD TO LIST
+            </button>
+            <button
+              id="export-series-btn"
+              class="hero-action-btn"
+              title="Export Series Package"
+            >
+              <i class="fas fa-download"></i> EXPORT
+            </button>
+          </div>
         </div>
         <div class="hero-overlay"></div>
       </header>
@@ -149,6 +175,14 @@
                 <div class="episode-list" id="episode-list-container"></div>
                 <div id="episodes-pagination" class="episodes-pagination"></div>
               </section>
+              <div
+                id="next-season-btn-container"
+                style="text-align: center; margin-top: 2rem; display: none"
+              >
+                <button id="next-season-btn" class="show-more-btn">
+                  <i class="fas fa-forward"></i> Next Season
+                </button>
+              </div>
             </div>
             <!-- Related Panel -->
             <div id="tab-panel-related" class="tab-panel">
@@ -217,9 +251,11 @@
         const isAnime = urlParams.get("anime") === "true";
         const isManga = urlParams.get("manga") === "true";
         const isLibrary = urlParams.get("library") === "true";
-        const type = isManga ? "manga" : "anime";
+        const type = urlParams.get("type") || (isManga ? "manga" : "anime");
         const API_BASE_URL = "https://arkm20-authapi.hf.space";
         const serverIp = localStorage.getItem("extension_server_ip");
+        // At the top of the script, with the other global variables
+        let currentProfile = null;
 
         const serverUrl = `http://${serverIp}:7275`;
         let userWatchHistory = null;
@@ -242,6 +278,10 @@
         const heroSection = document.querySelector(".series-hero-section");
         const seriesTitleTextElement =
           document.querySelector(".series-title-text");
+        // NEW: Selector for the hero add to list button
+        const addSeriesToListBtn = document.getElementById(
+          "add-series-to-list-btn"
+        );
 
         const seriesScoreElement = document.getElementById("series-score");
         const seriesYearElement = document.getElementById("series-year");
@@ -310,6 +350,8 @@
 
         if (type !== "anime") {
           if (tabsSection) tabsSection.style.display = "none";
+          // NEW: Hide hero add button for non-anime types on this page
+          if (addSeriesToListBtn) addSeriesToListBtn.style.display = "none";
         }
 
         function getSeriesIdFromUrl() {
@@ -396,6 +438,43 @@
             document.getElementById("tab-panel-episodes").innerHTML =
               '<p class="info-message">Could not load episodes.</p>';
             if (episodesLoader) episodesLoader.style.display = "none";
+            return [];
+          }
+        }
+
+        async function fetchSeriesEpisodesFromJikanVideos(malId) {
+          if (type !== "anime" || !malId) return [];
+          try {
+            const response = await fetch(
+              `https://api.jikan.moe/v4/anime/${malId}/videos`
+            );
+            if (!response.ok) {
+              console.warn(`Failed to fetch Jikan videos: ${response.status}`);
+              return [];
+            }
+            const data = await response.json();
+            const episodes = data?.data?.episodes || [];
+
+            // Adapt Jikan episode format to Kitsu-like format for compatibility
+            return episodes
+              .map((ep) => ({
+                attributes: {
+                  number: ep.mal_id,
+                  canonicalTitle: ep.title,
+                  seasonNumber: 1, // Jikan doesn't provide this, assume 1
+                  thumbnail: {
+                    small:
+                      ep.images?.jpg?.image_url ||
+                      "https://placehold.co/320x180/1f1f1f/FFF?text=?",
+                  },
+                },
+              }))
+              .sort((a, b) => a.attributes.number - b.attributes.number);
+          } catch (error) {
+            console.error(
+              "Failed to fetch Jikan episodes from /videos endpoint:",
+              error
+            );
             return [];
           }
         }
@@ -855,8 +934,14 @@
             episodeTitle.textContent =
               episode.attributes.canonicalTitle || `Episode ${episodeNumber}`;
             episodeInfoDiv.appendChild(episodeTitle);
+
+            // Action buttons container
+            const actionBtnsDiv = document.createElement("div");
+            actionBtnsDiv.className = "episode-action-buttons";
+
+            // Download Button
             const downloadBtn = document.createElement("button");
-            downloadBtn.className = "glassy-download-btn episode-download-icon";
+            downloadBtn.className = "glassy-download-btn episode-action-icon";
             downloadBtn.title = "Download Episode";
             downloadBtn.innerHTML = '<i class="fas fa-cloud-download"></i>';
             downloadBtn.addEventListener("click", (event) => {
@@ -868,12 +953,37 @@
                 "_blank"
               );
             });
+
+            // NEW: Add to List Button
+            const addToListBtn = document.createElement("button");
+            addToListBtn.className = "glassy-download-btn episode-action-icon";
+            addToListBtn.title = "Add to List";
+            addToListBtn.innerHTML = '<i class="fas fa-plus-square"></i>';
+            addToListBtn.addEventListener("click", (event) => {
+              event.stopPropagation();
+              if (
+                window.parent &&
+                typeof window.parent.openListManager === "function"
+              ) {
+                window.parent.openListManager({
+                  type: "anime",
+                  id: currentMalId,
+                  title: currentSeriesTitle,
+                  items: [String(episodeNumber)], // Send as array of strings
+                  source: "jikan",
+                });
+              }
+            });
+
+            actionBtnsDiv.appendChild(addToListBtn);
+            actionBtnsDiv.appendChild(downloadBtn);
+
             episodeItem.appendChild(episodeThumbnailDiv);
             episodeItem.appendChild(episodeNumberSpan);
             episodeItem.appendChild(episodeInfoDiv);
-            episodeItem.appendChild(downloadBtn);
+            episodeItem.appendChild(actionBtnsDiv);
             episodeItem.addEventListener("click", (event) => {
-              if (event.target.closest(".episode-download-icon")) return;
+              if (event.target.closest(".episode-action-icon")) return;
               episodeItem.classList.add("watched");
               updateLocalWatchHistory(
                 currentMalId,
@@ -1111,9 +1221,69 @@
           }
         }
 
+        // NEW: Event listener for hero "Add to List" button
+        if (addSeriesToListBtn) {
+          addSeriesToListBtn.addEventListener("click", () => {
+            if (type === "anime" && episodesData.length > 0) {
+              const allEpisodeNumbers = episodesData.map((ep) =>
+                String(ep.attributes.number)
+              );
+              if (
+                window.parent &&
+                typeof window.parent.openListManager === "function"
+              ) {
+                window.parent.openListManager({
+                  type: "anime",
+                  id: currentMalId,
+                  title: currentSeriesTitle,
+                  items: allEpisodeNumbers,
+                  source: "jikan",
+                });
+              }
+            }
+          });
+        }
+
+        // NEW: Event listener for hero "Export" button
+        const exportSeriesBtn = document.getElementById("export-series-btn");
+        if (exportSeriesBtn) {
+          exportSeriesBtn.addEventListener("click", () => {
+            if (!currentMalId || !type) {
+              window.parent.showToast("Series information not loaded yet.");
+              return;
+            }
+            const serverIp = localStorage.getItem("extension_server_ip");
+            if (!serverIp) {
+              window.parent.showToast("Server IP not configured.");
+              return;
+            }
+            const serverUrl = `http://${serverIp}:7275`;
+            const exportUrl = `${serverUrl}/export/series/${currentMalId}?type=${type}`;
+
+            window.open(exportUrl, "_blank");
+          });
+        }
+
         async function init() {
           const params = new URLSearchParams(window.location.search);
           currentMalId = params.get("id");
+          // In the init() function, right after setting up toggles and tabs
+          const profileId = localStorage.getItem("currentProfileId");
+          if (profileId) {
+            try {
+              // const response = await fetch(`/profiles/${profileId}`);
+              const response = await fetch(`/profiles/${profileId}`);
+              if (response.ok) {
+                currentProfile = await response.json();
+              } else {
+                console.warn(
+                  "Could not fetch current profile. Watch history will be disabled."
+                );
+              }
+            } catch (e) {
+              console.error("Error fetching profile:", e);
+            }
+          }
           const episodeToWatchOnLoad = params.get("watch-ep");
           if (!currentMalId) {
             displayError(
@@ -1142,8 +1312,35 @@
 
               if (episodesLoader) episodesLoader.style.display = "block";
 
-              const [episodes, relations, recommendations] = await Promise.all([
-                fetchSeriesEpisodes(currentKitsuId),
+              let episodes = [];
+              if (currentKitsuId) {
+                episodes = await fetchSeriesEpisodes(currentKitsuId);
+              }
+
+              if (!episodes || episodes.length === 0) {
+                // Fallback to Jikan
+                console.log(
+                  "Kitsu episodes not found, falling back to Jikan..."
+                );
+                episodes = await fetchSeriesEpisodesFromJikanVideos(
+                  currentMalId
+                );
+                if (episodes && episodes.length > 0) {
+                  // Display a message to the user
+                  const episodeListSection = document.querySelector(
+                    ".episode-list-section"
+                  );
+                  if (episodeListSection) {
+                    const warning = document.createElement("p");
+                    warning.textContent =
+                      "Episode data is from a fallback source and may be incomplete.";
+                    warning.className = "info-message fallback-warning";
+                    episodeListSection.prepend(warning);
+                  }
+                }
+              }
+
+              const [relations, recommendations] = await Promise.all([
                 fetchRelations(currentMalId),
                 fetchRecommendations(currentMalId),
               ]);

@@ -647,6 +647,200 @@
       .status-indicator.error {
         color: var(--status-error);
       }
+      /* --- IFRAME POPUP STYLES --- */
+      #iframe-popup-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 15000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      #iframe-popup-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      #iframe-popup-overlay .popup-content-wrapper {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        background: #111;
+        border: none;
+        transform: translateY(30px);
+        opacity: 0;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Ensures content stays within wrapper */
+      }
+
+      #iframe-popup-overlay.visible .popup-content-wrapper {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .popup-header {
+        flex-shrink: 0;
+        height: 44px;
+        background-color: #1c1c1e;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 10px;
+        position: relative;
+        z-index: 20;
+      }
+
+      #iframe-popup-overlay #popup-iframe {
+        width: 100%;
+        flex-grow: 1; /* Takes up remaining space */
+        border: none;
+      }
+
+      #iframe-popup-overlay .popup-close {
+        /* Resetting old styles */
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0;
+        padding: 5px 10px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        color: #8e8e93;
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+        font-family: "Inter", sans-serif;
+        font-weight: 500;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      #iframe-popup-overlay .popup-close:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: none; /* Override old hover transform */
+      }
+
+      /* --- NEW: LIST MANAGER POPUP STYLES --- */
+      #list-manager-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 16000;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end; /* Align to bottom */
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      #list-manager-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      #list-manager-overlay .list-manager-wrapper {
+        width: 100%;
+        max-width: 500px; /* Max width for larger screens */
+        height: 75vh; /* 75% of the viewport height */
+        max-height: 800px; /* Max height */
+        background: #18181b;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      #list-manager-overlay.visible .list-manager-wrapper {
+        transform: translateY(0);
+      }
+
+      #list-manager-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      /* --- NEW: Custom Toast Notification --- */
+      #toast-container {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        pointer-events: none;
+      }
+
+      .toast-message {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 280px;
+        max-width: 400px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+        background: rgba(40, 40, 40, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(16px) saturate(1.8);
+        -webkit-backdrop-filter: blur(16px) saturate(1.8);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+        animation: toast-in 0.4s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
+      }
+
+      .toast-message.hiding {
+        animation: toast-out 0.4s cubic-bezier(0.550, 0.055, 0.675, 0.190) forwards;
+      }
+
+      @keyframes toast-in {
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes toast-out {
+        from {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-20px) scale(0.95);
+        }
+      }
+
+      .toast-message .toast-icon {
+        font-size: 1.2rem;
+      }
+      .toast-message.success .toast-icon { color: #34c759; }
+      .toast-message.error .toast-icon { color: #ff3b30; }
+      .toast-message.info .toast-icon { color: #007aff; }
+
     </style>
   </head>
   <body>
@@ -774,6 +968,26 @@
         <div id="status-indicator" class="status-indicator"></div>
       </div>
     </div>
+
+    <!-- Fullscreen Iframe Popup -->
+    <div id="iframe-popup-overlay">
+      <div class="popup-content-wrapper">
+        <div class="popup-header">
+          <button id="popup-close-btn" class="popup-close">×</button>
+        </div>
+        <iframe id="popup-iframe" src="" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <!-- NEW: List Manager Popup -->
+    <div id="list-manager-overlay">
+      <div class="list-manager-wrapper">
+        <iframe id="list-manager-iframe" src="lists.html"></iframe>
+      </div>
+    </div>
+
+    <!-- NEW: Toast Container -->
+    <div id="toast-container"></div>
 
     <script>
       let deferredPrompt;
@@ -937,7 +1151,7 @@
           const response = await fetch(`http://${ip}:7275/identify`, {
             method: "GET",
             mode: "cors",
-            signal: AbortSignal.timeout(5000) // 5 second timeout
+            signal: AbortSignal.timeout(5000), // 5 second timeout
           });
           if (response.ok) {
             const data = await response.json();
@@ -954,7 +1168,8 @@
           throw new Error("Not a valid Animex server.");
         } catch (error) {
           console.error("Server connection error:", error);
-          statusIndicator.textContent = "Connection failed. Please check the IP address and ensure the server is running.";
+          statusIndicator.textContent =
+            "Connection failed. Please check the IP address and ensure the server is running.";
           statusIndicator.className = "status-indicator error";
           return false;
         }
@@ -969,7 +1184,7 @@
 
       document.addEventListener("DOMContentLoaded", () => {
         function checkAccessToken() {
-          const accessToken = localStorage.getItem("accessToken");
+          const accessToken = localStorage.getItem("currentProfileId");
           if (!accessToken) {
             window.location.href = "login.html";
           }
@@ -995,15 +1210,13 @@
               serverModal.classList.add("active");
             }
 
-            if (!navigator.onLine) {
-              window.location.href = "offline.html";
-              return;
-            }
+            
             document.querySelector(".app-container").style.animation =
               "fadeIn 0.5s ease-out forwards";
 
             // --- Show intro overlay if needed (now properly checks skipIntro) ---
-            if (shouldShowIntro()) {
+            const accessToken = localStorage.getItem("currentProfileId");
+            if (shouldShowIntro() && !accessToken) {
               const introOverlay = document.getElementById("intro-overlay");
               const introIframe = document.getElementById("intro-iframe");
               introOverlay.style.display = "block";
@@ -1043,7 +1256,12 @@
 
           if (contentFrame.src !== selectedItem.dataset.src) {
             contentFrame.style.opacity = "0.7";
-            contentFrame.src = selectedItem.dataset.src;
+            const profileId = localStorage.getItem("currentProfileId");
+            let newSrc = selectedItem.dataset.src;
+            if (profileId) {
+              newSrc = `${selectedItem.dataset.src}?profileId=${profileId}`;
+            }
+            contentFrame.src = newSrc;
             contentFrame.addEventListener(
               "load",
               () => {
@@ -1114,6 +1332,128 @@
         `;
       document.head.appendChild(style);
 
+      // --- IFRAME POPUP LOGIC ---
+      const popupOverlay = document.getElementById("iframe-popup-overlay");
+      const popupIframe = document.getElementById("popup-iframe");
+      const popupCloseBtn = document.getElementById("popup-close-btn");
+
+      /**
+       * Opens the fullscreen iframe popup.
+       * This function is exposed to child iframes via window.parent.openPopup
+       * @param {string} url The URL to load in the iframe.
+       */
+      function openPopup(url) {
+        if (!url || !popupOverlay || !popupIframe) return;
+
+        popupIframe.src = url; // Set the source
+        popupOverlay.classList.add("visible"); // Make it visible and trigger animation
+      }
+
+      /**
+       * Closes the fullscreen iframe popup.
+       */
+      function closePopup() {
+        if (!popupOverlay || !popupIframe) return;
+
+        popupOverlay.classList.remove("visible"); // Hide it and trigger animation
+
+        // Optional: For performance, clear the iframe's src after the transition
+        popupOverlay.addEventListener(
+          "transitionend",
+          () => {
+            popupIframe.src = "about:blank";
+          },
+          { once: true }
+        ); // Use { once: true } to auto-remove the listener
+      }
+
+      // Attach the open function to the window object to make it globally accessible to child iframes.
+      window.openPopup = openPopup;
+
+      // Event listener for the close button
+      if (popupCloseBtn) {
+        popupCloseBtn.addEventListener("click", closePopup);
+      }
+
+      // --- NEW: LIST MANAGER LOGIC ---
+      const listManagerOverlay = document.getElementById(
+        "list-manager-overlay"
+      );
+      const listManagerIframe = document.getElementById("list-manager-iframe");
+
+      /**
+       * Opens the list manager popup and sends item data to it.
+       * @param {object} data The item data to add to a list.
+       */
+      function openListManager(data) {
+        if (!listManagerOverlay || !listManagerIframe) return;
+
+        listManagerOverlay.classList.add("visible");
+
+        // Use a timeout to ensure the iframe is ready to receive messages
+        setTimeout(() => {
+          listManagerIframe.contentWindow.postMessage(
+            { type: "manage-item", data: data },
+            "*"
+          );
+        }, 100);
+      }
+
+      /**
+       * Closes the list manager popup.
+       */
+      function closeListManager() {
+        if (!listManagerOverlay) return;
+        listManagerOverlay.classList.remove("visible");
+      }
+
+      // Expose functions to child iframes
+      window.openListManager = openListManager;
+      window.closeListManager = closeListManager;
+
+      // Listen for 'close' messages from the list manager iframe
+      window.addEventListener("message", (event) => {
+        if (event.data === "close-list-manager") {
+          closeListManager();
+        }
+      });
+
+      // Also allow closing by clicking the overlay background
+      listManagerOverlay.addEventListener("click", (event) => {
+        if (event.target === listManagerOverlay) {
+          closeListManager();
+        }
+      });
+
+      // --- NEW: Toast Notification Logic ---
+      function showToast(message, type = 'info', duration = 4000) {
+          const container = document.getElementById('toast-container');
+          if (!container) return;
+
+          const toast = document.createElement('div');
+          toast.className = `toast-message ${type}`;
+          
+          let iconClass = 'fas fa-info-circle';
+          if (type === 'success') iconClass = 'fas fa-check-circle';
+          if (type === 'error') iconClass = 'fas fa-exclamation-triangle';
+
+          toast.innerHTML = `
+              <i class="toast-icon ${iconClass}"></i>
+              <span class="toast-text">${message}</span>
+          `;
+
+          container.appendChild(toast);
+
+          setTimeout(() => {
+              toast.classList.add('hiding');
+              toast.addEventListener('animationend', () => {
+                  toast.remove();
+              });
+          }, duration);
+      }
+      window.showToast = showToast;
+
+
       // Service Worker Registration
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
@@ -1122,6 +1462,75 @@
           .catch((error) =>
             console.error("Service Worker registration failed:", error)
           );
+      }
+
+      // --- CACHE & SETTINGS SYNC LOGIC ---
+      window.addEventListener('message', (event) => {
+          if (!event.data || !event.data.action) {
+             if (event.data === 'close-list-manager') {
+                closeListManager();
+             }
+             return;
+          }
+
+          switch (event.data.action) {
+              case 'clearPageCache':
+                  if ('serviceWorker' in navigator) {
+                      navigator.serviceWorker.ready.then(registration => {
+                          if (registration.active) {
+                              registration.active.postMessage({ action: 'clear_page_cache' });
+                          } else {
+                              showToast('No active service worker found. Cannot clear cache.', 'error');
+                          }
+                      }).catch(error => {
+                          console.error('Service Worker not ready:', error);
+                          showToast('Service worker not ready. Cannot clear cache.', 'error');
+                      });
+                  } else {
+                      showToast('Service workers are not supported in this browser.', 'error');
+                  }
+                  break;
+
+              case 'clearAllData':
+                  console.log("Clearing all site data...");
+                  // Clear storage first
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  
+                  if ('serviceWorker' in navigator) {
+                      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                          const unregisterPromises = registrations.map(reg => reg.unregister());
+                          return Promise.all(unregisterPromises);
+                      }).then(() => {
+                          return caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))));
+                      }).then(() => {
+                          showToast('All site data has been cleared. The application will now reload.', 'success');
+                          setTimeout(() => window.location.reload(), 1500);
+                      }).catch(err => {
+                          console.error("Error during full data clear:", err);
+                          showToast("An error occurred while clearing data. Please try clearing your browser data manually.", 'error');
+                      });
+                  } else {
+                      // Fallback for browsers without SW support
+                      caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key)))).then(() => {
+                          showToast('All site data has been cleared. The application will now reload.', 'success');
+                          setTimeout(() => window.location.reload(), 1500);
+                      });
+                  }
+                  break;
+          }
+      });
+
+      // Listen for messages back from the SW
+      if (navigator.serviceWorker) {
+          navigator.serviceWorker.addEventListener('message', event => {
+              if (event.data && event.data.action === 'cacheCleared') {
+                  if (event.data.type === 'page') {
+                      showToast('Cached pages and resources have been cleared. Reloading...', 'success');
+                      setTimeout(() => window.location.reload(), 1500);
+                  }
+              }
+          });
       }
     </script>
   </body>

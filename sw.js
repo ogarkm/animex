@@ -1,46 +1,18 @@
 const CACHE_NAME = 'animex-v2';
 const PRECACHE_URLS = [
-  '/', // index.html
-  '/Launch.html',
-  '/README.md',
-  '/Resources/Images/Launch.png',
-  '/Resources/Images/app-icon.png',
-  '/Resources/Images/image%201.png',
-  '/Resources/Images/image.png',
-  '/Resources/Svgs/Tabbar/Anime.svg',
-  '/Resources/Svgs/item-list-1.svg',
-  '/Resources/Svgs/item-list-2.svg',
-  '/Resources/Svgs/item-list-arrow.svg',
-  '/Resources/favicon.png',
-  '/Resources/manifest.json',
-  '/Resources/old/Manga.html',
-  '/Resources/old/styles.css',
-  '/Resources/series.css',
-  '/Resources/styles.css',
-  '/anime.html',
-  '/cdn.py',
-  '/down.html',
-  '/in.py',
+  '/',
   '/index.html',
-  '/kwik_page.html',
   '/library.html',
-  '/make.py',
-  '/manga.html',
-  '/output.html',
-  '/pdf.html',
-  '/search.html',
-  '/series-info.html',
-  '/settings.html',
-  '/test.htm',
-  '/video_player.html', // Make sure this is included
-  '/view.html',
   '/offline.html',
-
-  // External resources
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
+  // Essential resources
+  '/Resources/manifest.json',
+  '/Resources/Images/icon-196.png',
+  // External libs & fonts
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+  'https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
-
-  // FontAwesome 6.7.2 stylesheets
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js',
   'https://site-assets.fontawesome.com/releases/v6.7.2/css/all.css',
   'https://site-assets.fontawesome.com/releases/v6.7.2/css/sharp-solid.css',
   'https://site-assets.fontawesome.com/releases/v6.7.2/css/sharp-regular.css',
@@ -85,70 +57,103 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
-  
-  // FIXED: Don't intercept blob URLs, data URLs, or chrome-extension URLs
-  if (url.protocol === 'blob:' || 
-      url.protocol === 'data:' || 
-      url.protocol === 'chrome-extension:' ||
-      url.protocol === 'moz-extension:') {
-    return; // Let the browser handle these directly
+
+  // Don't intercept special protocols
+  if (['blob:', 'data:', 'chrome-extension:', 'moz-extension:'].includes(url.protocol)) {
+    return;
   }
-  
-  // Cache-first strategy for app resources and CDN assets
-  if (url.origin === location.origin || 
-      url.hostname.includes('fonts.googleapis.com') ||
-      url.hostname.includes('fonts.gstatic.com') ||
-      url.hostname.includes('cdnjs.cloudflare.com') ||
-      url.hostname.includes('unpkg.com')) {
-    
-    event.respondWith(
-      caches.match(event.request)
-        .then(cachedResponse => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          
-          return fetch(event.request)
-            .then(networkResponse => {
-              // Cache successful responses (but not blob URLs or other non-cacheable content)
-              if (networkResponse.status === 200 && 
-                  !url.protocol.startsWith('blob:') && 
-                  !url.protocol.startsWith('data:')) {
-                const responseClone = networkResponse.clone();
-                caches.open(CACHE_NAME)
-                  .then(cache => cache.put(event.request, responseClone))
-                  .catch(err => console.warn('Cache put failed:', err));
-              }
-              return networkResponse;
-            })
-            .catch(() => {
-              // Only show offline page for main navigation, not for video player or other resources
-              if (event.request.mode === 'navigate' && 
-                  !url.pathname.includes('video_player.html')) {
-                return caches.match('/offline.html');
-              }
-              // For video player or other resources, just throw the error
-              throw new Error('Network failed and no cache available');
-            });
-        })
-    );
-  } else {
-    // Network-first for external APIs and video content
+
+  // For navigation requests, use a network-first strategy.
+  // This ensures users get the latest version if online,
+  // but falls back to the cache and then the offline page.
+  if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
-        .then(networkResponse => {
-          // Cache successful responses for later (but not blob URLs)
-          if (networkResponse.status === 200 && 
-              !url.protocol.startsWith('blob:') && 
-              !url.protocol.startsWith('data:')) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => cache.put(event.request, responseClone))
-              .catch(err => console.warn('Cache put failed:', err));
+        .then(response => {
+          // If we get a good response, cache it for next time.
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
           }
-          return networkResponse;
+          return response;
         })
-        .catch(() => caches.match(event.request))
+        .catch(() => {
+          // Network failed, try to serve from cache.
+          return caches.match(event.request).then(cachedResponse => {
+            // If in cache, serve it. Otherwise, show the offline page.
+            return cachedResponse || caches.match('/offline.html');
+          });
+        })
     );
+    return;
+  }
+
+  // For all other requests (CSS, JS, images), use a cache-first strategy.
+  event.respondWith(
+    caches.match(event.request).then(cachedResponse => {
+      // Return from cache if found.
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      // Not in cache, so try the network.
+      return fetch(event.request).then(networkResponse => {
+        // If we get a good response, cache it.
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      });
+      // If fetch fails, the browser will handle the error (e.g., broken image).
+      // No explicit .catch is needed here unless we want to provide specific fallbacks for assets.
+    })
+  );
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.action) {
+    switch (event.data.action) {
+      case 'clear_page_cache':
+        console.log('SW: Clearing page cache...');
+        // URLs to clear: HTML pages and external CDN resources
+        const urlsToClear = PRECACHE_URLS.filter(url =>
+          url.endsWith('.html') || url.includes('https://') || url === '/'
+        );
+        console.log('SW: URLs to clear:', urlsToClear);
+
+        event.waitUntil(
+          caches.open(CACHE_NAME).then(cache => {
+            const promises = urlsToClear.map(url => cache.delete(url));
+            return Promise.all(promises).then(() => {
+              console.log('SW: Page cache cleared.');
+              // Notify clients
+              self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then(clients => {
+                clients.forEach(client => client.postMessage({ action: 'cacheCleared', type: 'page' }));
+              });
+            });
+          })
+        );
+        break;
+
+      case 'clear_all_caches':
+        console.log('SW: Clearing all caches...');
+        event.waitUntil(
+          caches.keys().then(keys =>
+            Promise.all(
+              keys.map(key => caches.delete(key))
+            )
+          ).then(() => {
+            console.log('SW: All caches deleted.');
+            self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then(clients => {
+                clients.forEach(client => client.postMessage({ action: 'cacheCleared', type: 'all' }));
+            });
+          })
+        );
+        break;
+    }
   }
 });

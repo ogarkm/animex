@@ -435,7 +435,7 @@
                 const selectedSeries = Array.from(document.querySelectorAll('input[name="series"]:checked')).map(cb => cb.value);
                 
                 if (selectedSeries.length === 0) {
-                    alert('Please select at least one series.');
+                    window.parent.showToast('Please select at least one series.');
                     loadingOverlay.style.display = 'none';
                     return;
                 }
