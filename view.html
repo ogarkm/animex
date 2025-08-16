@@ -2,26 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, user-scalable=no"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Episode Player</title>
-
-  <!-- Inter font -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link
-    rel="preconnect"
-    href="https://fonts.gstatic.com"
-    crossorigin
-  />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --accent-color-active: #FF9500;
+      --accent-color: #FF9500;
+      --background-color: #0A0A0A;
+      --surface-color: #141414;
+      --text-primary: #FFFFFF;
+      --text-secondary: #A0A0A0;
+      --border-color: rgba(255, 255, 255, 0.1);
       --indicator-left: 4px;
       --indicator-width: 0px;
     }
@@ -30,225 +23,191 @@
       padding: 0;
       height: 100%;
       width: 100%;
-      background: #000;
+      background: var(--background-color);
       font-family: 'Inter', sans-serif;
-      color: #fff;
+      color: var(--text-primary);
       -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: contain;
     }
     body {
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
     }
 
-    /* Top-left controls for landscape mode */
-    #top-controls {
-        position: fixed;
-        top: 12px;
-        left: 12px;
-        z-index: 120;
-        display: none; /* Hidden by default */
-        gap: 8px;
-    }
-    .top-btn {
-        background: rgba(30, 30, 30, 0.8);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        color: #fff;
-        font-size: 0.9em;
-        font-weight: 600;
-        padding: 8px 16px;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: background 0.2s;
-        margin-left: 90px;
-        margin-top: 10px;
-    }
-    .top-btn:hover {
-        background: rgba(50, 50, 50, 0.9);
-    }
-    #toggle-controls-btn.active {
-        background: var(--accent-color-active);
-        border-color: rgba(255, 149, 0, 0.5);
-    }
-
-    /* Loading Container */
+    /* --- Loading Screen --- */
     #loading-container {
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        z-index: 200; background-color: #000; background-size: cover;
-        background-position: center; display: none; align-items: flex-end;
-        justify-content: center;
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 200; background-color: #000; background-size: cover;
+      background-position: center; display: flex; align-items: flex-end;
+      justify-content: center; transition: opacity 0.3s ease;
     }
     #loading-container::before {
-        content: ''; position: absolute; top: 0; left: 0; width: 100%;
-        height: 100%; background: linear-gradient(to top, rgba(0,0,0,1) 20%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);
-        z-index: 1;
+      content: ''; position: absolute; top: 0; left: 0; width: 100%;
+      height: 100%; background: linear-gradient(to top, rgba(0,0,0,1) 20%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);
     }
     #loading-info {
-        position: relative; z-index: 2; text-align: left; padding: 1.5rem;
-        max-width: 90%; max-height: 50%; overflow-y: auto; box-sizing: border-box;
+      position: relative; text-align: left; padding: 1.5rem 1.5rem 3rem;
+      max-width: 90%; max-height: 50%; overflow-y: auto; box-sizing: border-box;
     }
     #loading-info h2 { margin: 0 0 0.5rem 0; font-size: 1.5rem; }
-    #loading-info p { margin: 0; font-size: 0.9rem; opacity: 0.8; line-height: 1.5; }
+    #loading-info p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
     .loader-spinner {
-        border: 4px solid rgba(255, 255, 255, 0.2); border-radius: 50%;
-        border-top: 4px solid var(--accent-color-active); width: 40px; height: 40px;
-        animation: spin 1s linear infinite; position: absolute; top: 50%; left: 50%;
-        transform: translate(-50%, -50%); z-index: 3;
+      border: 4px solid rgba(255, 255, 255, 0.2); border-radius: 50%;
+      border-top: 4px solid var(--accent-color); width: 40px; height: 40px;
+      animation: spin 1s linear infinite; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
     }
     @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
 
-    /* Video Player Container */
+    /* --- Player & Content --- */
     #player-container {
-      width: 100vw; height: 56.25vw; min-height: 200px; max-height: none;
-      background: #000; display: flex; align-items: center; justify-content: center;
-      position: relative; margin-top: 80px; margin-bottom: 20px; flex-shrink: 0;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      flex-shrink: 0;
+      position: relative;
     }
     #player-container iframe {
-      width: 100%; height: 100%; border: none; background: #111; display: block;
+      width: 100%; height: 100%; border: none; background: #111;
+    }
+    #error-message {
+      color: #ff6b6b; text-align: center; padding: 2rem 1rem; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center; height: 100%;
     }
 
-    /* Info Container */
-    #info-container {
-      width: 100%; background: #0a0a0a; padding: 1.2rem;
-      display: flex; flex-direction: column; gap: 0.8rem; font-size: 1.05rem;
-      box-sizing: border-box; flex: 1; min-height: calc(100vh - 56.25vw);
-    }
-    #series-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.2rem; }
-    #meta-line { font-size: 0.95rem; opacity: 0.8; display: flex; flex-wrap: wrap; gap: 0.7em; margin-bottom: 0.8rem; }
-    #error-message { color: #ff6b6b; text-align: center; padding: 2rem 1rem; font-size: 1.1rem; }
-
-    /* Synopsis Container (Portrait only) */
-    #synopsis-container {
-        display: none; /* Hidden by default */
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    #synopsis-container h4 {
-        margin: 0 0 0.5rem 0;
-        font-weight: 700;
-        opacity: 0.9;
-    }
-    #synopsis-container p {
-        font-size: 0.9em;
-        line-height: 1.6;
-        opacity: 0.7;
-        margin: 0;
+    #content-container {
+      flex-grow: 1;
+      padding: 1rem 1.2rem;
+      background: var(--background-color);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
-    /* Controls Wrapper */
-    #controls-wrapper { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 0.5rem; }
+    /* --- Header Info --- */
+    #header-info {
+      text-align: left;
+    }
+    #series-title { font-size: 1.3rem; font-weight: 700; line-height: 1.3; }
+    #meta-line { font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem; }
 
-    /* Search Options */
-    .search-options-list {
-      position: relative; display: flex; gap: 4px; margin: 0; padding: 4px;
-      list-style: none; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px);
-      border-radius: 22px; border: 1px solid rgba(255, 255, 255, 0.1);
+    /* --- Controls --- */
+    #controls-main {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.8rem;
+      align-items: center;
     }
-    .search-options-list::before {
-      content: ''; position: absolute; top: 4px; left: var(--indicator-left);
-      width: var(--indicator-width); height: calc(100% - 8px);
-      background: rgba(255, 149, 0, 0.9); border-radius: 18px;
-      border: 1px solid rgba(255, 149, 0, 0.3); z-index: 1;
-      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    #source-controls {
+      display: flex;
+      background-color: var(--surface-color);
+      border-radius: 12px;
+      padding: 5px;
+      border: 1px solid var(--border-color);
+      gap: 5px;
     }
-    .search-option-btn {
-      background: none; border: none; color: #ccc; font-size: 1.05em; font-weight: 700;
-      padding: 8px 26px; border-radius: 18px; cursor: pointer; outline: none; z-index: 2;
-      transition: color 0.3s ease;
-    }
-    .search-option-btn.active { color: #fff; }
 
-    /* Next Episode Button */
-    #next-episode-btn {
-      display: block; background: var(--accent-color-active, #FF9500); color: #fff;
-      font-weight: 700; font-size: 1.08em; border: none; border-radius: 22px;
-      padding: 10px 24px; cursor: pointer; transition: background 0.18s; white-space: nowrap;
+    /* SUB/DUB Toggle */
+    .subdub-toggle {
+      position: relative; display: flex;
+      list-style: none; margin: 0; padding: 0;
+      flex-grow: 1;
     }
-    #next-episode-btn:hover { background: #e6850a; }
-    #series-over-msg { text-align: center; font-weight: 700; font-size: 1.05em; color: var(--accent-color-active, #FF9500); opacity: 0.8; }
+    .subdub-toggle::before {
+      content: ''; position: absolute; top: 0; left: var(--indicator-left);
+      width: var(--indicator-width); height: 100%;
+      background: var(--accent-color);
+      border-radius: 8px;
+      z-index: 1;
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    .subdub-btn {
+      position: relative; /* Ensure z-index stacking context */
+      background: none; border: none; color: var(--text-secondary);
+      font-size: 0.9em; font-weight: 600;
+      padding: 8px 16px; /* Add horizontal padding for spacing */
+      border-radius: 8px; cursor: pointer;
+      outline: none; z-index: 2; transition: color 0.3s ease;
+      flex-grow: 1; text-align: center;
+    }
+    .subdub-btn.active { color: var(--text-primary); }
 
-    #source-changer-container {
-      display: none; /* Hidden by default, shown in portrait */
-      margin-top: 1rem;
+    /* Source Selector */
+    .source-selector-wrapper {
+      position: relative;
+      flex-grow: 1;
     }
     #source-changer-select {
       width: 100%;
-      background-color: rgba(30, 30, 30, 0.8);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background-color: transparent;
+      color: var(--text-primary);
+      border: none;
       border-radius: 8px;
-      padding: 10px 12px;
-      font-size: 0.95em;
+      padding: 8px 28px 8px 12px;
+      font-size: 0.9em;
+      font-weight: 600;
       font-family: 'Inter', sans-serif;
       -webkit-appearance: none;
       appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-size: 16px;
       cursor: pointer;
+      text-align: center;
+      text-align-last: center; /* For Firefox */
     }
-    #source-changer-select:focus {
-        outline: none;
-        border-color: var(--accent-color-active);
+    .source-selector-wrapper::after {
+      content: '';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--text-secondary);
+      pointer-events: none;
+    }
+    #source-changer-select:focus { outline: none; }
+
+    /* Next Episode Button */
+    #next-episode-btn {
+      display: block; background: var(--accent-color); color: #fff;
+      font-weight: 600; font-size: 0.95em; border: none; border-radius: 12px;
+      padding: 12px 20px; cursor: pointer; transition: background 0.2s;
+      white-space: nowrap;
+    }
+    #next-episode-btn:hover { background: #e6850a; }
+    #series-over-msg {
+      text-align: center; font-weight: 600; font-size: 0.95em;
+      color: var(--accent-color); opacity: 0.8; padding: 12px 0;
     }
 
-    /* Portrait Mode Adjustments */
-    @media (orientation: portrait) {
-      #info-container #synopsis-container {
-        display: block; /* Show synopsis in portrait */
-      }
-      #source-changer-container {
-        display: block;
-      }
+    /* Synopsis */
+    #synopsis-container {
+      margin-top: 0.5rem;
     }
-    @media (max-width: 600px) and (orientation: portrait) {
-      #player-container { height: 56.25vw; min-height: 180px; }
-      #info-container { font-size: 1rem; padding: 1rem; min-height: calc(100vh - 56.25vw); }
-      #series-title { font-size: 1.1rem; }
-      .search-option-btn { padding: 7px 16px; font-size: 1em; }
-      #next-episode-btn { padding: 9px 20px; font-size: 1em; }
+    #synopsis-container h4 {
+      margin: 0 0 0.5rem 0; font-weight: 600; opacity: 0.9;
+    }
+    #synopsis-container p {
+      font-size: 0.9em; line-height: 1.6; color: var(--text-secondary); margin: 0;
     }
 
-    /* Mobile Landscape Orientation */
+    /* --- Landscape Mode --- */
     @media (orientation: landscape) and (max-height: 600px) {
-        body.landscape-active { overflow: hidden; }
-        .landscape-active #top-controls { display: flex; }
-        .landscape-active #player-container {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 100; max-height: 100vh; margin: 0; visibility: hidden;
-        }
-        .landscape-active #player-container.loaded { visibility: visible; }
-        .landscape-active #player-container iframe { width: 100%; height: 100%; }
-
-        /* Overlay Controls Panel */
-        .landscape-active #info-container {
-            position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
-            min-height: auto; max-height: none; height: auto; overflow: visible;
-            z-index: 110; background: rgba(10, 10, 10, 0.85);
-            backdrop-filter: blur(8px); box-shadow: 0 -2px 12px 0 rgba(0, 0, 0, 0.6);
-            padding: 8px 12px; transform: translateY(100%);
-            transition: transform 0.3s ease-in-out;
-        }
-        .landscape-active.controls-visible #info-container { transform: translateY(0); }
-        .landscape-active #synopsis-container { display: none !important; } /* Ensure synopsis is hidden */
-        .landscape-active #info-container #series-title { font-size: 0.9rem; margin-bottom: 0; }
-        .landscape-active #info-container #meta-line { font-size: 0.8rem; margin-bottom: 4px; gap: 0.5em; }
-        .landscape-active #info-container #controls-wrapper { margin-top: 0; gap: 0.5rem; }
-        .landscape-active #info-container .search-options-list { padding: 2px; border-radius: 16px; }
-        .landscape-active #info-container .search-option-btn { padding: 4px 12px; font-size: 0.85em; border-radius: 14px; }
-        .landscape-active #info-container #next-episode-btn { padding: 6px 14px; font-size: 0.85em; border-radius: 16px; }
+      body { flex-direction: row; }
+      #player-container {
+        width: 100vw; height: 100vh;
+        position: fixed; top: 0; left: 0; z-index: 100;
+      }
+      #content-container {
+        display: none; /* Hide by default in landscape */
+      }
+      /* Add specific landscape controls if needed, or rely on player's native controls */
     }
   </style>
 </head>
 <body>
-  <div id="top-controls">
-      <button id="toggle-controls-btn" class="top-btn">Controls</button>
-      <button id="reload-player-btn" class="top-btn">Reload Player</button>
-  </div>
 
   <div id="loading-container">
     <div class="loader-spinner"></div>
@@ -260,26 +219,32 @@
 
   <div id="player-container"></div>
 
-  <div id="info-container">
-    <div id="series-title"><span id="series-name">—</span></div>
-    <div id="meta-line">
-      <span>Type: <span id="series-type">—</span></span> |
-      <span>Year: <span id="series-year">—</span></span> |
-      <span>Episode: <span id="episode-number">—</span></span>
+  <div id="content-container">
+    <div id="header-info">
+      <div id="series-title">—</div>
+      <div id="meta-line">
+        <span>Type: <span id="series-type">—</span></span> |
+        <span>Year: <span id="series-year">—</span></span> |
+        <span>Episode: <span id="episode-number">—</span></span>
+      </div>
     </div>
-    <div id="controls-wrapper">
-      <ul class="search-options-list" id="search-options-list">
-        <li><button class="search-option-btn active" id="sub-option-btn" type="button">SUB</button></li>
-        <li><button class="search-option-btn" id="dub-option-btn" type="button">DUB</button></li>
-      </ul>
+
+    <div id="controls-main">
+      <div id="source-controls">
+        <ul class="subdub-toggle" id="subdub-toggle">
+          <li><button class="subdub-btn active" id="sub-option-btn" type="button">SUB</button></li>
+          <li><button class="subdub-btn" id="dub-option-btn" type="button">DUB</button></li>
+        </ul>
+        <div class="source-selector-wrapper">
+          <select id="source-changer-select" name="source-changer"></select>
+        </div>
+      </div>
+      <div id="next-episode-container"></div>
     </div>
-    <div id="source-changer-container">
-      <label for="source-changer-select" style="display: none;">Source</label>
-      <select id="source-changer-select" name="source-changer"></select>
-    </div>
+
     <div id="synopsis-container">
-        <h4>Synopsis</h4>
-        <p id="synopsis-text">—</p>
+      <h4>Synopsis</h4>
+      <p id="synopsis-text">—</p>
     </div>
   </div>
 
@@ -288,221 +253,230 @@
       const params = new URLSearchParams(window.location.search);
       const jikanId = params.get('id');
       const episode = params.get('ep');
-      
+
+      // DOM Elements
       const playerContainer = document.getElementById('player-container');
+      const loadingContainer = document.getElementById('loading-container');
       const subOptionBtn = document.getElementById('sub-option-btn');
       const dubOptionBtn = document.getElementById('dub-option-btn');
-      const searchOptionsList = document.getElementById('search-options-list');
-      const controlsWrapper = document.getElementById('controls-wrapper');
-      const loadingContainer = document.getElementById('loading-container');
-      const toggleControlsBtn = document.getElementById('toggle-controls-btn');
-      const reloadPlayerBtn = document.getElementById('reload-player-btn');
-      const synopsisText = document.getElementById('synopsis-text');
-      const serverIp = localStorage.getItem('extension_server_ip');
-      const sourceChangerContainer = document.getElementById('source-changer-container');
       const sourceChangerSelect = document.getElementById('source-changer-select');
+      const nextEpisodeContainer = document.getElementById('next-episode-container');
+      const synopsisText = document.getElementById('synopsis-text');
 
+      // App State
+      const serverIp = localStorage.getItem('extension_server_ip');
       const profileId = localStorage.getItem("currentProfileId");
       let currentProfile = null;
       let userPref = localStorage.getItem('animeDubPref') || 'sub';
       let currentModule = 'default';
 
-      if (!jikanId || !episode) {
-        playerContainer.innerHTML = `<div id="error-message">Missing "id" or "ep" parameter.</div>`;
-        return;
+      // --- Main Initialization ---
+      try {
+        // Initial Checks
+        if (!jikanId || !episode) {
+          throw new Error('Missing "id" or "ep" parameter.');
+        }
+        if (!serverIp) {
+          throw new Error('Extension server IP not set. Please configure it.');
+        }
+
+        loadingContainer.style.display = 'flex';
+
+        await fetchProfile();
+        const animeData = await fetchAnimeData();
+        updateUI(animeData);
+        await logWatchHistory(jikanId, episode, animeData.title);
+        await populateSourceChanger();
+
+        if (userPref === 'dub') {
+          dubOptionBtn.classList.add('active');
+          subOptionBtn.classList.remove('active');
+        } else {
+          subOptionBtn.classList.add('active');
+          dubOptionBtn.classList.remove('active');
+        }
+
+        await loadIframe(userPref === 'dub', currentModule);
+        setupEventListeners();
+        setTimeout(moveActiveIndicator, 150);
+
+      } catch (error) {
+        console.error("A critical error occurred during initialization:", error);
+        loadingContainer.style.display = 'none';
+        playerContainer.innerHTML = `<div id="error-message">Failed to load player: ${error.message}</div>`;
       }
-      if (!serverIp) {
-        playerContainer.innerHTML = `<div id="error-message">Extension server IP not set. Please configure it on the main page.</div>`;
-        return;
-      }
-      
-      if (profileId) {
+
+
+      // --- Functions ---
+
+      async function fetchProfile() {
+        if (!profileId) return;
         try {
-            const response = await fetch(`/profiles/${profileId}`);
-            if (response.ok) {
-                currentProfile = await response.json();
-            } else {
-                console.warn("Could not load active profile.");
-            }
+          const response = await fetch(`/profiles/${profileId}`);
+          if (response.ok) currentProfile = await response.json();
+          else console.warn("Could not load active profile.");
         } catch (e) {
-            console.error("Error fetching profile:", e);
+          console.error("Error fetching profile:", e);
         }
       }
 
       async function logWatchHistory(malId, episodeNumber, seriesTitle) {
-          if (!currentProfile) {
-              console.log("No profile active, skipping history log.");
-              return;
-          }
-          const params = new URLSearchParams({
-              mal_id: malId,
-              episode_number: episodeNumber,
-              series_title: seriesTitle,
-              season_number: 1,
-          });
-          try {
-              await fetch(`/profiles/${currentProfile.id}/watch-history?${params.toString()}`, { method: 'POST' });
-              console.log(`Logged watch history for Ep. ${episodeNumber} on profile ${currentProfile.name}.`);
-          } catch (error) {
-              console.error("Failed to log watch history:", error);
-          }
+        if (!currentProfile || !seriesTitle || seriesTitle === 'Unknown') return;
+        const query = new URLSearchParams({
+          mal_id: malId,
+          episode_number: episodeNumber,
+          series_title: seriesTitle,
+          season_number: 1,
+        });
+        try {
+          await fetch(`/profiles/${currentProfile.id}/watch-history?${query.toString()}`, { method: 'POST' });
+          console.log(`Logged watch history for Ep. ${episodeNumber}.`);
+        } catch (error) {
+          console.error("Failed to log watch history:", error);
+        }
       }
 
       function moveActiveIndicator() {
-        const activeButton = document.querySelector('.search-option-btn.active');
+        const activeButton = document.querySelector('.subdub-btn.active');
         if (activeButton) {
-          const indicator = document.querySelector('.search-options-list');
+          const indicator = document.querySelector('.subdub-toggle');
           const listRect = indicator.getBoundingClientRect();
           const buttonRect = activeButton.getBoundingClientRect();
           const leftPosition = buttonRect.left - listRect.left;
-          
           indicator.style.setProperty('--indicator-left', `${leftPosition}px`);
           indicator.style.setProperty('--indicator-width', `${activeButton.offsetWidth}px`);
         }
       }
 
-      function isMobileLandscape() {
-        return window.matchMedia("(orientation: landscape) and (max-height: 600px)").matches;
-      }
-
-      function handleOrientation() {
-        if (isMobileLandscape()) {
-          document.body.classList.add('landscape-active');
-        } else {
-          document.body.classList.remove('landscape-active', 'controls-visible');
-          toggleControlsBtn.classList.remove('active');
-          toggleControlsBtn.textContent = 'Controls';
-        }
-        setTimeout(moveActiveIndicator, 100);
-      }
-
       async function fetchAnimeData() {
         let title = 'Unknown', type = 'N/A', year = 'N/A', totalEpisodes = null, synopsis = 'No synopsis available.';
         let episodeSynopsis = 'No episode synopsis available.', episodeThumbnail = null;
-        
+
         try {
-            const [jikanInfoResp, jikanEpisodesResp, kitsuMapResp] = await Promise.all([
-                fetch(`https://api.jikan.moe/v4/anime/${jikanId}`),
-                fetch(`https://api.jikan.moe/v4/anime/${jikanId}/episodes`),
-                fetch(`http://${serverIp}:7275/map/mal/${jikanId}`)
+          const [jikanInfoResp, jikanEpisodesResp, kitsuMapResp] = await Promise.all([
+            fetch(`https://api.jikan.moe/v4/anime/${jikanId}`),
+            fetch(`https://api.jikan.moe/v4/anime/${jikanId}/episodes`),
+            fetch(`http://${serverIp}:7275/map/mal/${jikanId}`)
+          ]);
+
+          if (jikanInfoResp.ok) {
+            const data = (await jikanInfoResp.json()).data || {};
+            title = data.title_english || data.title || 'Unknown';
+            type = data.type || 'N/A';
+            year = data.year || data.aired?.prop?.from?.year || 'N/A';
+          }
+
+          if (jikanEpisodesResp.ok) {
+            const data = await jikanEpisodesResp.json();
+            totalEpisodes = data.pagination?.last_visible_page > 1 ? null : data.data?.length;
+          }
+
+          if (kitsuMapResp.ok) {
+            const mapData = await kitsuMapResp.json();
+            const kitsuId = mapData.kitsu_id;
+            const [kitsuAnimeResp, kitsuEpisodeResp] = await Promise.all([
+              fetch(`https://kitsu.io/api/edge/anime/${kitsuId}`),
+              fetch(`https://kitsu.io/api/edge/anime/${kitsuId}/episodes?filter[number]=${episode}`)
             ]);
-
-            if (jikanInfoResp.ok) {
-                const data = (await jikanInfoResp.json()).data || {};
-                title = data.title_english || data.title || 'Unknown';
-                type = data.type || 'N/A';
-                year = data.year || data.aired?.prop?.from?.year || 'N/A';
+            if (kitsuAnimeResp.ok) {
+              const kitsuData = await kitsuAnimeResp.json();
+              if (kitsuData && kitsuData.data && kitsuData.data.attributes) {
+                  const attributes = kitsuData.data.attributes;
+                  synopsis = attributes.synopsis || synopsis;
+                  if (attributes.posterImage?.original) {
+                      loadingContainer.style.backgroundImage = `url(${attributes.posterImage.original})`;
+                  }
+              }
             }
-
-            if (jikanEpisodesResp.ok) {
-                const data = await jikanEpisodesResp.json();
-                totalEpisodes = data.pagination?.last_visible_page > 1 ? null : data.data?.length;
+            if (kitsuEpisodeResp.ok) {
+              const episodeData = await kitsuEpisodeResp.json();
+              if (episodeData.data?.length > 0 && episodeData.data[0].attributes) {
+                const episodeAttributes = episodeData.data[0].attributes;
+                episodeSynopsis = episodeAttributes.synopsis || episodeAttributes.description || episodeSynopsis;
+                episodeThumbnail = episodeAttributes.thumbnail?.original;
+              }
             }
+          }
+        } catch (err) {
+          console.warn('Failed to fetch some anime data:', err);
+          // Return default data, but the main try/catch will handle the UI
+        }
 
-            if (kitsuMapResp.ok) {
-                const mapData = await kitsuMapResp.json();
-                const kitsuId = mapData.kitsu_id;
-                
-                const [kitsuAnimeResp, kitsuEpisodeResp] = await Promise.all([
-                    fetch(`https://kitsu.io/api/edge/anime/${kitsuId}`),
-                    fetch(`https://kitsu.io/api/edge/anime/${kitsuId}/episodes?filter[number]=${episode}`)
-                ]);
-                
-                if (kitsuAnimeResp.ok) {
-                    const kitsuData = await kitsuAnimeResp.json();
-                    const attributes = kitsuData.data.attributes;
-                    synopsis = attributes.synopsis || synopsis;
-                    if (attributes.posterImage?.original) {
-                        loadingContainer.style.backgroundImage = `url(${attributes.posterImage.original})`;
-                    }
-                }
-                
-                if (kitsuEpisodeResp.ok) {
-                    const episodeData = await kitsuEpisodeResp.json();
-                    if (episodeData.data && episodeData.data.length > 0) {
-                        const episodeAttributes = episodeData.data[0].attributes;
-                        episodeSynopsis = episodeAttributes.synopsis || episodeAttributes.description || episodeSynopsis;
-                        episodeThumbnail = episodeAttributes.thumbnail?.original;
-                    }
-                }
-            }
-        } catch (err) { console.warn('Failed to fetch some anime data:', err); }
-        
         return { title, type, year, totalEpisodes, synopsis, episodeSynopsis, episodeThumbnail };
       }
 
       async function populateSourceChanger() {
         try {
-            const response = await fetch(`http://${serverIp}:7275/modules/streaming`);
-            if (!response.ok) throw new Error('Failed to fetch streaming modules');
-            const modules = await response.json();
+          const response = await fetch(`http://${serverIp}:7275/modules/streaming`);
+          if (!response.ok) throw new Error('Failed to fetch streaming modules');
+          const modules = await response.json();
 
-            if (modules.length > 1) {
-                sourceChangerSelect.innerHTML = '';
-                const defaultOption = document.createElement('option');
-                defaultOption.textContent = 'Default Source';
-                defaultOption.value = 'default';
-                sourceChangerSelect.appendChild(defaultOption);
+          sourceChangerSelect.innerHTML = '';
+          const defaultOption = document.createElement('option');
+          defaultOption.textContent = 'Default Source';
+          defaultOption.value = 'default';
+          sourceChangerSelect.appendChild(defaultOption);
 
-                modules.forEach(module => {
-                    const option = document.createElement('option');
-                    option.value = module.id;
-                    option.textContent = module.name;
-                    sourceChangerSelect.appendChild(option);
-                });
-            } else {
-                sourceChangerContainer.style.display = 'none';
-            }
+          if (modules.length > 0) {
+            modules.forEach(module => {
+              const option = document.createElement('option');
+              option.value = module.id;
+              option.textContent = module.name;
+              sourceChangerSelect.appendChild(option);
+            });
+          }
         } catch (error) {
-            console.error('Could not populate source changer:', error);
-            sourceChangerContainer.style.display = 'none';
+          console.error('Could not populate source changer:', error);
+          const errorOption = document.createElement('option');
+          errorOption.textContent = 'Error loading';
+          errorOption.value = 'default';
+          errorOption.disabled = true;
+          sourceChangerSelect.innerHTML = '';
+          sourceChangerSelect.appendChild(errorOption);
         }
       }
 
-      const { title, type, year, totalEpisodes, synopsis, episodeSynopsis, episodeThumbnail } = await fetchAnimeData();
-      await logWatchHistory(jikanId, episode, title);
+      function updateUI(data) {
+        const safeData = data || {};
+        document.getElementById('series-title').textContent = safeData.title || '—';
+        document.getElementById('series-type').textContent = safeData.type || 'N/A';
+        document.getElementById('series-year').textContent = safeData.year || 'N/A';
+        document.getElementById('episode-number').textContent = episode || 'N/A';
+        synopsisText.textContent = safeData.episodeSynopsis || 'No synopsis available.';
+        document.getElementById('loading-title').textContent = safeData.title || 'Loading...';
+        document.getElementById('loading-synopsis').textContent = safeData.episodeSynopsis || '';
 
-      document.getElementById('series-name').textContent = title;
-      document.getElementById('series-type').textContent = type;
-      document.getElementById('series-year').textContent = year;
-      document.getElementById('episode-number').textContent = episode;
-      synopsisText.textContent = episodeSynopsis;
-      document.getElementById('loading-title').textContent = title;
-      document.getElementById('loading-synopsis').textContent = episodeSynopsis;
+        if (safeData.episodeThumbnail) {
+          loadingContainer.style.backgroundImage = `url(${safeData.episodeThumbnail})`;
+        }
 
-      if (episodeThumbnail) {
-          loadingContainer.style.backgroundImage = `url(${episodeThumbnail})`;
-      }
-
-      const currentEpNum = parseInt(episode, 10);
-      if (totalEpisodes && currentEpNum < totalEpisodes) {
-        const nextEpBtn = document.createElement('button');
-        nextEpBtn.id = 'next-episode-btn';
-        nextEpBtn.textContent = `Next →`;
-        nextEpBtn.addEventListener('click', () => {
-          params.set('ep', currentEpNum + 1);
-          window.location.search = params.toString();
-        });
-        controlsWrapper.appendChild(nextEpBtn);
-      } else if (totalEpisodes && currentEpNum >= totalEpisodes) {
-        const seriesOverMsg = document.createElement('div');
-        seriesOverMsg.id = 'series-over-msg';
-        seriesOverMsg.textContent = 'Series Complete';
-        controlsWrapper.appendChild(seriesOverMsg);
-      }
-
-      async function showLoadingScreen() {
-          if (isMobileLandscape()) {
-              loadingContainer.style.display = 'flex';
-          }
+        const currentEpNum = parseInt(episode, 10);
+        nextEpisodeContainer.innerHTML = ''; // Clear previous button/message
+        if (safeData.totalEpisodes && currentEpNum < safeData.totalEpisodes) {
+          const nextEpBtn = document.createElement('button');
+          nextEpBtn.id = 'next-episode-btn';
+          nextEpBtn.textContent = `Next →`;
+          nextEpBtn.addEventListener('click', () => {
+            params.set('ep', currentEpNum + 1);
+            window.location.search = params.toString();
+          });
+          nextEpisodeContainer.appendChild(nextEpBtn);
+        } else if (safeData.totalEpisodes && currentEpNum >= safeData.totalEpisodes) {
+          const seriesOverMsg = document.createElement('div');
+          seriesOverMsg.id = 'series-over-msg';
+          seriesOverMsg.textContent = 'Series Complete';
+          nextEpisodeContainer.appendChild(seriesOverMsg);
+        }
       }
 
       async function loadIframe(dub, preferModule = 'default') {
         playerContainer.innerHTML = '';
-        playerContainer.classList.remove('loaded');
-        await showLoadingScreen();
+        // Don't show loading screen again if it's already visible
+        if (loadingContainer.style.display !== 'flex') {
+            loadingContainer.style.display = 'flex';
+        }
 
-        let iframeSrcURL = `http://${serverIp}:7275/iframe-src?mal_id=${encodeURIComponent(jikanId)}&episode=${encodeURIComponent(episode)}&dub=${dub}`;
+        let iframeSrcURL = `http://${serverIp}:7275/iframe-src?mal_id=${jikanId}&episode=${episode}&dub=${dub}`;
         if (preferModule && preferModule !== 'default') {
           iframeSrcURL += `&prefer_module=${encodeURIComponent(preferModule)}`;
         }
@@ -511,7 +485,7 @@
           const res = await fetch(iframeSrcURL);
           if (!res.ok) throw new Error(`Proxy error ${res.status}`);
           const json = await res.json();
-          if (!json.src) throw new Error('No embed source found');
+          if (!json.src) throw new Error('No embed source found from any module');
 
           if (json.source_module) {
             sourceChangerSelect.value = json.source_module;
@@ -523,84 +497,48 @@
           iframe.setAttribute('src', json.src);
           iframe.setAttribute('allowfullscreen', 'true');
           iframe.setAttribute('scrolling', 'no');
-          iframe.onload = () => {
-              loadingContainer.style.display = 'none';
-              playerContainer.classList.add('loaded');
-          };
           playerContainer.appendChild(iframe);
+
+          // Hide the loading screen as soon as the iframe is added to the DOM.
+          // The iframe itself will show its own loading progress.
+          loadingContainer.style.display = 'none';
         } catch (err) {
           console.error('Error loading player:', err);
           loadingContainer.style.display = 'none';
-          playerContainer.innerHTML = `<div id="error-message">Could not load player. Please try another option.</div>`;
+          playerContainer.innerHTML = `<div id="error-message">Could not load player: ${err.message}. Please try another source or type.</div>`;
         }
       }
 
-      await populateSourceChanger();
-
-      if (userPref === 'dub') { dubOptionBtn.classList.add('active'); subOptionBtn.classList.remove('active'); }
-      else { subOptionBtn.classList.add('active'); dubOptionBtn.classList.remove('active'); }
-      
-      handleOrientation();
-      await loadIframe(userPref === 'dub', currentModule);
-      setTimeout(moveActiveIndicator, 150);
-
-      subOptionBtn.addEventListener('click', async () => {
-        if (userPref !== 'sub') {
+      function setupEventListeners() {
+        subOptionBtn.addEventListener('click', async () => {
+          if (userPref !== 'sub') {
             userPref = 'sub';
             localStorage.setItem('animeDubPref', 'sub');
             subOptionBtn.classList.add('active');
             dubOptionBtn.classList.remove('active');
             moveActiveIndicator();
             await loadIframe(false, currentModule);
-        }
-      });
-      dubOptionBtn.addEventListener('click', async () => {
-        if (userPref !== 'dub') {
+          }
+        });
+        dubOptionBtn.addEventListener('click', async () => {
+          if (userPref !== 'dub') {
             userPref = 'dub';
             localStorage.setItem('animeDubPref', 'dub');
             dubOptionBtn.classList.add('active');
             subOptionBtn.classList.remove('active');
             moveActiveIndicator();
             await loadIframe(true, currentModule);
-        }
-      });
-
-      sourceChangerSelect.addEventListener('change', async () => {
-        const selectedModule = sourceChangerSelect.value;
-        if (selectedModule !== currentModule) {
+          }
+        });
+        sourceChangerSelect.addEventListener('change', async () => {
+          const selectedModule = sourceChangerSelect.value;
+          if (selectedModule !== currentModule) {
             currentModule = selectedModule;
             await loadIframe(userPref === 'dub', currentModule);
-        }
-      });
-
-      reloadPlayerBtn.addEventListener('click', async () => {
-        await loadIframe(userPref === 'dub', currentModule);
-      });
-
-      function showControls() {
-        if (!isMobileLandscape()) return;
-        document.body.classList.add('controls-visible');
-        toggleControlsBtn.classList.add('active');
-        toggleControlsBtn.textContent = 'Hide';
+          }
+        });
+        window.addEventListener('resize', () => setTimeout(moveActiveIndicator, 100));
       }
-
-      function hideControls() {
-        if (!isMobileLandscape()) return;
-        document.body.classList.remove('controls-visible');
-        toggleControlsBtn.classList.remove('active');
-        toggleControlsBtn.textContent = 'Controls';
-      }
-
-      toggleControlsBtn.addEventListener('click', () => {
-        if (document.body.classList.contains('controls-visible')) {
-          hideControls();
-        } else {
-          showControls();
-        }
-      });
-
-      window.addEventListener('orientationchange', () => setTimeout(handleOrientation, 100));
-      window.addEventListener('resize', () => setTimeout(moveActiveIndicator, 100));
     });
   </script>
 </body>
