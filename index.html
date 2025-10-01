@@ -31,7 +31,7 @@
     <link rel="manifest" href="Resources/manifest.json/" />
     <meta name="theme-color" content="#0b0b0b" />
 
-    <link rel="icon" href="/Resources/Images/icon-196.png" type="image/png" />
+    <link rel="icon" href="Resources/Images/logo-196.png" type="image/png" />
     <!-- iOS support -->
     <link rel="apple-touch-icon" href="/Resources/Images/icon-196.png" />
     <style>
@@ -809,11 +809,12 @@
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         opacity: 0;
         transform: translateY(-20px) scale(0.95);
-        animation: toast-in 0.4s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
+        animation: toast-in 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
       }
 
       .toast-message.hiding {
-        animation: toast-out 0.4s cubic-bezier(0.550, 0.055, 0.675, 0.190) forwards;
+        animation: toast-out 0.4s cubic-bezier(0.55, 0.055, 0.675, 0.19)
+          forwards;
       }
 
       @keyframes toast-in {
@@ -837,10 +838,15 @@
       .toast-message .toast-icon {
         font-size: 1.2rem;
       }
-      .toast-message.success .toast-icon { color: #34c759; }
-      .toast-message.error .toast-icon { color: #ff3b30; }
-      .toast-message.info .toast-icon { color: #007aff; }
-
+      .toast-message.success .toast-icon {
+        color: #34c759;
+      }
+      .toast-message.error .toast-icon {
+        color: #ff3b30;
+      }
+      .toast-message.info .toast-icon {
+        color: #007aff;
+      }
     </style>
   </head>
   <body>
@@ -1144,21 +1150,25 @@
       const connectBtn = document.getElementById("connect-btn");
       const statusIndicator = document.getElementById("status-indicator");
 
-      async function checkServerStatus(ip) {
+      async function checkServerStatus(ip, isDeployed = false) {
         statusIndicator.textContent = "Connecting...";
         statusIndicator.className = "status-indicator connecting";
+        const url = isDeployed ? '/identify' : `http://${ip}:7275/identify`;
+        
         try {
-          const response = await fetch(`http://${ip}:7275/identify`, {
+          const response = await fetch(url, {
             method: "GET",
-            mode: "cors",
-            signal: AbortSignal.timeout(5000), // 5 second timeout
+            mode: isDeployed ? "same-origin" : "cors",
+            signal: AbortSignal.timeout(5000),
           });
           if (response.ok) {
             const data = await response.json();
             if (data.app === "Animex Extension API") {
               statusIndicator.textContent = "Connected!";
               statusIndicator.className = "status-indicator connected";
-              localStorage.setItem("extension_server_ip", ip);
+              if (!isDeployed) {
+                localStorage.setItem("extension_server_ip", ip);
+              }
               setTimeout(() => {
                 serverModal.classList.remove("active");
               }, 1000);
@@ -1168,8 +1178,9 @@
           throw new Error("Not a valid Animex server.");
         } catch (error) {
           console.error("Server connection error:", error);
-          statusIndicator.textContent =
-            "Connection failed. Please check the IP address and ensure the server is running.";
+          statusIndicator.textContent = isDeployed 
+            ? "Connection to server failed. Please refresh."
+            : "Connection failed. Check IP and ensure server is running.";
           statusIndicator.className = "status-indicator error";
           return false;
         }
@@ -1178,7 +1189,7 @@
       connectBtn.addEventListener("click", () => {
         const ip = ipInput.value.trim();
         if (ip) {
-          checkServerStatus(ip);
+          checkServerStatus(ip, false);
         }
       });
 
@@ -1198,19 +1209,28 @@
             checkAccessToken();
             setInterval(checkAccessToken, 5000);
 
-            const savedIp = localStorage.getItem("extension_server_ip");
-            if (savedIp) {
-              ipInput.value = savedIp;
-              checkServerStatus(savedIp).then((connected) => {
-                if (!connected) {
-                  serverModal.classList.add("active");
-                }
-              });
+            const isDeployed = window.location.protocol.startsWith('http');
+
+            if (isDeployed) {
+                serverModal.querySelector('.modal-content h2').textContent = "Connecting to Server";
+                serverModal.querySelector('.modal-content p').style.display = 'none';
+                serverModal.querySelector('.ip-input-container').style.display = 'none';
+                serverModal.querySelector('.connect-button').style.display = 'none';
+                checkServerStatus(null, true);
             } else {
-              serverModal.classList.add("active");
+                const savedIp = localStorage.getItem("extension_server_ip");
+                if (savedIp) {
+                    ipInput.value = savedIp;
+                    checkServerStatus(savedIp, false).then((connected) => {
+                        if (!connected) {
+                            serverModal.classList.add("active");
+                        }
+                    });
+                } else {
+                    serverModal.classList.add("active");
+                }
             }
 
-            
             document.querySelector(".app-container").style.animation =
               "fadeIn 0.5s ease-out forwards";
 
@@ -1426,33 +1446,32 @@
       });
 
       // --- NEW: Toast Notification Logic ---
-      function showToast(message, type = 'info', duration = 4000) {
-          const container = document.getElementById('toast-container');
-          if (!container) return;
+      function showToast(message, type = "info", duration = 4000) {
+        const container = document.getElementById("toast-container");
+        if (!container) return;
 
-          const toast = document.createElement('div');
-          toast.className = `toast-message ${type}`;
-          
-          let iconClass = 'fas fa-info-circle';
-          if (type === 'success') iconClass = 'fas fa-check-circle';
-          if (type === 'error') iconClass = 'fas fa-exclamation-triangle';
+        const toast = document.createElement("div");
+        toast.className = `toast-message ${type}`;
 
-          toast.innerHTML = `
+        let iconClass = "fas fa-info-circle";
+        if (type === "success") iconClass = "fas fa-check-circle";
+        if (type === "error") iconClass = "fas fa-exclamation-triangle";
+
+        toast.innerHTML = `
               <i class="toast-icon ${iconClass}"></i>
               <span class="toast-text">${message}</span>
           `;
 
-          container.appendChild(toast);
+        container.appendChild(toast);
 
-          setTimeout(() => {
-              toast.classList.add('hiding');
-              toast.addEventListener('animationend', () => {
-                  toast.remove();
-              });
-          }, duration);
+        setTimeout(() => {
+          toast.classList.add("hiding");
+          toast.addEventListener("animationend", () => {
+            toast.remove();
+          });
+        }, duration);
       }
       window.showToast = showToast;
-
 
       // Service Worker Registration
       if ("serviceWorker" in navigator) {
@@ -1465,72 +1484,113 @@
       }
 
       // --- CACHE & SETTINGS SYNC LOGIC ---
-      window.addEventListener('message', (event) => {
-          if (!event.data || !event.data.action) {
-             if (event.data === 'close-list-manager') {
-                closeListManager();
-             }
-             return;
+      window.addEventListener("message", (event) => {
+        if (!event.data || !event.data.action) {
+          if (event.data === "close-list-manager") {
+            closeListManager();
           }
+          return;
+        }
 
-          switch (event.data.action) {
-              case 'clearPageCache':
-                  if ('serviceWorker' in navigator) {
-                      navigator.serviceWorker.ready.then(registration => {
-                          if (registration.active) {
-                              registration.active.postMessage({ action: 'clear_page_cache' });
-                          } else {
-                              showToast('No active service worker found. Cannot clear cache.', 'error');
-                          }
-                      }).catch(error => {
-                          console.error('Service Worker not ready:', error);
-                          showToast('Service worker not ready. Cannot clear cache.', 'error');
-                      });
+        switch (event.data.action) {
+          case "clearPageCache":
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker.ready
+                .then((registration) => {
+                  if (registration.active) {
+                    registration.active.postMessage({
+                      action: "clear_page_cache",
+                    });
                   } else {
-                      showToast('Service workers are not supported in this browser.', 'error');
+                    showToast(
+                      "No active service worker found. Cannot clear cache.",
+                      "error"
+                    );
                   }
-                  break;
+                })
+                .catch((error) => {
+                  console.error("Service Worker not ready:", error);
+                  showToast(
+                    "Service worker not ready. Cannot clear cache.",
+                    "error"
+                  );
+                });
+            } else {
+              showToast(
+                "Service workers are not supported in this browser.",
+                "error"
+              );
+            }
+            break;
 
-              case 'clearAllData':
-                  console.log("Clearing all site data...");
-                  // Clear storage first
-                  localStorage.clear();
-                  sessionStorage.clear();
-                  
-                  if ('serviceWorker' in navigator) {
-                      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                          const unregisterPromises = registrations.map(reg => reg.unregister());
-                          return Promise.all(unregisterPromises);
-                      }).then(() => {
-                          return caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))));
-                      }).then(() => {
-                          showToast('All site data has been cleared. The application will now reload.', 'success');
-                          setTimeout(() => window.location.reload(), 1500);
-                      }).catch(err => {
-                          console.error("Error during full data clear:", err);
-                          showToast("An error occurred while clearing data. Please try clearing your browser data manually.", 'error');
-                      });
-                  } else {
-                      // Fallback for browsers without SW support
-                      caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key)))).then(() => {
-                          showToast('All site data has been cleared. The application will now reload.', 'success');
-                          setTimeout(() => window.location.reload(), 1500);
-                      });
-                  }
-                  break;
-          }
+          case "clearAllData":
+            console.log("Clearing all site data...");
+            // Clear storage first
+            localStorage.clear();
+            sessionStorage.clear();
+
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker
+                .getRegistrations()
+                .then(function (registrations) {
+                  const unregisterPromises = registrations.map((reg) =>
+                    reg.unregister()
+                  );
+                  return Promise.all(unregisterPromises);
+                })
+                .then(() => {
+                  return caches
+                    .keys()
+                    .then((keys) =>
+                      Promise.all(keys.map((key) => caches.delete(key)))
+                    );
+                })
+                .then(() => {
+                  showToast(
+                    "All site data has been cleared. The application will now reload.",
+                    "success"
+                  );
+                  setTimeout(() => window.location.reload(), 1500);
+                })
+                .catch((err) => {
+                  console.error("Error during full data clear:", err);
+                  showToast(
+                    "An error occurred while clearing data. Please try clearing your browser data manually.",
+                    "error"
+                  );
+                });
+            } else {
+              // Fallback for browsers without SW support
+              caches
+                .keys()
+                .then((keys) =>
+                  Promise.all(keys.map((key) => caches.delete(key)))
+                )
+                .then(() => {
+                  showToast(
+                    "All site data has been cleared. The application will now reload.",
+                    "success"
+                  );
+                  setTimeout(() => window.location.reload(), 1500);
+                });
+            }
+            break;
+        }
       });
 
       // Listen for messages back from the SW
       if (navigator.serviceWorker) {
-          navigator.serviceWorker.addEventListener('message', event => {
-              if (event.data && event.data.action === 'cacheCleared') {
-                  if (event.data.type === 'page') {
-                      showToast('Cached pages and resources have been cleared. Reloading...', 'success');
-                      setTimeout(() => window.location.reload(), 1500);
-                  }
-              }
-          });
+        navigator.serviceWorker.addEventListener("message", (event) => {
+          if (event.data && event.data.action === "cacheCleared") {
+            if (event.data.type === "page") {
+              showToast(
+                "Cached pages and resources have been cleared. Reloading...",
+                "success"
+              );
+              setTimeout(() => window.location.reload(), 1500);
+            }
+          }
+        });
       }
     </script>
   </body>

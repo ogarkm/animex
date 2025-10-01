@@ -34,6 +34,45 @@
         text-align: center;
         border: 1px solid #7a6300;
       }
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+      .section-title {
+        margin: 0;
+        flex-shrink: 0;
+      }
+      .season-selector-container {
+        flex-grow: 1;
+        min-width: 180px;
+        max-width: 350px;
+      }
+      .season-selector {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background-color: var(--background-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        font-family: "Inter", sans-serif;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .season-selector:hover {
+        border-color: var(--brand-accent-faded);
+      }
+      .season-selector:focus {
+        outline: none;
+        border-color: var(--brand-accent);
+        box-shadow: 0 0 0 2px var(--brand-accent-faded);
+      }
+      .thumbnail-toggle-btn {
+        margin-left: auto; /* Pushes it to the right */
+      }
     </style>
   </head>
   <body>
@@ -163,6 +202,9 @@
               <section class="episode-list-section">
                 <div class="section-header">
                   <h2 class="section-title">Episodes</h2>
+                  <div class="season-selector-container" style="display: none;">
+                    <select id="season-selector" class="season-selector" title="Select a season"></select>
+                  </div>
                   <button
                     id="thumbnail-toggle-btn"
                     class="thumbnail-toggle-btn"
@@ -319,6 +361,9 @@
           "thumbnail-toggle-btn"
         );
         const episodesLoader = document.getElementById("episodes-loader");
+
+        const seasonSelectorContainer = document.querySelector('.season-selector-container');
+        const seasonSelector = document.getElementById('season-selector');
 
         const tabsSection = document.getElementById("tabs-section");
         const tabsContainer = document.getElementById("tabs-container");
@@ -949,7 +994,7 @@
               let quality = localStorage.getItem("quality") || "720p";
               const isDub = true;
               window.open(
-                `${serverUrl}/download?id=${currentMalId}&episode=${episodeNumber}&dub=${isDub}&quality=${quality}`,
+                `${serverUrl}/download?mal_id=${currentMalId}&episode=${episodeNumber}&dub=${isDub}&quality=${quality}`,
                 "_blank"
               );
             });
@@ -1140,6 +1185,60 @@
           });
         }
 
+        async function fetchAndDisplaySeasons(malId) {
+            try {
+                const response = await fetch(`${serverUrl}/anime/${malId}/seasons`);
+                if (!response.ok) throw new Error('Failed to fetch seasons');
+                const seasons = await response.json();
+
+                if (seasons && seasons.length > 1) {
+                    seasonSelector.innerHTML = '';
+                    seasons.forEach((season, index) => {
+                        const option = document.createElement('option');
+                        option.value = season.mal_id;
+                        const seasonLabel = `Season ${index + 1}`;
+                        option.textContent = `${seasonLabel}: ${season.title}`;
+                        option.dataset.fullTitle = season.title;
+
+                        if (String(season.mal_id) === String(malId)) {
+                            option.selected = true;
+                        }
+                        seasonSelector.appendChild(option);
+                    });
+                    seasonSelectorContainer.style.display = 'block';
+                } else {
+                    seasonSelectorContainer.style.display = 'none';
+                }
+            } catch (error) {
+                console.error("Failed to load seasons:", error);
+                seasonSelectorContainer.style.display = 'none';
+            }
+        }
+
+        seasonSelector.addEventListener('change', async (event) => {
+            const newMalId = event.target.value;
+            if (newMalId === currentMalId) return;
+
+            currentMalId = newMalId;
+            
+            const selectedOption = seasonSelector.options[seasonSelector.selectedIndex];
+            currentSeriesTitle = selectedOption.dataset.fullTitle;
+
+            episodeListContainer.innerHTML = '';
+            episodesPaginationContainer.innerHTML = '';
+            if (episodesLoader) episodesLoader.style.display = 'block';
+
+            let newEpisodes = [];
+            const newKitsuId = await getKitsuId(currentMalId);
+            if (newKitsuId) {
+                newEpisodes = await fetchSeriesEpisodes(newKitsuId);
+            }
+            if (!newEpisodes || newEpisodes.length === 0) {
+                newEpisodes = await fetchSeriesEpisodesFromJikanVideos(currentMalId);
+            }
+            displayEpisodes(newEpisodes);
+        });
+
         function setupCollapsibleDetails() {
           // Use a timeout to ensure content has rendered and scrollHeight is accurate
           setTimeout(() => {
@@ -1308,6 +1407,7 @@
               const kitsuData = await fetchKitsuData(currentKitsuId);
 
               await displayAnimeDetails(seriesDetails, kitsuData);
+              await fetchAndDisplaySeasons(currentMalId);
               setupCollapsibleDetails();
 
               if (episodesLoader) episodesLoader.style.display = "block";

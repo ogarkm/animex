@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
   <style>
     :root {
       --accent-color: #FF9500;
@@ -95,9 +96,27 @@
     /* --- Controls --- */
     #controls-main {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 1fr auto auto;
       gap: 0.8rem;
       align-items: center;
+    }
+    .control-btn {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s;
+      height: 44px; /* Match height of other controls */
+      width: 44px;
+    }
+    .control-btn:hover {
+      background: var(--border-color);
+      color: var(--text-primary);
     }
     #source-controls {
       display: flex;
@@ -239,6 +258,9 @@
           <select id="source-changer-select" name="source-changer"></select>
         </div>
       </div>
+      <button id="reload-iframe-btn" class="control-btn" title="Reload Player">
+        <i class="fas fa-sync-alt"></i>
+      </button>
       <div id="next-episode-container"></div>
     </div>
 
@@ -510,6 +532,8 @@
       }
 
       function setupEventListeners() {
+        const reloadIframeBtn = document.getElementById('reload-iframe-btn');
+
         subOptionBtn.addEventListener('click', async () => {
           if (userPref !== 'sub') {
             userPref = 'sub';
@@ -536,6 +560,12 @@
             currentModule = selectedModule;
             await loadIframe(userPref === 'dub', currentModule);
           }
+        });
+        reloadIframeBtn.addEventListener('click', () => {
+            const iframe = playerContainer.querySelector('iframe');
+            if (iframe) {
+                iframe.src = iframe.src;
+            }
         });
         window.addEventListener('resize', () => setTimeout(moveActiveIndicator, 100));
       }
